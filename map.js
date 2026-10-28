@@ -176,11 +176,9 @@ const MapUI = {
     if (!this.point || this.point.lat !== lat) return;
     let text;
     if (!d) text = tr('Глубина: нет данных (сервис недоступен).', 'Depth: no data (service unavailable).', 'Dubina: nema podataka (servis nije dostupan).');
-    else if (d.avg <= -1) text = tr(`Глубина ≈ ${f0(-d.avg)} м`, `Depth ≈ ${f0(-d.avg)} m`, `Dubina ≈ ${f0(-d.avg)} m`);
+    else if (d.avg <= -1) text = trv('Глубина ≈ {0} м', 'Depth ≈ {0} m', 'Dubina ≈ {0} m', [f0(-d.avg)]);
     else if (!Number.isNaN(d.nearDepth)) {
-      text = tr(`Берег. Рядом глубина до ${f0(d.nearDepth)} м. Сетка EMODnet (~100 м) у кромки воды неточна.`,
-        `Shoreline. Nearby depth reaches ${f0(d.nearDepth)} m. The EMODnet grid (~100 m) is imprecise at the water's edge.`,
-        `Obala. U blizini dubina doseže ${f0(d.nearDepth)} m. EMODnet mreža (~100 m) je neprecizna uz samu obalu.`);
+      text = trv('Берег. Рядом глубина до {0} м. Сетка EMODnet (~100 м) у кромки воды неточна.', 'Shoreline. Nearby depth reaches {0} m. The EMODnet grid (~100 m) is imprecise at the water\'s edge.', 'Obala. U blizini dubina doseže {0} m. EMODnet mreža (~100 m) je neprecizna uz samu obalu.', [f0(d.nearDepth)]);
     } else text = tr('Суша.', 'Land.', 'Kopno.');
     depthLine.textContent = text;
   },

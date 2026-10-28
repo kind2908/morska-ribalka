@@ -1,5 +1,5 @@
 // Главный файл: состояние, переключение вкладок, загрузка данных, запуск
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.7.0';
 const ANDROID_APK = 'app-release.apk';
 const THEMES = ['sea', 'light', 'sand'];
 const THEME_COLORS = { sea: ['#0B5C8E', '#0A1822'], light: ['#F6F7F5', '#F6F7F5'], sand: ['#F5ECDD', '#F5ECDD'] };
@@ -11,7 +11,7 @@ const S = {
   diarySub: 0, draft: null, editNote: null, mark: null, slider: 10,
   rulesOpen: false, libOpen: null, aboutOpen: false, theme: 0,
   gps: { code: 0, acc: 0, loading: false }, token: 0, pending: false,
-  updateReady: false, installHint: null, reload: null
+  updateReady: false, installHint: null, reload: null, picker: false
 };
 
 const $ = id => document.getElementById(id);
@@ -43,6 +43,19 @@ const A = {
     S.fish = fishFor(S.boat).find(f => f.name === name) || fishFor(S.boat)[0];
     Store.set(S.boat ? 'fish_boat' : 'fish_shore', S.fish.name);
     render();
+  },
+  // выбор страны: ставит язык страны (если просили), районы, точку и перезагружает данные
+  setCountry(code, withLang) {
+    Country.set(code);
+    if (withLang) Lang.set(Country.data.lang);
+    refreshRegions();
+    S.picker = false;
+    S.region = REGIONS[0].key; Store.set('region', S.region);
+    S.selected = regionSpots(S.region)[0];
+    S.fish = pickFish(S.boat);
+    S.libOpen = null; S.rulesOpen = false;
+    render(true);
+    S.reload();
   },
   setRegion(key) {
     if (key === S.region) return;
@@ -106,13 +119,33 @@ function pickFish(boat) {
 // ---------- Загрузка данных ----------
 S.reload = function () {
   const token = ++S.token, spot = S.selected;
-  S.data = null; S.error = false; S.days = []; S.hourly = null; S.air = null;
+  S.data = null; S.error = false; S.days = []; S.hourly = null; S.air = null; S.station = null;
   render();
   const ok = fn => v => { if (token === S.token) { fn(v); softRender(); } };
-  loadSeaData(spot).then(ok(d => { S.data = d; })).catch(ok(() => { S.error = true; }));
-  loadDays(spot).then(ok(d => { S.days = d; })).catch(ok(() => { S.days = []; }));
-  loadHourly(spot).then(ok(d => { S.hourly = d; })).catch(ok(() => { S.hourly = null; }));
-  loadAir(spot).then(ok(d => { S.air = d; })).catch(ok(() => { S.air = null; }));
+  const go = () => {
+    loadSeaData(spot).then(ok(d => { S.data = d; })).catch(ok(() => { S.error = true; }));
+    loadDays(spot).then(ok(d => { S.days = d; })).catch(ok(() => { S.days = []; }));
+    loadHourly(spot).then(ok(d => { S.hourly = d; })).catch(ok(() => { S.hourly = null; }));
+    loadAir(spot).then(ok(d => { S.air = d; })).catch(ok(() => { S.air = null; }));
+    loadStation(spot).then(ok(d => { S.station = d; })).catch(ok(() => { S.station = null; }));
+  };
+  if (spot.snap === false) {
+    // точки «3 км» и «15 км» проверяем по карте глубин и при необходимости сдвигаем на воду
+    const key = 'snap.' + spot.lat.toFixed(4) + ',' + spot.lon.toFixed(4);
+    const cached = Store.get(key, null);
+    const apply = p => {
+      if (p) { spot.lat = p.lat; spot.lon = p.lon; }
+      spot.snap = true;
+    };
+    if (cached) { apply(cached); go(); return; }
+    snapToWater(spot.lat, spot.lon).then(p => {
+      if (p) Store.set(key, p);
+      apply(p);
+      if (token === S.token) { render(); go(); }
+    }).catch(() => { spot.snap = true; if (token === S.token) go(); });
+    return;
+  }
+  go();
 };
 
 // не перерисовываем под руками, пока человек печатает
@@ -125,6 +158,16 @@ function softRender() {
 // ---------- Отрисовка ----------
 function render(force) {
   const view = $('view'), nav = $('tabs');
+  document.body.classList.toggle('picking', S.picker);
+  if (S.picker) {
+    if (MapUI.map || MapUI.box) MapUI.destroy();
+    view.classList.remove('maponly');
+    view.replaceChildren(h('div', { class: 'stack page-wrap' }, renderCountryPicker(S, A)));
+    nav.replaceChildren();
+    view.scrollTop = 0;
+    lastTab = 'picker';
+    return;
+  }
   if (!force && S.tab === 3 && !S.showSettings && MapUI.alive()) { MapUI.ready(S); return; }
   const sameScreen = lastTab === (S.showSettings ? 'settings' : S.tab);
   const scroll = sameScreen ? view.scrollTop : 0;
@@ -210,8 +253,16 @@ function init() {
   A.applyTheme();
   if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => A.applyTheme());
 
-  const region = Store.get('region', 'Херцег-Нови');
-  S.region = REGIONS.some(r => r.key === region) ? region : 'Херцег-Нови';
+  // 1.6.1: «Зубатка» переименована в «Зубан» (Dentex dentex)
+  ['fish_boat', 'fish_shore'].forEach(k => { if (Store.get(k, null) === 'Зубатка') Store.set(k, 'Зубан'); });
+  const dl = Store.get('diary', []);
+  if (dl.some(e => e.fish === 'Зубатка')) Store.set('diary', dl.map(e => e.fish === 'Зубатка' ? Object.assign({}, e, { fish: 'Зубан' }) : e));
+  const savedCountry = Country.saved();
+  Country.apply(savedCountry || 'ME');
+  refreshRegions();
+  S.picker = !savedCountry;
+  const region = Store.get('region', REGIONS[0].key);
+  S.region = REGIONS.some(r => r.key === region) ? region : REGIONS[0].key;
   S.boat = !!Store.get('boat', false);
   S.fish = pickFish(S.boat);
   S.selected = regionSpots(S.region)[0];
@@ -225,7 +276,7 @@ function init() {
     if (S.pending) { S.pending = false; setTimeout(() => softRender(), 80); }
   });
   render(true);
-  S.reload();
+  if (!S.picker) S.reload();
   registerWorker();
 }
 document.addEventListener('DOMContentLoaded', init);

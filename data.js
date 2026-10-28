@@ -65,7 +65,7 @@ window.DATA = {
    "sr": null
   },
   {
-   "key": "Зубатка",
+   "key": "Зубан",
    "latin": "Dentex dentex",
    "where": [
     "Скалы, пещеры и свалы 15–60 м.",
@@ -2390,7 +2390,7 @@ window.DATA = {
    "surf": false
   },
   {
-   "name": "Зубатка",
+   "name": "Зубан",
    "season": [
     5,
     5,
@@ -2489,8 +2489,8 @@ window.DATA = {
    "Mahi-mahi",
    "Lampuga"
   ],
-  "Зубатка": [
-   "Зубатка",
+  "Зубан": [
+   "Зубан",
    "Common dentex",
    "Zubatac"
   ],

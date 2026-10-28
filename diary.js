@@ -131,20 +131,16 @@ function diaryStats(list) {
   if (!list.length) return [tr('Пока нет записей.', 'No entries yet.', 'Još nema zapisa.')];
   const good = list.filter(e => e.count > 0), bad = list.filter(e => e.count === 0);
   const lines = [];
-  lines.push(tr(`Выходов: ${list.length}, с уловом: ${good.length}, без улова: ${bad.length}`,
-    `Trips: ${list.length}, with catch: ${good.length}, without catch: ${bad.length}`,
-    `Izlazaka: ${list.length}, sa ulovom: ${good.length}, bez ulova: ${bad.length}`));
+  lines.push(trv('Выходов: {0}, с уловом: {1}, без улова: {2}', 'Trips: {0}, with catch: {1}, without catch: {2}', 'Izlazaka: {0}, sa ulovom: {1}, bez ulova: {2}', [list.length, good.length, bad.length]));
   const totalCount = good.reduce((s, e) => s + e.count, 0);
   const totalWeight = f1(good.filter(e => !isNaN_(e.weightKg)).reduce((s, e) => s + e.weightKg, 0));
-  lines.push(tr(`Всего рыбы: ${totalCount} шт., вес по записям: ${totalWeight} кг`,
-    `Total fish: ${totalCount} pcs, weight in entries: ${totalWeight} kg`,
-    `Ukupno ribe: ${totalCount} kom, težina u zapisima: ${totalWeight} kg`));
+  lines.push(trv('Всего рыбы: {0} шт., вес по записям: {1} кг', 'Total fish: {0} pcs, weight in entries: {1} kg', 'Ukupno ribe: {0} kom, težina u zapisima: {1} kg', [totalCount, totalWeight]));
   const by = {};
   good.forEach(e => { by[e.fish] = (by[e.fish] || 0) + e.count; });
   const top = Object.entries(by).sort((a, b) => b[1] - a[1])[0];
   if (top) {
     const name = fishLabel(top[0]);
-    lines.push(tr(`Чаще всего ловится: ${name} (${top[1]} шт.)`, `Most often caught: ${name} (${top[1]} pcs)`, `Najčešće se lovi: ${name} (${top[1]} kom)`));
+    lines.push(trv('Чаще всего ловится: {0} ({1} шт.)', 'Most often caught: {0} ({1} pcs)', 'Najčešće se lovi: {0} ({1} kom)', [name, top[1]]));
   }
   if (good.length >= 3 && bad.length >= 3) {
     lines.push(tr('Средние условия (удачные выходы / без улова):', 'Average conditions (successful trips / no catch):', 'Prosječni uslovi (uspješni izlasci / bez ulova):'));
@@ -174,7 +170,7 @@ function entryTitle(e) {
 }
 function fmtTime(iso) {
   try {
-    const loc = { ru: 'ru-RU', en: 'en-GB', sr: 'sr-Latn-ME' }[Lang.current];
+    const loc = { ru: 'ru-RU', en: 'en-GB', sr: 'sr-Latn-ME', hr: 'hr-HR', it: 'it-IT', el: 'el-GR', sq: 'sq-AL', bg: 'bg-BG', sl: 'sl-SI' }[Lang.current] || 'en-GB';
     return new Date(iso).toLocaleString(loc, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   } catch (e) { return iso; }
 }

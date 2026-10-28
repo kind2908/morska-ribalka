@@ -2,8 +2,17 @@
 const LANGS = [
   { code: 'ru', label: 'Русский' },
   { code: 'en', label: 'English' },
-  { code: 'sr', label: 'Srpski' }
+  { code: 'sr', label: 'Srpski' },
+  { code: 'hr', label: 'Hrvatski' },
+  { code: 'it', label: 'Italiano' },
+  { code: 'el', label: 'Ελληνικά' },
+  { code: 'sq', label: 'Shqip' },
+  { code: 'bg', label: 'Български' },
+  { code: 'sl', label: 'Slovenščina' }
 ];
+// Словари для новых языков: TRX[язык][русская строка] = перевод (файлы trx-*.js)
+window.TRX = window.TRX || {};
+const trFallback = (L, en, sr) => (L === 'hr' || L === 'bs' ? sr : en);
 
 const Store = {
   get(key, def) {
@@ -22,22 +31,37 @@ const Lang = {
   load() {
     const saved = Store.get('lang', null);
     const phone = (navigator.language || 'ru').slice(0, 2).toLowerCase();
-    const guess = ['ru', 'en', 'sr'].includes(phone) ? phone : (phone === 'hr' || phone === 'bs' ? 'sr' : 'ru');
+    const known = LANGS.map(l => l.code);
+    const guess = known.includes(phone) ? phone : (phone === 'bs' || phone === 'cnr' ? 'sr' : 'ru');
     this.current = LANGS.some(l => l.code === saved) ? saved : guess;
   },
   set(code) { this.current = code; Store.set('lang', code); }
 };
 
 function tr(ru, en, sr) {
-  if (Lang.current === 'en') return en;
-  if (Lang.current === 'sr') return sr;
-  return ru;
+  const L = Lang.current;
+  if (L === 'ru') return ru;
+  if (L === 'en') return en;
+  if (L === 'sr') return sr;
+  const d = window.TRX[L];
+  if (d && d[ru]) return d[ru];
+  return trFallback(L, en, sr);
+}
+// перевод с подстановкой {0}, {1}… из массива vars
+function trv(ru, en, sr, vars) {
+  return tr(ru, en, sr).replace(/\{(\d+)\}/g, (m, i) => (vars[+i] != null ? vars[+i] : m));
 }
 // массив [ru, en, sr] -> строка на текущем языке
 function t3(arr) {
   if (!arr) return '';
-  const i = Lang.current === 'en' ? 1 : Lang.current === 'sr' ? 2 : 0;
-  return arr[i] != null ? arr[i] : arr[0];
+  const L = Lang.current;
+  if (L === 'ru') return arr[0];
+  if (L === 'en') return arr[1] != null ? arr[1] : arr[0];
+  if (L === 'sr') return arr[2] != null ? arr[2] : arr[0];
+  const d = window.TRX[L];
+  if (d && d[arr[0]]) return d[arr[0]];
+  const v = L === 'hr' ? arr[2] : arr[1];
+  return v != null ? v : arr[0];
 }
 
 const noData = () => tr('нет данных', 'no data', 'nema podataka');
@@ -50,15 +74,17 @@ const U = {
   mm: () => tr('мм', 'mm', 'mm')
 };
 
-const REGION_LABELS = {
-  'Херцег-Нови': ['Херцег-Нови', 'Herceg Novi', 'Herceg Novi'],
-  'Тиват': ['Тиват', 'Tivat / Boka', 'Tivat / Boka'],
-  'Будва': ['Будва', 'Budva', 'Budva'],
-  'Петровац': ['Петровац', 'Petrovac', 'Petrovac'],
-  'Бар': ['Бар', 'Bar', 'Bar'],
-  'Ульцинь': ['Ульцинь', 'Ulcinj', 'Ulcinj']
-};
-const regionLabel = key => REGION_LABELS[key] ? t3(REGION_LABELS[key]) : key;
+function regionLabel(key) {
+  for (const c of COUNTRIES) {
+    const r = c.regions.find(x => x.key === key);
+    if (r) {
+      if (Lang.current === 'ru') return r.ru;
+      if (Lang.current === c.lang || (c.lang === 'hr' && Lang.current === 'sr')) return r.loc;
+      return r.en;
+    }
+  }
+  return key;
+}
 
 function spotLabel(name) {
   if (name.includes(' · ')) {
@@ -107,14 +133,22 @@ function withNorm(value, unit, low, high, digits) {
   return `${(value * k).toFixed(d)} ${shown} (${usual} ${(low * k).toFixed(d)}–${(high * k).toFixed(d)}, ${status})`;
 }
 
+// выбор варианта из объекта {ru,en,sr,...} с запасным вариантом
+const byLang = o => o[Lang.current] || (Lang.current === 'hr' ? o.sr : o.en);
+
 function compass(deg) {
   if (isNaN_(deg)) return '';
   const names = {
     ru: ['север', 'северо-восток', 'восток', 'юго-восток', 'юг', 'юго-запад', 'запад', 'северо-запад'],
     en: ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest'],
-    sr: ['sjever', 'sjeveroistok', 'istok', 'jugoistok', 'jug', 'jugozapad', 'zapad', 'sjeverozapad']
-  }[Lang.current];
-  return names[Math.floor((deg + 22.5) / 45) % 8];
+    sr: ['sjever', 'sjeveroistok', 'istok', 'jugoistok', 'jug', 'jugozapad', 'zapad', 'sjeverozapad'],
+    it: ['nord', 'nord-est', 'est', 'sud-est', 'sud', 'sud-ovest', 'ovest', 'nord-ovest'],
+    el: ['βορράς', 'βορειοανατολικά', 'ανατολή', 'νοτιοανατολικά', 'νότος', 'νοτιοδυτικά', 'δύση', 'βορειοδυτικά'],
+    sq: ['veri', 'verilindje', 'lindje', 'juglindje', 'jug', 'jugperëndim', 'perëndim', 'veriperëndim'],
+    bg: ['север', 'североизток', 'изток', 'югоизток', 'юг', 'югозапад', 'запад', 'северозапад'],
+    sl: ['sever', 'severovzhod', 'vzhod', 'jugovzhod', 'jug', 'jugozahod', 'zahod', 'severozahod']
+  };
+  return byLang(names)[Math.floor((deg + 22.5) / 45) % 8];
 }
 
 function windFrom(deg) {
@@ -122,9 +156,14 @@ function windFrom(deg) {
   const names = {
     ru: ['С', 'СВ (бора)', 'В', 'ЮВ (юго)', 'Ю', 'ЮЗ', 'З', 'СЗ'],
     en: ['N', 'NE (bora)', 'E', 'SE (jugo)', 'S', 'SW', 'W', 'NW'],
-    sr: ['S', 'SI (bura)', 'I', 'JI (jugo)', 'J', 'JZ', 'Z', 'SZ']
-  }[Lang.current];
-  return names[Math.floor((deg + 22.5) / 45) % 8];
+    sr: ['S', 'SI (bura)', 'I', 'JI (jugo)', 'J', 'JZ', 'Z', 'SZ'],
+    it: ['N', 'NE (bora)', 'E', 'SE (scirocco)', 'S', 'SO', 'O', 'NO'],
+    el: ['Β', 'ΒΑ (μπόρα)', 'Α', 'ΝΑ (σιρόκος)', 'Ν', 'ΝΔ', 'Δ', 'ΒΔ'],
+    sq: ['V', 'VL (bora)', 'L', 'JL (siroko)', 'J', 'JP', 'P', 'VP'],
+    bg: ['С', 'СИ (бора)', 'И', 'ЮИ (юго)', 'Ю', 'ЮЗ', 'З', 'СЗ'],
+    sl: ['S', 'SV (burja)', 'V', 'JV (jugo)', 'J', 'JZ', 'Z', 'SZ']
+  };
+  return byLang(names)[Math.floor((deg + 22.5) / 45) % 8];
 }
 
 function beaufort(ms) {
@@ -141,14 +180,19 @@ function windWord(ms) {
   const ru = ['штиль', 'тихий', 'лёгкий', 'слабый', 'умеренный', 'свежий', 'сильный', 'крепкий', 'очень крепкий', 'шторм', 'сильный шторм', 'жестокий шторм', 'ураган'];
   const en = ['calm', 'light air', 'light breeze', 'gentle breeze', 'moderate breeze', 'fresh breeze', 'strong breeze', 'near gale', 'gale', 'strong gale', 'storm', 'violent storm', 'hurricane'];
   const sr = ['bonaca', 'lahor', 'povjetarac', 'slab vjetar', 'umjeren vjetar', 'umjereno jak vjetar', 'jak vjetar', 'žestok vjetar', 'olujni vjetar', 'jak olujni vjetar', 'oluja', 'jaka oluja', 'orkan'];
-  const word = { ru, en, sr }[Lang.current][b];
+  const it = ['calma', 'bava di vento', 'brezza leggera', 'brezza tesa', 'vento moderato', 'vento teso', 'vento forte', 'vento molto forte', 'burrasca', 'burrasca forte', 'tempesta', 'tempesta violenta', 'uragano'];
+  const el = ['άπνοια', 'ελαφρύ αεράκι', 'ελαφρά αύρα', 'μέτρια αύρα', 'μέτριος άνεμος', 'ισχυρή αύρα', 'ισχυρός άνεμος', 'σφοδρός άνεμος', 'θύελλα', 'ισχυρή θύελλα', 'καταιγίδα', 'σφοδρή καταιγίδα', 'τυφώνας'];
+  const sq = ['qetësi', 'erë shumë e lehtë', 'erë e lehtë', 'erë e butë', 'erë e moderuar', 'erë e freskët', 'erë e fortë', 'erë shumë e fortë', 'stuhi', 'stuhi e fortë', 'furtunë', 'furtunë e dhunshme', 'uragan'];
+  const bg = ['тихо', 'лек полъх', 'слаб вятър', 'умерен слаб вятър', 'умерен вятър', 'свеж вятър', 'силен вятър', 'много силен вятър', 'буря', 'силна буря', 'щормов вятър', 'жесток щорм', 'ураган'];
+  const sl = ['brezvetrje', 'rahel veter', 'lahen veter', 'šibek veter', 'zmeren veter', 'svež veter', 'močan veter', 'zelo močan veter', 'vihar', 'močan vihar', 'nevihta', 'silovita nevihta', 'orkan'];
+  const word = byLang({ ru, en, sr, it, el, sq, bg, sl })[b];
   return `${word}, ${b} ${tr('Бф', 'Bft', 'Bf')}`;
 }
 
 // ---------- время в Черногории (как в запросах к погоде) ----------
 function nowLocal() {
   const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Belgrade', year: 'numeric', month: '2-digit', day: '2-digit',
+    timeZone: TZ_NAME, year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
   }).formatToParts(new Date());
   const g = t => parts.find(p => p.type === t).value;
@@ -158,7 +202,7 @@ function nowLocal() {
 function dayLabel(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d, 12));
-  const loc = { ru: 'ru', en: 'en', sr: 'sr-Latn' }[Lang.current];
+  const loc = { ru: 'ru', en: 'en', sr: 'sr-Latn', hr: 'hr', it: 'it', el: 'el', sq: 'sq', bg: 'bg', sl: 'sl' }[Lang.current] || 'en';
   let w;
   try { w = new Intl.DateTimeFormat(loc, { weekday: 'short', timeZone: 'UTC' }).format(dt); } catch (e) { w = ''; }
   return `${w} ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}`;

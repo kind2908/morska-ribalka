@@ -37,7 +37,7 @@ function renderBite(S, A) {
     const res = biteExplain(d, S.fish, S.boat);
     const scoreD = res.score, score = Math.round(scoreD);
     const col = scoreColor(score);
-    wrap.appendChild(card(tr(`Прогноз клёва: ${fishLabel(S.fish.name)}`, `Bite forecast: ${fishLabel(S.fish.name)}`, `Prognoza ulova: ${fishLabel(S.fish.name)}`),
+    wrap.appendChild(card(trv('Прогноз клёва: {0}', 'Bite forecast: {0}', 'Prognoza ulova: {0}', [fishLabel(S.fish.name)]),
       h('div', { class: 'scorerow' },
         h('span', { class: 'bigscore', style: { color: col } }, f1(scoreD)),
         h('span', { class: 'of10' }, ' / 10'),
@@ -59,13 +59,13 @@ function renderBite(S, A) {
         if (level) {
           const head = level.charAt(0).toUpperCase() + level.slice(1);
           const total = f0(today.rain);
-          rc.appendChild(h('p', { class: 'bold' }, tr(`${head}, всего за день ≈ ${total} мм`, `${head}, total for the day ≈ ${total} mm`, `${head}, ukupno za dan ≈ ${total} mm`)));
+          rc.appendChild(h('p', { class: 'bold' }, trv('{0}, всего за день ≈ {1} мм', '{0}, total for the day ≈ {1} mm', '{0}, ukupno za dan ≈ {1} mm', [head, total])));
         }
         if (!today.rainWindows.length && level) rc.appendChild(h('p', null, tr('Основная часть дождя уже прошла.', 'Most of the rain has already passed.', 'Najveći dio kiše je već prošao.')));
         today.rainWindows.forEach(w2 => rc.appendChild(h('p', null, '☔ ' + rainWindowText(w2))));
         if (today.thunder) rc.appendChild(h('p', null, tr('⛈ Возможна гроза.', '⛈ Thunderstorm possible.', '⛈ Moguća je grmljavina.')));
       }
-      if (today.rainProbMax >= 0) rc.appendChild(small(tr(`Вероятность осадков до ${today.rainProbMax}%`, `Chance of rain up to ${today.rainProbMax}%`, `Vjerovatnoća padavina do ${today.rainProbMax}%`)));
+      if (today.rainProbMax >= 0) rc.appendChild(small(trv('Вероятность осадков до {0}%', 'Chance of rain up to {0}%', 'Vjerovatnoća padavina do {0}%', [today.rainProbMax])));
       wrap.appendChild(rc);
     }
 
@@ -125,9 +125,7 @@ function hourlyCard(S, d) {
   c.appendChild(bars); c.appendChild(labels);
   const best = bestWindow(points, clamp(nowHour, 0, 22));
   if (best) {
-    c.appendChild(h('p', { class: 'bold' }, tr(`Лучшее время из оставшегося: ${pad2(best[0])}:00–${pad2(best[0] + 2)}:00 (оценка ${f1(best[1])})`,
-      `Best of the rest of the day: ${pad2(best[0])}:00–${pad2(best[0] + 2)}:00 (score ${f1(best[1])})`,
-      `Najbolje do kraja dana: ${pad2(best[0])}:00–${pad2(best[0] + 2)}:00 (ocjena ${f1(best[1])})`)));
+    c.appendChild(h('p', { class: 'bold' }, trv('Лучшее время из оставшегося: {0}:00–{1}:00 (оценка {2})', 'Best of the rest of the day: {0}:00–{1}:00 (score {2})', 'Najbolje do kraja dana: {0}:00–{1}:00 (ocjena {2})', [pad2(best[0]), pad2(best[0] + 2), f1(best[1])])));
   }
   c.appendChild(small(tr('Высота столбца это оценка в этот час. Прошедшие часы бледные. На зорях добавлено +0.8, в яркий полдень −0.3.',
     'Bar height is the score for that hour. Past hours are faded. Dawn and dusk add +0.8, bright midday −0.3.',
@@ -144,7 +142,7 @@ function renderConditions(S, A) {
     wrap.appendChild(card(tr('Море', 'Sea', 'More'),
       infoRow(tr('Температура воды', 'Water temperature', 'Temperatura vode'), fmt(d.waterTemp, '°C')),
       infoRow(tr('Высота волны', 'Wave height', 'Visina talasa'), withNorm(d.waveHeight, U.m(), WAVE_LOW, WAVE_HIGH, 1)),
-      infoRow(tr('Течение', 'Current', 'Struja'), isNaN_(d.currentSpeed) ? noData() : `${f1(d.currentSpeed)} ${U.kmh()}, ` + tr(`на ${compass(d.currentDir)}`, `heading ${compass(d.currentDir)}`, `smjer: ${compass(d.currentDir)}`)),
+      infoRow(tr('Течение', 'Current', 'Struja'), isNaN_(d.currentSpeed) ? noData() : `${f1(d.currentSpeed)} ${U.kmh()}, ` + trv('на {0}', 'heading {0}', 'smjer: {0}', [compass(d.currentDir)])),
       infoRow(tr('Уровень моря', 'Sea level', 'Nivo mora'), isNaN_(d.seaLevel) ? noData() : `${sgn(d.seaLevel * 100, 0)} ${U.cm()}, ${trend}`),
       infoRow(tr('Прилив / отлив', 'High / low tide', 'Plima / oseka'), `${d.nextHigh} / ${d.nextLow}`)));
 
@@ -158,15 +156,29 @@ function renderConditions(S, A) {
         'This is forecast-model data for the selected point. On the street, especially between buildings and near slopes, gusts can be stronger.',
         'Ovo su podaci prognostičkog modela za izabranu tačku. Na ulici, naročito između zgrada i uz padine, udari mogu biti jači.'))));
 
+    if (S.station) {
+      const st = S.station;
+      wrap.appendChild(card(tr('Ближайшая метеостанция', 'Nearest weather station', 'Najbliža meteorološka stanica'),
+        small(trv('{0} ({1}), {2} км от точки', '{0} ({1}), {2} km from the point', '{0} ({1}), {2} km od tačke', [st.name, st.icao, st.km]) + (st.time ? ' · ' + trv('измерено в {0}', 'observed at {0}', 'mjereno u {0}', [st.time]) : '')),
+        infoRow(tr('Температура воздуха', 'Air temperature', 'Temperatura zraka'), fmt(st.temp, '°C')),
+        infoRow(tr('Ветер', 'Wind', 'Vjetar'), fmt(st.wind, U.ms) + (isNaN_(st.windDir) ? '' : ', ' + windFrom(st.windDir))),
+        infoRow(tr('Порывы', 'Gusts', 'Udari'), isNaN_(st.gust) ? '—' : fmt(st.gust, U.ms)),
+        infoRow(tr('Давление', 'Pressure', 'Pritisak'), isNaN_(st.pressure) ? noData() : f0(st.pressure) + ' ' + U.hpa()),
+        infoRow(tr('Видимость', 'Visibility', 'Vidljivost'), isNaN_(st.vis) ? noData() : f0(st.vis) + ' ' + tr('км', 'km', 'km')),
+        small(tr('Это реальное измерение аэропорта (METAR), а не прогноз. Станция может быть в десятках километров от вашей точки, а на берегу ветер часто отличается.',
+          'This is a real airport observation (METAR), not a forecast. The station can be tens of kilometres from your point, and wind on the shore often differs.',
+          'Ovo je stvarno mjerenje aerodroma (METAR), a ne prognoza. Stanica može biti desetinama kilometara od vaše tačke, a na obali se vjetar često razlikuje.'))));
+    }
+
     const clarity = clarityScore(d), vis = visibilityMeters(clarity);
     const vc = card(tr('Видимость под водой', 'Underwater visibility', 'Vidljivost pod vodom'));
     vc.appendChild(h('div', { class: 'headline' }, `≈ ${vis} ${U.m()}`));
     const from = Math.round(vis * 0.8), to = Math.round(vis * 1.2), clar = clarityLabel(clarity);
-    vc.appendChild(h('p', null, tr(`Диапазон ${from}–${to} м, вода ${clar}`, `Range ${from}–${to} m, water: ${clar}`, `Raspon ${from}–${to} m, voda: ${clar}`)));
+    vc.appendChild(h('p', null, trv('Диапазон {0}–{1} м, вода {2}', 'Range {0}–{1} m, water: {2}', 'Raspon {0}–{1} m, voda: {2}', [from, to, clar])));
     const rain3 = f0(d.rain3d);
-    vc.appendChild(small(tr(`Оценка по волне, ветру и осадкам за 3 дня (${rain3} мм)`, `Estimated from waves, wind and 3-day rainfall (${rain3} mm)`, `Procjena prema talasima, vjetru i padavinama za 3 dana (${rain3} mm)`)));
+    vc.appendChild(small(trv('Оценка по волне, ветру и осадкам за 3 дня ({0} мм)', 'Estimated from waves, wind and 3-day rainfall ({0} mm)', 'Procjena prema talasima, vjetru i padavinama za 3 dana ({0} mm)', [rain3])));
     const mineLabel = h('p', null);
-    const setMine = () => { mineLabel.textContent = tr(`Твоя оценка: ${S.slider} м`, `Your estimate: ${S.slider} m`, `Tvoja procjena: ${S.slider} m`); };
+    const setMine = () => { mineLabel.textContent = trv('Твоя оценка: {0} м', 'Your estimate: {0} m', 'Tvoja procjena: {0} m', [S.slider]); };
     setMine();
     vc.appendChild(mineLabel);
     vc.appendChild(h('input', { type: 'range', min: 0, max: 30, step: 1, value: S.slider, class: 'range',
@@ -177,9 +189,9 @@ function renderConditions(S, A) {
     if (S.mark != null) {
       const diff = S.mark - vis;
       const verdict = diff === 0 ? tr('расчёт совпал', 'estimate matched', 'procjena se poklapa')
-        : diff > 0 ? tr(`расчёт занижен на ${Math.abs(diff)} м`, `estimate is ${Math.abs(diff)} m too low`, `procjena je preniska za ${Math.abs(diff)} m`)
-          : tr(`расчёт завышен на ${Math.abs(diff)} м`, `estimate is ${Math.abs(diff)} m too high`, `procjena je previsoka za ${Math.abs(diff)} m`);
-      vc.appendChild(h('p', null, tr(`Сохранено: ${S.mark} м (${verdict})`, `Saved: ${S.mark} m (${verdict})`, `Sačuvano: ${S.mark} m (${verdict})`)));
+        : diff > 0 ? trv('расчёт занижен на {0} м', 'estimate is {0} m too low', 'procjena je preniska za {0} m', [Math.abs(diff)])
+          : trv('расчёт завышен на {0} м', 'estimate is {0} m too high', 'procjena je previsoka za {0} m', [Math.abs(diff)]);
+      vc.appendChild(h('p', null, trv('Сохранено: {0} м ({1})', 'Saved: {0} m ({1})', 'Sačuvano: {0} m ({1})', [S.mark, verdict])));
     }
     wrap.appendChild(vc);
 
@@ -204,7 +216,7 @@ function renderDays(S, A) {
       h('p', null, tr('Загрузка или нет данных для этой точки.', 'Loading, or no data for this point.', 'Učitavanje ili nema podataka za ovu tačku.'))));
     return out;
   }
-  const c = card(tr(`Прогноз на ${S.days.length} дней`, `${S.days.length}-day forecast`, `Prognoza za ${S.days.length} dana`));
+  const c = card(trv('Прогноз на {0} дней', '{0}-day forecast', 'Prognoza za {0} dana', [S.days.length]));
   S.days.forEach(day => {
     const dayScore = dayBite(day, S.fish, S.boat);
     const warn = safetyWarning(day.windMax, day.gustMax, day.waveMax, day.rain, day.rainPeakMmH, day.thunder, S.boat);
@@ -233,7 +245,7 @@ function renderDiary(S, A) {
   const out = [h('h2', { class: 'page' }, tr('Дневник уловов', 'Catch diary', 'Dnevnik ulova'))];
   out.push(segmented([
     [0, tr('Новая запись', 'New entry', 'Novi zapis')],
-    [1, tr(`Записи (${entries.length})`, `Entries (${entries.length})`, `Zapisi (${entries.length})`)],
+    [1, trv('Записи ({0})', 'Entries ({0})', 'Zapisi ({0})', [entries.length])],
     [2, tr('Статистика', 'Statistics', 'Statistika')]
   ], S.diarySub, k => { S.diarySub = k; S.diaryMsg = ''; A.rerender(); }));
 
@@ -377,7 +389,7 @@ function diaryStatsView(S, A, entries) {
     if (!f) return;
     try {
       const n = await restoreBackup(f);
-      S.diaryMsg = tr(`Восстановлено записей: ${n}`, `Entries restored: ${n}`, `Vraćeno zapisa: ${n}`);
+      S.diaryMsg = trv('Восстановлено записей: {0}', 'Entries restored: {0}', 'Vraćeno zapisa: {0}', [n]);
       A.rerender();
     } catch (e) { status.textContent = tr('Не удалось прочитать файл копии', 'Could not read the backup file', 'Nije moguće pročitati datoteku kopije'); }
   } });
@@ -416,7 +428,13 @@ function renderSettings(S, A) {
     btn(tr('← Готово', '← Done', '← Gotovo'), () => A.closeSettings(), { primary: true }),
     h('h2', { class: 'page inline' }, tr('Рыбалка и место', 'Fishing and location', 'Ribolov i lokacija'))));
 
-  out.push(card(tr('Язык', 'Language', 'Jezik'), segmented(LANGS.map(l => [l.code, l.label]), Lang.current, code => { Lang.set(code); S.diaryMsg = ''; A.rerender(); })));
+  out.push(card(tr('Страна', 'Country', 'Država'),
+    select(Country.all.map(c => [c.code, c.native + ' · ' + c.name[1]]), Country.code, code => { if (code !== Country.code) A.setCountry(code, false); A.rerender(); }),
+    small(tr('Правила рыбалки, города и часовой пояс зависят от страны. Язык при смене страны не меняется, выберите его ниже.',
+      'Fishing rules, cities and time zone depend on the country. The language does not change with the country; choose it below.',
+      'Pravila ribolova, gradovi i vremenska zona zavise od države. Jezik se ne mijenja uz državu, izaberite ga ispod.')),
+    btn(tr('Включить язык страны', 'Use the country’s language', 'Uključi jezik države'), () => { Lang.set(Country.data.lang); A.rerender(); }, { cls: 'full' })));
+  out.push(card(tr('Язык', 'Language', 'Jezik'), select(LANGS.map(l => [l.code, l.label]), Lang.current, code => { Lang.set(code); S.diaryMsg = ''; A.rerender(); })));
 
   out.push(card(tr('Тема', 'Theme', 'Tema'),
     segmented([[0, tr('Море', 'Sea', 'More')], [1, tr('Светлая', 'Light', 'Svijetla')], [2, tr('Песок', 'Sand', 'Pijesak')]], S.theme, k => { S.theme = k; Store.set('theme', k); A.applyTheme(); A.rerender(); }),
@@ -497,8 +515,8 @@ function gpsText(S) {
     case 1: return tr('Не удалось получить позицию. Включи геолокацию на телефоне, выйди на открытое место и попробуй снова. Если GPS не работает, нажми «Указать место на карте вручную».',
       'Could not get your position. Turn on location on your phone, go to an open area and try again. If GPS does not work, tap “Set location on the map manually”.',
       'Nije moguće dobiti poziciju. Uključi lokaciju na telefonu, izađi na otvoreno i pokušaj ponovo. Ako GPS ne radi, pritisni „Ručno odredi lokaciju na karti“.');
-    case 2: return tr(`Позиция определена, точность ±${acc} м.`, `Position found, accuracy ±${acc} m.`, `Pozicija određena, tačnost ±${acc} m.`);
-    case 3: return tr(`Позиция определена, но точность низкая (±${acc} м). Выйди на открытое место и повтори.`, `Position found, but accuracy is low (±${acc} m). Go to an open area and try again.`, `Pozicija određena, ali je tačnost niska (±${acc} m). Izađi na otvoreno i pokušaj ponovo.`);
+    case 2: return trv('Позиция определена, точность ±{0} м.', 'Position found, accuracy ±{0} m.', 'Pozicija određena, tačnost ±{0} m.', [acc]);
+    case 3: return trv('Позиция определена, но точность низкая (±{0} м). Выйди на открытое место и повтори.', 'Position found, but accuracy is low (±{0} m). Go to an open area and try again.', 'Pozicija određena, ali je tačnost niska (±{0} m). Izađi na otvoreno i pokušaj ponovo.', [acc]);
     case 5: return tr('Нет разрешения на определение местоположения. Разрешите его для этого сайта в настройках телефона (Safari → Геопозиция).',
       'Location permission denied. Allow it for this site in the phone settings (Safari → Location).',
       'Nema dozvole za određivanje lokacije. Dozvolite je za ovaj sajt u postavkama telefona (Safari → Lokacija).');
@@ -506,12 +524,28 @@ function gpsText(S) {
   }
 }
 
+// ---------------- Выбор страны (первый запуск) ----------------
+function renderCountryPicker(S, A) {
+  const out = [];
+  out.push(h('h2', { class: 'page' }, 'Выберите страну · Choose your country'));
+  out.push(small('Odaberite zemlju · Scegli il paese · Επιλέξτε χώρα · Zgjidhni shtetin · Изберете държава · Izberite državo'));
+  Country.all.forEach(c => {
+    out.push(h('button', { class: 'country', type: 'button', onclick: () => A.setCountry(c.code, true) },
+      h('span', { class: 'cc' }, c.code),
+      h('span', { class: 'cn' }, c.native + ' · ' + c.name[1])));
+  });
+  out.push(small(tr('Язык приложения подберётся по стране, его можно сменить в настройках. Правила рыбалки, города и погода подстроятся под выбранную страну.',
+    'The app language follows the country and can be changed in settings. Fishing rules, cities and weather adapt to the chosen country.',
+    'Jezik aplikacije prati državu i može se promijeniti u postavkama. Pravila ribolova, gradovi i vrijeme prilagođavaju se izabranoj državi.')));
+  return out;
+}
+
 function aboutCard(S, A) {
   const c = card(tr('О приложении', 'About', 'O aplikaciji'),
     h('a', { class: 'link', href: '#', onclick: e => { e.preventDefault(); S.aboutOpen = !S.aboutOpen; A.rerender(); } },
       S.aboutOpen ? tr('Свернуть ▲', 'Collapse ▲', 'Skupi ▲') : tr('Показать ▼', 'Show ▼', 'Prikaži ▼')));
   if (!S.aboutOpen) return c;
-  c.appendChild(h('p', { class: 'bold' }, tr('Морская рыбалка · Адриатика', 'Sea fishing · Adriatic', 'Morski ribolov · Jadran') + ' · web ' + APP_VERSION));
+  c.appendChild(h('p', { class: 'bold' }, tr('Морская рыбалка', 'Sea fishing', 'Morski ribolov') + ' · web ' + APP_VERSION));
   c.appendChild(h('p', { class: 'bold' }, tr('Безопасность', 'Safety', 'Sigurnost')));
   c.appendChild(h('p', null, tr(
     'Прогноз клёва и погоды считается по модели и открытым данным. Это ориентир, а не гарантия. Условия на море могут измениться быстрее прогноза. Перед выходом в море проверьте официальный морской прогноз, скажите близким, куда вы идёте, берите спасательный жилет и телефон. Решение о выходе на воду вы принимаете сами.',
@@ -519,9 +553,9 @@ function aboutCard(S, A) {
     'Prognoza ulova i vremena računa se po modelu i otvorenim podacima. To je orijentir, a ne garancija. Uslovi na moru mogu se promijeniti brže od prognoze. Prije izlaska na more provjerite zvaničnu pomorsku prognozu, javite bliskima kuda idete, ponesite prsluk za spasavanje i telefon. Odluku o izlasku na vodu donosite sami.')));
   c.appendChild(h('p', { class: 'bold' }, tr('Правила', 'Rules', 'Pravila')));
   c.appendChild(h('p', null, tr(
-    'Сведения о правилах рыбалки собраны из открытых публикаций и могут устареть. Это не юридическая консультация. Актуальные правила уточняйте в рыболовном клубе или в Министерстве сельского хозяйства Черногории.',
-    'The fishing rules information is collected from public sources and may be out of date. It is not legal advice. Check current rules with a fishing club or the Ministry of Agriculture of Montenegro.',
-    'Podaci o pravilima ribolova prikupljeni su iz javnih izvora i mogu biti zastarjeli. To nije pravni savjet. Važeća pravila provjerite u ribolovačkom klubu ili u Ministarstvu poljoprivrede Crne Gore.')));
+    'Сведения о правилах рыбалки собраны из открытых публикаций и могут устареть. Это не юридическая консультация. Актуальные правила уточняйте в рыболовном клубе или в ведомстве страны.',
+    'The fishing rules information is collected from public sources and may be out of date. It is not legal advice. Check current rules with a fishing club or the authority of the country you are in.',
+    'Podaci o pravilima ribolova prikupljeni su iz javnih izvora i mogu biti zastarjeli. To nije pravni savjet. Važeća pravila provjerite u ribolovačkom klubu ili kod nadležne službe države u kojoj se nalazite.')));
   c.appendChild(h('p', { class: 'bold' }, tr('Источники данных', 'Data sources', 'Izvori podataka')));
   c.appendChild(h('p', { class: 'pre' }, tr(
     '• Погода, волны, температура воды, течения: Open-Meteo.com (CC BY 4.0). Температура и волны для моря это модельные значения, а не измерения у вашего берега.\n• Глубины: EMODnet Bathymetry. Сетка около 100–250 м, у самого берега глубину она может занижать или завышать.\n• Спутниковая карта и названия: Esri World Imagery и Esri Reference.\n• Карта: библиотека Leaflet.\n• Фото рыб: Википедия и Wikimedia Commons, свободные лицензии.',

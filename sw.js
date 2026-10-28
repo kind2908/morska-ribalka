@@ -1,11 +1,11 @@
 // Service worker: приложение открывается без интернета (данные погоды всё равно нужны онлайн).
 // При выходе новой версии меняйте номер VERSION: пользователи увидят кнопку «Обновить».
-const VERSION = '1.5.0';
+const VERSION = '1.7.0';
 const CACHE = 'fishing-web-' + VERSION;
 const RUNTIME = 'fishing-runtime';
 const SHELL = [
   './', 'index.html', 'style.css', 'manifest.webmanifest',
-  'data.js', 'fishx.js', 'i18n.js', 'model.js', 'api.js', 'dom.js', 'diary.js',
+  'data.js', 'fishx.js', 'countries.js', 'trx-it.js', 'trx-el.js', 'trx-sq.js', 'trx-bg.js', 'trx-sl.js', 'i18n.js', 'model.js', 'api.js', 'dom.js', 'diary.js',
   'library.js', 'map.js', 'screens.js', 'bg.js', 'stats.js', 'app.js',
   'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'
 ];

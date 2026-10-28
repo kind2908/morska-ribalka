@@ -194,7 +194,7 @@ window.FISHX = {
    "safety": null,
    "noeat": null
   },
-  "Зубатка": {
+  "Зубан": {
    "months": [
     1,
     1,
@@ -217,14 +217,14 @@ window.FISHX = {
    "rec": [
     {
      "title": [
-      "Зубатка в «безумной воде» (Dentice all'acqua pazza)",
+      "Зубан в «безумной воде» (Dentice all'acqua pazza)",
       "Dentex in “crazy water” (Dentice all'acqua pazza)",
       "Zubatac u „ludoj vodi“ (Dentice all'acqua pazza)"
      ],
      "min": 35,
      "serves": 2,
      "ingr": [
-      "филе или стейки зубатки 600 г, помидоры черри 250 г, чеснок 2 зубчика, чили, петрушка, оливковое масло, вода 150 мл",
+      "филе или стейки зубана 600 г, помидоры черри 250 г, чеснок 2 зубчика, чили, петрушка, оливковое масло, вода 150 мл",
       "dentex fillets or steaks 600 g, cherry tomatoes 250 g, 2 garlic cloves, chilli, parsley, olive oil, water 150 ml",
       "fileti ili odresci zubaca 600 g, cherry rajčice 250 g, 2 režnja češnjaka, čili, peršin, maslinovo ulje, voda 150 ml"
      ],
@@ -253,14 +253,14 @@ window.FISHX = {
     },
     {
      "title": [
-      "Зубатка на гриле с оливковым маслом и лимоном",
+      "Зубан на гриле с оливковым маслом и лимоном",
       "Grilled dentex with olive oil and lemon",
       "Zubatac na žaru s maslinovim uljem i limunom"
      ],
      "min": 30,
      "serves": 2,
      "ingr": [
-      "зубатка 700 г целиком, оливковое масло, лимон, чеснок, петрушка, розмарин, соль",
+      "зубан 700 г целиком, оливковое масло, лимон, чеснок, петрушка, розмарин, соль",
       "1 whole dentex (700 g), olive oil, lemon, garlic, parsley, rosemary, salt",
       "1 cijeli zubatac (700 g), maslinovo ulje, limun, češnjak, peršin, ruzmarin, so"
      ],

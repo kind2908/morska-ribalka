@@ -169,11 +169,7 @@ function safetyWarning(windMax, gustMax, waveMax, rainMm, rainPeakMmH, thunder, 
   if (waveDanger || waveCaution) reasons.push(tr('высокая волна', 'high waves', 'visoki talasi'));
 
   const w = f0(wind * 3.6), g = f0(gust * 3.6), wv = f1(wave), r = f0(rain), p = f1(peak);
-  const details = tr(
-    `Максимум за день: ветер ${w} км/ч, порывы ${g} км/ч, волна ${wv} м, осадки ${r} мм (до ${p} мм/ч).`,
-    `Daily maximum: wind ${w} km/h, gusts ${g} km/h, waves ${wv} m, rain ${r} mm (up to ${p} mm/h).`,
-    `Dnevni maksimum: vjetar ${w} km/h, udari ${g} km/h, talasi ${wv} m, padavine ${r} mm (do ${p} mm/h).`
-  );
+  const details = trv('Максимум за день: ветер {0} км/ч, порывы {1} км/ч, волна {2} м, осадки {3} мм (до {4} мм/ч).', 'Daily maximum: wind {0} km/h, gusts {1} km/h, waves {2} m, rain {3} mm (up to {4} mm/h).', 'Dnevni maksimum: vjetar {0} km/h, udari {1} km/h, talasi {2} m, padavine {3} mm (do {4} mm/h).', [w, g, wv, r, p]);
   const head = danger ? tr('⚠ Опасно: ', '⚠ Dangerous: ', '⚠ Opasno: ') : tr('⚠ Осторожно: ', '⚠ Caution: ', '⚠ Oprez: ');
   return [danger ? 2 : 1, head + reasons.join(', ') + '. ' + details];
 }
@@ -198,10 +194,10 @@ function bestHours(d) {
     }
   } catch (e) { /* пропускаем */ }
   if (d.nextHigh !== '—') {
-    out.push(tr(`Смена воды (прилив) около ${d.nextHigh}`, `Tide change (high tide) around ${d.nextHigh}`, `Promjena vode (plima) oko ${d.nextHigh}`));
+    out.push(trv('Смена воды (прилив) около {0}', 'Tide change (high tide) around {0}', 'Promjena vode (plima) oko {0}', [d.nextHigh]));
   }
   if (d.nextLow !== '—') {
-    out.push(tr(`Смена воды (отлив) около ${d.nextLow}`, `Tide change (low tide) around ${d.nextLow}`, `Promjena vode (oseka) oko ${d.nextLow}`));
+    out.push(trv('Смена воды (отлив) около {0}', 'Tide change (low tide) around {0}', 'Promjena vode (oseka) oko {0}', [d.nextLow]));
   }
   return out;
 }
@@ -255,16 +251,14 @@ function windVsShore(windFromDeg, windMs) {
   if (diff > 180.0) diff = 360.0 - diff;
   const strong = !isNaN_(windMs) && windMs * 3.6 >= 25.0;
   if (diff <= 50.0) {
-    return [0, tr(
-      'С моря, на берег' + (strong ? ': нагоняет волну и прибой' : ': у берега может быть рябь и прибой'),
-      'From the sea, onto the shore' + (strong ? ': builds waves and surf' : ': some chop and surf near the shore'),
-      'S mora, prema obali' + (strong ? ': stvara talas i pribojn' : ': uz obalu može biti mreškanje i prasak'))];
+    return [0, strong
+      ? tr('С моря, на берег: нагоняет волну и прибой', 'From the sea, onto the shore: builds waves and surf', 'S mora, prema obali: stvara talas i prasak')
+      : tr('С моря, на берег: у берега может быть рябь и прибой', 'From the sea, onto the shore: some chop and surf near the shore', 'S mora, prema obali: uz obalu može biti mreškanje i prasak')];
   }
   if (diff >= 130.0) {
-    return [2, tr(
-      'С берега, в море' + (strong ? ': в лодке может сносить от берега, будьте осторожны' : ': у берега тихо, лодку может сносить в море'),
-      'Offshore, towards the sea' + (strong ? ': a boat can be pushed away from the coast, be careful' : ': calm near the shore, a boat can drift out'),
-      'S kopna, prema moru' + (strong ? ': čamac može nositi od obale, budite oprezni' : ': uz obalu je mirno, čamac može nositi na pučinu'))];
+    return [2, strong
+      ? tr('С берега, в море: в лодке может сносить от берега, будьте осторожны', 'Offshore, towards the sea: a boat can be pushed away from the coast, be careful', 'S kopna, prema moru: čamac može nositi od obale, budite oprezni')
+      : tr('С берега, в море: у берега тихо, лодку может сносить в море', 'Offshore, towards the sea: calm near the shore, a boat can drift out', 'S kopna, prema moru: uz obalu je mirno, čamac može nositi na pučinu')];
   }
   return [1, tr('Вдоль берега', 'Along the shore', 'Duž obale')];
 }
@@ -291,34 +285,18 @@ const FISH = {
   shore: DATA.shore.map(buildFish),
   boat: DATA.boat.map(buildFish)
 };
-const fishFor = boat => (boat ? FISH.boat : FISH.shore);
+const fishFor = boat => (boat ? FISH.boat : FISH.shore).filter(f => Country.visible({ key: f.name }));
 
-// ---------- Районы и точки ----------
-const REGIONS = (() => {
-  const mk = (key, shore, mid, far) => ({
-    key,
-    spots: [
-      { name: 'Берег · ' + key, lat: shore[0], lon: shore[1] },
-      { name: '3 км · ' + key, lat: mid[0], lon: mid[1] },
-      { name: '15 км · ' + key, lat: far[0], lon: far[1] }
-    ]
-  });
-  return [
-    {
-      key: 'Херцег-Нови',
-      spots: [
-        { name: 'Берег', lat: 42.4490, lon: 18.5685 },
-        { name: '3 км', lat: 42.4300, lon: 18.5550 },
-        { name: '15 км', lat: 42.2785, lon: 18.4673 }
-      ]
-    },
-    mk('Тиват', [42.4350, 18.6950], [42.4400, 18.7100], [42.2785, 18.4673]),
-    mk('Будва', [42.2790, 18.8400], [42.2600, 18.8143], [42.1840, 18.7120]),
-    mk('Петровац', [42.2060, 18.9460], [42.1870, 18.9203], [42.1110, 18.8180]),
-    mk('Бар', [42.0930, 19.0870], [42.0740, 19.0613], [41.9980, 18.9590]),
-    mk('Ульцинь', [41.9200, 19.2040], [41.9010, 19.1783], [41.8250, 19.0760])
-  ];
-})();
+// ---------- Районы и точки (берутся из текущей страны) ----------
+const SPOT_NAMES = ['Берег', '3 км', '15 км'];
+function buildRegions() {
+  return Country.regions().map((r, idx) => ({
+    key: r.key,
+    spots: r.pts.map((p, i) => ({ name: (idx === 0 ? '' : '') + SPOT_NAMES[i] + (idx === 0 ? '' : ' · ' + r.key), lat: p[0], lon: p[1], snap: i > 0 ? false : true }))
+  }));
+}
+let REGIONS = buildRegions();
+function refreshRegions() { REGIONS = buildRegions(); }
 const regionSpots = key => (REGIONS.find(r => r.key === key) || REGIONS[0]).spots;
 
 const WIND_LOW = 5 / 3.6, WIND_HIGH = 20 / 3.6;

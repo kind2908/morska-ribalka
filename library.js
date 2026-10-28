@@ -96,7 +96,12 @@ const MONTHS = [
   ['J','F','M','A','M','J','J','A','K','O','N','D']];
 function seasonBar(months) {
   const names = [tr('Нет','No','Ne'), tr('Слабо','Weak','Slabo'), tr('Хорошо','Good','Dobro'), tr('Пик','Peak','Vrhunac')];
-  const m = MONTHS[Lang.current === 'en' ? 1 : Lang.current === 'sr' ? 2 : 0];
+  let m;
+  try {
+    const loc = { ru: 'ru', en: 'en', sr: 'sr-Latn', hr: 'hr', it: 'it', el: 'el', sq: 'sq', bg: 'bg', sl: 'sl' }[Lang.current] || 'en';
+    const f = new Intl.DateTimeFormat(loc, { month: 'narrow', timeZone: 'UTC' });
+    m = Array.from({ length: 12 }, (_, i) => f.format(new Date(Date.UTC(2026, i, 15))));
+  } catch (e) { m = MONTHS[1]; }
   const wrap = h('div', { class: 'sbar' });
   months.forEach((v, i) => wrap.appendChild(h('div', { class: 'sb s' + v, title: names[v] }, h('i', null), h('b', null, m[i]))));
   return wrap;
@@ -125,9 +130,9 @@ function renderLibrary(S, rerender) {
     [1, tr('Головоногие', 'Cephalopods', 'Glavonošci')],
     [2, tr('Ракообразные', 'Crustaceans', 'Rakovi')]
   ];
-  const out = [h('h2', { class: 'page' }, tr('Рыбы Адриатики', 'Adriatic fish', 'Ribe Jadrana'))];
+  const out = [h('h2', { class: 'page' }, tr('Рыбы', 'Fish', 'Ribe') + ' · ' + Country.sea())];
 
-  const rules = DATA.rules;
+  const rules = Country.rules();
   const rulesCard = card(tr('Основные правила и законы', 'Main rules and laws', 'Osnovna pravila i zakoni'),
     h('a', { class: 'link', href: '#', onclick: e => { e.preventDefault(); S.rulesOpen = !S.rulesOpen; rerender(); } },
       S.rulesOpen ? tr('Свернуть ▲', 'Collapse ▲', 'Skupi ▲') : tr('Показать ▼', 'Show ▼', 'Prikaži ▼')));
@@ -139,7 +144,7 @@ function renderLibrary(S, rerender) {
   out.push(rulesCard);
 
   groups.forEach(([g, title]) => {
-    const list = DATA.lib.filter(f => f.group === g);
+    const list = DATA.lib.filter(f => f.group === g && Country.visible(f));
     if (!list.length) return;
     out.push(h('h2', { class: 'group' }, title));
     list.forEach(f => {
@@ -174,7 +179,7 @@ function renderLibrary(S, rerender) {
   });
 
   out.push(small(tr(
-    'Названия по таблице иллюстраций «Рыбы Адриатики». Фото загружаются из Википедии (свободные лицензии, авторы указаны на страницах статей) при первом показе. Фото может не совпасть с видом, поэтому ориентируйтесь на латинское название. Если фото не загрузилось, нажмите на серую плашку. Правила для моллюсков и крабов я не проверял и в библиотеку не включил.',
+    'Названия по таблице иллюстраций «Рыбы Адриатики» (для других морей список сокращён). Фото загружаются из Википедии (свободные лицензии, авторы указаны на страницах статей) при первом показе. Фото может не совпасть с видом, поэтому ориентируйтесь на латинское название. Если фото не загрузилось, нажмите на серую плашку. Правила для моллюсков и крабов я не проверял и в библиотеку не включил.',
     'Names follow the “Fish of the Adriatic” illustration table. Photos are loaded from Wikipedia (free licences, authors are listed on the article pages) on first view. A photo may not match the species, so go by the Latin name. If a photo does not load, tap the grey box. I did not check the rules for shellfish and crabs and left them out.',
     'Nazivi prema tabeli ilustracija „Ribe Jadrana“. Fotografije se učitavaju s Wikipedije (slobodne licence, autori su navedeni na stranicama članaka) pri prvom prikazu. Fotografija se može ne poklapati s vrstom, pa se držite latinskog naziva. Ako se fotografija ne učita, dodirnite sivu pločicu. Pravila za školjke i rakove nisam provjeravao i nisam ih uključio.')));
   return out;

@@ -426,9 +426,9 @@ function renderSettings(S, A) {
 
   out.push(card(tr('Фон', 'Background', 'Pozadina'),
     segmented([['video', tr('Видео', 'Video', 'Video')], ['fish', tr('Рыбки', 'Fish', 'Ribe')], ['off', tr('Выкл', 'Off', 'Isključeno')]], Bg.mode(), v => { Bg.set(v); A.rerender(); }),
-    small(tr('«Видео»: лодка и тунец под водой. «Рыбки»: лёгкая анимация, меньше нагрузка на телефон. Выключите, если телефон быстро садится. На широком экране (компьютер) вместо видео всегда показываются рыбки.',
-      '“Video”: a boat and a tuna under water. “Fish”: a light animation that is easier on the phone. Turn it off if your phone drains quickly. On a wide screen (computer) fish are shown instead of the video.',
-      '„Video“: čamac i tunj pod vodom. „Ribe“: lagana animacija, manje opterećuje telefon. Isključite ako se telefon brzo prazni. Na širokom ekranu (računar) umjesto videa prikazuju se ribe.'))));
+    small(tr('«Видео»: лодка и тунец под водой. «Рыбки»: лёгкая анимация, меньше нагрузка на телефон. Выключите, если телефон быстро садится. На компьютере показывается горизонтальный ролик.',
+      '“Video”: a boat and a tuna under water. “Fish”: a light animation that is easier on the phone. Turn it off if your phone drains quickly. A wide version of the video is used on a computer.',
+      '„Video“: čamac i tunj pod vodom. „Ribe“: lagana animacija, manje opterećuje telefon. Isključite ako se telefon brzo prazni. Na računaru se koristi široka verzija videa.'))));
 
   out.push(card(tr('Анонимная статистика', 'Anonymous statistics', 'Anonimna statistika'),
     segmented([[true, tr('Вкл', 'On', 'Uključeno')], [false, tr('Выкл', 'Off', 'Isključeno')]], Stats.isOn(), v => { Stats.set(v); A.rerender(); }),

@@ -150,7 +150,7 @@ const Bg = (() => {
     vid.id = 'bgv'; vid.setAttribute('aria-hidden', 'true');
     vid.muted = true; vid.loop = true; vid.playsInline = true; vid.autoplay = true;
     vid.setAttribute('muted', ''); vid.setAttribute('playsinline', ''); vid.setAttribute('webkit-playsinline', '');
-    vid.preload = 'auto'; vid.src = 'bg.mp4';
+    vid.preload = 'auto';
     vid.addEventListener('error', () => fallback());
     veil = document.createElement('div'); veil.id = 'bgveil';
     document.body.prepend(veil); document.body.prepend(vid);
@@ -161,13 +161,14 @@ const Bg = (() => {
 
   function run() {
     if (!cv) return;
-    // ролик вертикальный: на широком экране (компьютер) он растягивался бы в 3 раза, поэтому там показываем рыбок
-    const wide = window.innerWidth / window.innerHeight > 1.15;
-    const showVideo = mode === 'video' && !wide, showFish = mode === 'fish' || (mode === 'video' && wide);
+    const showVideo = mode === 'video', showFish = mode === 'fish';
     cv.style.display = showFish ? 'block' : 'none';
     document.body.classList.toggle('has-bg', mode !== 'off');
     if (showVideo) {
       ensureVideo();
+      // на широком экране (компьютер) горизонтальный ролик, на телефоне вертикальный
+      const want = window.innerWidth / window.innerHeight > 1.15 ? 'bg-wide.mp4' : 'bg.mp4';
+      if (vid.getAttribute('data-src') !== want) { vid.setAttribute('data-src', want); vid.src = want; }
       vid.style.display = 'block'; veil.style.display = 'block';
       if (held || document.hidden) vid.pause();
       else { const p = vid.play(); if (p && p.catch) p.catch(() => fallback()); }

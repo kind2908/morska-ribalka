@@ -40,6 +40,9 @@ body {
 .stack { display: flex; flex-direction: column; gap: 12px; }
 
 #bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; display: none; }
+#bgv { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none; display: none; background: #0a2a40; }
+#bgveil { position: fixed; inset: 0; z-index: 0; pointer-events: none; display: none; background: rgba(0,0,0,.18); }
+@supports (background: color-mix(in srgb, red 50%, transparent)) { #bgveil { background: color-mix(in srgb, var(--bg) 28%, transparent); } }
 #view, #tabs { position: relative; z-index: 1; }
 
 #tabs {

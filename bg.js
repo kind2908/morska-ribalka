@@ -2,7 +2,7 @@
 // Рисуется на canvas позади всего приложения. Можно отключить в настройках.
 const Bg = (() => {
   let cv = null, ctx = null, W = 0, H = 0, dpr = 1, raf = 0, last = 0, t = 0;
-  let enabled = true, held = false, pal = null, grad = null;
+  let mode = 'video', held = false, pal = null, grad = null, vid = null, veil = null;
   let fish = [], bubbles = [], dust = [], rays = [];
   const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const rnd = (a, b) => a + Math.random() * (b - a);
@@ -139,15 +139,38 @@ const Bg = (() => {
       ctx.fillStyle = `rgba(${pal.bub},${pal.bubA})`; ctx.fill();
     }
 
-    if (!once && !reduce && enabled && !held && !document.hidden) raf = requestAnimationFrame(tick);
+    if (!once && !reduce && mode === 'fish' && !held && !document.hidden) raf = requestAnimationFrame(tick);
   }
   function tick(ts) { if (ts - last < 32) { raf = requestAnimationFrame(tick); return; } frame(ts, false); }
 
+  // ---- видеофон ----
+  function ensureVideo() {
+    if (vid) return vid;
+    vid = document.createElement('video');
+    vid.id = 'bgv'; vid.setAttribute('aria-hidden', 'true');
+    vid.muted = true; vid.loop = true; vid.playsInline = true; vid.autoplay = true;
+    vid.setAttribute('muted', ''); vid.setAttribute('playsinline', ''); vid.setAttribute('webkit-playsinline', '');
+    vid.preload = 'auto'; vid.src = 'bg.mp4';
+    vid.addEventListener('error', () => fallback());
+    veil = document.createElement('div'); veil.id = 'bgveil';
+    document.body.prepend(veil); document.body.prepend(vid);
+    return vid;
+  }
+  // если видео не запустилось (экономия заряда, старый браузер), показываем рыбок
+  function fallback() { if (mode === 'video') { mode = 'fish'; run(); } }
+
   function run() {
     if (!cv) return;
-    cv.style.display = enabled ? 'block' : 'none';
-    document.body.classList.toggle('has-bg', enabled);
-    if (!enabled) { if (raf) cancelAnimationFrame(raf); raf = 0; return; }
+    const showVideo = mode === 'video', showFish = mode === 'fish';
+    cv.style.display = showFish ? 'block' : 'none';
+    document.body.classList.toggle('has-bg', mode !== 'off');
+    if (showVideo) {
+      ensureVideo();
+      vid.style.display = 'block'; veil.style.display = 'block';
+      if (held || document.hidden) vid.pause();
+      else { const p = vid.play(); if (p && p.catch) p.catch(() => fallback()); }
+    } else if (vid) { vid.pause(); vid.style.display = 'none'; veil.style.display = 'none'; }
+    if (!showFish) { if (raf) cancelAnimationFrame(raf); raf = 0; return; }
     pal = palette(); grad = null;
     if (reduce || held || document.hidden) { if (!raf) frame(performance.now(), true); return; }
     if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); }
@@ -155,7 +178,9 @@ const Bg = (() => {
 
   return {
     init() {
-      enabled = Store.get('bg_anim', true) !== false;
+      const saved = Store.get('bg_mode', null);
+      mode = saved === 'video' || saved === 'fish' || saved === 'off' ? saved : (Store.get('bg_anim', true) === false ? 'off' : 'video');
+      if (reduce && mode === 'video') mode = 'fish';
       cv = document.createElement('canvas');
       cv.id = 'bg'; cv.setAttribute('aria-hidden', 'true');
       document.body.prepend(cv);
@@ -166,8 +191,8 @@ const Bg = (() => {
       document.addEventListener('visibilitychange', run);
       run();
     },
-    isOn() { return enabled; },
-    set(v) { enabled = !!v; Store.set('bg_anim', enabled); run(); },
+    mode() { return mode; },
+    set(m) { mode = m; Store.set('bg_mode', m); run(); },
     hold(v) { if (held === !!v) return; held = !!v; run(); },
     theme() { if (!cv) return; pal = palette(); grad = null; if (!raf) frame(performance.now(), true); }
   };

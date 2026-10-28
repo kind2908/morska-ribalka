@@ -265,15 +265,16 @@ function windVsShore(windFromDeg, windMs) {
 
 // ---------- Оценки и цвета ----------
 function scoreColor(score) {
-  if (score >= 8) return '#2E9E5B';
-  if (score >= 6) return '#8BC34A';
-  if (score >= 4) return '#F0A030';
+  // оценка округлённая; шкала строгая: 5-7 «средний», «хороший» с 8
+  if (score >= 9) return '#2E9E5B';
+  if (score >= 8) return '#8BC34A';
+  if (score >= 5) return '#F0A030';
   return '#D9534F';
 }
 function scoreWord(score) {
-  if (score >= 8) return tr('отличный', 'excellent', 'odličan');
-  if (score >= 6) return tr('хороший', 'good', 'dobar');
-  if (score >= 4) return tr('средний', 'fair', 'srednji');
+  if (score >= 9) return tr('отличный', 'excellent', 'odličan');
+  if (score >= 8) return tr('хороший', 'good', 'dobar');
+  if (score >= 5) return tr('средний', 'fair', 'srednji');
   return tr('слабый', 'poor', 'slab');
 }
 

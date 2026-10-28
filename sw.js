@@ -5,9 +5,9 @@ const CACHE = 'fishing-web-' + VERSION;
 const RUNTIME = 'fishing-runtime';
 const SHELL = [
   './', 'index.html', 'style.css', 'manifest.webmanifest',
-  'js/data.js', 'js/i18n.js', 'js/model.js', 'js/api.js', 'js/dom.js', 'js/diary.js',
-  'js/library.js', 'js/map.js', 'js/screens.js', 'js/app.js',
-  'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'
+  'data.js', 'i18n.js', 'model.js', 'api.js', 'dom.js', 'diary.js',
+  'library.js', 'map.js', 'screens.js', 'app.js',
+  'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'
 ];
 
 self.addEventListener('install', e => {

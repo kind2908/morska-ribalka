@@ -1,6 +1,6 @@
 // Service worker: приложение открывается без интернета (данные погоды всё равно нужны онлайн).
 // При выходе новой версии меняйте номер VERSION: пользователи увидят кнопку «Обновить».
-const VERSION = '1.7.0';
+const VERSION = '1.8.0';
 const CACHE = 'fishing-web-' + VERSION;
 const RUNTIME = 'fishing-runtime';
 const SHELL = [

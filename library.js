@@ -84,6 +84,39 @@ function fishPhoto(latin, cls) {
   return box;
 }
 
+// подключаем расширенные данные: рыба-лев и новые поля
+(function () {
+  if (!window.FISHX) return;
+  FISHX.extra.forEach(e => { if (!DATA.lib.some(f => f.key === e.key)) DATA.lib.push(e); });
+})();
+
+const MONTHS = [
+  ['Я','Ф','М','А','М','И','И','А','С','О','Н','Д'],
+  ['J','F','M','A','M','J','J','A','S','O','N','D'],
+  ['J','F','M','A','M','J','J','A','K','O','N','D']];
+function seasonBar(months) {
+  const names = [tr('Нет','No','Ne'), tr('Слабо','Weak','Slabo'), tr('Хорошо','Good','Dobro'), tr('Пик','Peak','Vrhunac')];
+  const m = MONTHS[Lang.current === 'en' ? 1 : Lang.current === 'sr' ? 2 : 0];
+  const wrap = h('div', { class: 'sbar' });
+  months.forEach((v, i) => wrap.appendChild(h('div', { class: 'sb s' + v, title: names[v] }, h('i', null), h('b', null, m[i]))));
+  return wrap;
+}
+
+function recipeBlock(S, fkey, r, idx, rerender) {
+  const id = fkey + '#' + idx;
+  const open = S.recOpen === id;
+  const box = h('div', { class: 'recipe' });
+  box.appendChild(h('div', { class: 'row click', onclick: () => { S.recOpen = open ? null : id; rerender(); } },
+    h('b', null, '🍽 ' + t3(r.title)),
+    h('span', { class: 'link' }, open ? '▲' : '▼')));
+  if (open) {
+    box.appendChild(small(r.min + ' ' + tr('мин', 'min', 'min') + ' · ' + r.serves + ' ' + tr('порц.', 'servings', 'porcija')));
+    box.appendChild(infoRow(tr('Продукты', 'Ingredients', 'Namirnice'), t3(r.ingr)));
+    r.steps.forEach((st, i) => box.appendChild(h('p', null, (i + 1) + '. ' + t3(st))));
+  }
+  return box;
+}
+
 const libTitle = f => (f.en ? tr(f.key, f.en, f.sr || f.en) : fishLabel(f.key));
 
 function renderLibrary(S, rerender) {
@@ -124,6 +157,17 @@ function renderLibrary(S, rerender) {
         c.appendChild(infoRow(tr('Часы активности', 'Active hours', 'Aktivni sati'), t3(f.hours)));
         c.appendChild(infoRow(tr('Сезон', 'Season', 'Sezona'), t3(f.season)));
         c.appendChild(infoRow(tr('Правила', 'Rules', 'Pravila'), t3(f.rule)));
+        const x = window.FISHX && FISHX.sp[f.key];
+        if (x) {
+          c.appendChild(infoRow(tr('Повадки', 'Habits', 'Navike'), t3(x.habits)));
+          c.appendChild(seasonBar(x.months));
+          if (x.safety) c.appendChild(h('div', { class: 'warn' }, '⚠ ' + t3(x.safety)));
+          if (x.noeat) c.appendChild(h('div', { class: 'warn' }, '🚫 ' + t3(x.noeat)));
+          if (x.rec.length) {
+            c.appendChild(h('h3', { class: 'recs' }, tr('Что приготовить', 'What to cook', 'Što skuhati')));
+            x.rec.forEach((r, i) => c.appendChild(recipeBlock(S, f.key, r, i, rerender)));
+          }
+        }
       }
       out.push(c);
     });

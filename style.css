@@ -171,3 +171,15 @@ textarea.field { resize: vertical; }
 .sheet p { margin: 0; }
 .sheet .close { position: absolute; top: 4px; right: 6px; border: 0; background: none; font-size: 26px; color: inherit; cursor: pointer; width: 34px; height: 34px; }
 .leaflet-container { font: inherit; }
+
+.sbar{display:flex;gap:2px;margin:10px 0}
+.sb{flex:1;text-align:center;font-size:11px;color:var(--on-surface-variant)}
+.sb i{display:block;height:14px;border-radius:3px;background:var(--surface-variant);margin-bottom:2px}
+.sb.s1 i{background:color-mix(in srgb,var(--primary) 30%,var(--surface-variant))}
+.sb.s2 i{background:color-mix(in srgb,var(--primary) 65%,var(--surface-variant))}
+.sb.s3 i{background:var(--primary)}
+.warn{margin:10px 0;padding:10px 12px;border-radius:10px;background:#fdecea;color:#7a1c14;font-size:14px}
+@media (prefers-color-scheme:dark){.warn{background:#4a1f1b;color:#ffd9d4}}
+.recipe{margin:8px 0;padding:10px 12px;border-radius:10px;background:var(--surface-variant)}
+.recipe p{margin:6px 0;font-size:15px}
+h3.recs{margin:14px 0 4px;font-size:16px}

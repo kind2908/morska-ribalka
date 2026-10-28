@@ -1,6 +1,6 @@
 // Главный файл: состояние, переключение вкладок, загрузка данных, запуск
-const APP_VERSION = '1.3.0';
-const ANDROID_APK = 'MorskaRibalka.apk';
+const APP_VERSION = '1.4.0';
+const ANDROID_APK = 'app-release.apk';
 const THEMES = ['sea', 'light', 'sand'];
 const THEME_COLORS = { sea: ['#0B5C8E', '#0A1822'], light: ['#F6F7F5', '#F6F7F5'], sand: ['#F5ECDD', '#F5ECDD'] };
 
@@ -145,6 +145,7 @@ function render(force) {
   if (S.tab === 3 && !S.showSettings) view.replaceChildren(content[0]);
   view.scrollTop = scroll;
   lastTab = S.showSettings ? 'settings' : S.tab;
+  if (!sameScreen) Stats.screen(S.tab, S.showSettings);
 
   nav.replaceChildren(...tabTitles().map((title, i) =>
     h('button', {
@@ -205,6 +206,7 @@ function init() {
   Lang.load();
   S.theme = Math.min(2, Math.max(0, Store.get('theme', 0)));
   Bg.init();
+  Stats.init();
   A.applyTheme();
   if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => A.applyTheme());
 

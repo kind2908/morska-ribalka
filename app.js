@@ -1,0 +1,226 @@
+// Главный файл: состояние, переключение вкладок, загрузка данных, запуск
+const APP_VERSION = '1.1.0';
+const ANDROID_APK = 'downloads/MorskaRibalka.apk';
+const THEMES = ['sea', 'light', 'sand'];
+const THEME_COLORS = { sea: ['#0B5C8E', '#0A1822'], light: ['#F6F7F5', '#F6F7F5'], sand: ['#F5ECDD', '#F5ECDD'] };
+
+const S = {
+  region: 'Херцег-Нови', selected: null, boat: false, fish: null,
+  data: null, error: false, days: [], hourly: null, air: null,
+  mySpots: [], tab: 0, showSettings: false, mapFocus: null, pick: null,
+  diarySub: 0, draft: null, editNote: null, mark: null, slider: 10,
+  rulesOpen: false, libOpen: null, aboutOpen: false, theme: 0,
+  gps: { code: 0, acc: 0, loading: false }, token: 0, pending: false,
+  updateReady: false, installHint: null, reload: null
+};
+
+const $ = id => document.getElementById(id);
+let lastTab = -1;
+
+// ---------- Действия ----------
+const A = {
+  rerender() { render(); },
+  openSettings() { S.showSettings = true; render(); },
+  closeSettings() { S.showSettings = false; render(); },
+  applyTheme() {
+    const name = THEMES[S.theme] || 'sea';
+    document.documentElement.dataset.theme = name;
+    const dark = name === 'sea' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
+    const meta = document.querySelector('meta[name=theme-color]');
+    if (meta) meta.setAttribute('content', THEME_COLORS[name][dark ? 1 : 0]);
+  },
+  setBoat(v) {
+    S.boat = v; Store.set('boat', v);
+    S.fish = pickFish(v);
+    const spots = regionSpots(S.region);
+    if (!v && (S.selected.lat === spots[1].lat || S.selected.lat === spots[2].lat) && (S.selected.lon === spots[1].lon || S.selected.lon === spots[2].lon)) {
+      S.selected = spots[0]; S.reload(); return;
+    }
+    render();
+  },
+  setFish(name) {
+    S.fish = fishFor(S.boat).find(f => f.name === name) || fishFor(S.boat)[0];
+    Store.set(S.boat ? 'fish_boat' : 'fish_shore', S.fish.name);
+    render();
+  },
+  setRegion(key) {
+    if (key === S.region) return;
+    S.region = key; Store.set('region', key);
+    S.selected = regionSpots(key)[0];
+    S.reload();
+  },
+  select(spot) { S.selected = spot; S.reload(); },
+  addSpot(spot) {
+    S.mySpots.push(spot); Store.set('my_spots', S.mySpots);
+    render(); MapUI.ready(S);
+  },
+  removeSpot(i) { S.mySpots.splice(i, 1); Store.set('my_spots', S.mySpots); render(); },
+  gps() {
+    if (!navigator.geolocation) { S.gps = { code: 1, acc: 0, loading: false }; render(); return; }
+    S.gps = { code: 0, acc: 0, loading: true }; render();
+    navigator.geolocation.getCurrentPosition(pos => {
+      const acc = Math.round(pos.coords.accuracy || -1);
+      S.gps = { code: acc > 200 ? 3 : 2, acc, loading: false };
+      S.selected = { name: 'Моё место', lat: pos.coords.latitude, lon: pos.coords.longitude };
+      S.reload();
+    }, err => {
+      S.gps = { code: err && err.code === 1 ? 5 : 1, acc: 0, loading: false };
+      render();
+    }, { enableHighAccuracy: true, timeout: 25000, maximumAge: 0 });
+  },
+  pickOnMap(req) { S.pick = req; S.showSettings = false; S.tab = 3; S.mapFocus = null; render(true); },
+  showOnMap(p) { S.mapFocus = p; S.pick = null; S.tab = 3; render(true); },
+  updateBanner() {
+    return h('div', { class: 'warn caution row' },
+      h('span', { class: 'grow' }, tr('Доступна новая версия приложения.', 'A new version of the app is available.', 'Dostupna je nova verzija aplikacije.')),
+      btn(tr('Обновить', 'Update', 'Ažuriraj'), () => {
+        if (S.waitingWorker) S.waitingWorker.postMessage({ type: 'SKIP_WAITING' }); else location.reload();
+      }, { primary: true }));
+  }
+};
+
+const mapHooks = {
+  consumeFocus() { S.mapFocus = null; },
+  cancelPick() {
+    const kind = S.pick && S.pick.kind;
+    S.pick = null; S.tab = kind === 'location' ? 0 : 4; render(true);
+  },
+  picked(point) {
+    const p = S.pick; S.pick = null;
+    if (!p) return;
+    if (p.kind === 'location') { S.selected = { name: 'Точка на карте', lat: point.lat, lon: point.lon }; S.tab = 0; S.reload(); render(true); }
+    else if (p.kind === 'diary') { S.draft.point = point; S.diarySub = 0; S.tab = 4; render(true); }
+    else if (p.kind === 'entry') { Diary.update(p.id, { lat: point.lat, lon: point.lon }); S.diarySub = 1; S.tab = 4; render(true); }
+  },
+  useSpot(spot) { S.pick = null; S.tab = 0; S.selected = spot; S.reload(); render(true); },
+  saveSpot(spot) { A.addSpot(spot); }
+};
+
+function pickFish(boat) {
+  const name = Store.get(boat ? 'fish_boat' : 'fish_shore', null);
+  const list = fishFor(boat);
+  return list.find(f => f.name === name) || list[0];
+}
+
+// ---------- Загрузка данных ----------
+S.reload = function () {
+  const token = ++S.token, spot = S.selected;
+  S.data = null; S.error = false; S.days = []; S.hourly = null; S.air = null;
+  render();
+  const ok = fn => v => { if (token === S.token) { fn(v); softRender(); } };
+  loadSeaData(spot).then(ok(d => { S.data = d; })).catch(ok(() => { S.error = true; }));
+  loadDays(spot).then(ok(d => { S.days = d; })).catch(ok(() => { S.days = []; }));
+  loadHourly(spot).then(ok(d => { S.hourly = d; })).catch(ok(() => { S.hourly = null; }));
+  loadAir(spot).then(ok(d => { S.air = d; })).catch(ok(() => { S.air = null; }));
+};
+
+// не перерисовываем под руками, пока человек печатает
+function softRender() {
+  const a = document.activeElement;
+  if (a && ['INPUT', 'TEXTAREA', 'SELECT'].includes(a.tagName) && $('view').contains(a)) { S.pending = true; return; }
+  render();
+}
+
+// ---------- Отрисовка ----------
+function render(force) {
+  const view = $('view'), nav = $('tabs');
+  if (!force && S.tab === 3 && !S.showSettings && MapUI.alive()) { MapUI.ready(S); return; }
+  const sameScreen = lastTab === (S.showSettings ? 'settings' : S.tab);
+  const scroll = sameScreen ? view.scrollTop : 0;
+  if (MapUI.map || MapUI.box) MapUI.destroy();
+
+  document.body.classList.toggle('in-settings', S.showSettings);
+  view.classList.toggle('maponly', !S.showSettings && S.tab === 3);
+  let content;
+  if (S.showSettings) content = renderSettings(S, A);
+  else if (S.tab === 0) content = renderBite(S, A);
+  else if (S.tab === 1) content = renderConditions(S, A);
+  else if (S.tab === 2) content = renderDays(S, A);
+  else if (S.tab === 3) content = [MapUI.build(S, mapHooks)];
+  else if (S.tab === 4) content = renderDiary(S, A);
+  else content = renderLibrary(S, () => render());
+  view.replaceChildren(h('div', { class: 'stack page-wrap' }, content));
+  if (S.tab === 3 && !S.showSettings) view.replaceChildren(content[0]);
+  view.scrollTop = scroll;
+  lastTab = S.showSettings ? 'settings' : S.tab;
+
+  nav.replaceChildren(...tabTitles().map((title, i) =>
+    h('button', {
+      class: 'tab' + (S.tab === i ? ' on' : ''), type: 'button',
+      onclick: () => {
+        if (S.tab === i && !S.showSettings) return;
+        S.tab = i;
+        if (i !== 3) { S.mapFocus = null; S.pick = null; }
+        if (i === 4) S.diarySub = S.diarySub === 2 ? 2 : S.diarySub;
+        render(true);
+      }
+    }, h('span', { class: 'ti' }, TAB_ICONS[i]), h('span', { class: 'tl' }, title))));
+  document.documentElement.lang = Lang.current;
+}
+
+// ---------- Подсказка про установку на iPhone ----------
+function makeInstallHint() {
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  if (!ios || standalone || Store.get('hint_closed', false)) return null;
+  return h('div', { class: 'warn caution' },
+    h('div', { class: 'row' },
+      h('b', { class: 'grow' }, tr('Как поставить на iPhone', 'How to install on iPhone', 'Kako instalirati na iPhone')),
+      h('button', { class: 'gear', type: 'button', 'aria-label': 'close', onclick: () => { Store.set('hint_closed', true); S.installHint = null; render(); } }, '×')),
+    h('p', null, tr('В Safari нажмите «Поделиться» (квадрат со стрелкой), затем «На экран “Домой”». Дальше открывайте приложение с иконки: данные Safari и иконки хранятся раздельно, поэтому дневник начинайте вести уже в ней.',
+      'In Safari tap “Share” (the square with an arrow), then “Add to Home Screen”. Then open the app from the icon: Safari and the icon keep their data separately, so start your diary in the icon.',
+      'U Safariju dodirnite „Podijeli“ (kvadrat sa strelicom), zatim „Dodaj na početni ekran“. Zatim otvarajte aplikaciju s ikone: Safari i ikona čuvaju podatke odvojeno, pa dnevnik počnite voditi u ikoni.')));
+}
+
+// ---------- Service worker ----------
+function registerWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    const flag = w => { S.waitingWorker = w; S.updateReady = true; render(); };
+    if (reg.waiting && navigator.serviceWorker.controller) flag(reg.waiting);
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      if (!nw) return;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) flag(nw);
+      });
+    });
+    // проверка новой версии при каждом открытии
+    reg.update().catch(() => {});
+  }).catch(() => {});
+  // перезагружаем страницу только при обновлении, а не при самой первой установке
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloaded || !hadController) return;
+    reloaded = true;
+    location.reload();
+  });
+}
+
+// ---------- Запуск ----------
+function init() {
+  Lang.load();
+  S.theme = Math.min(2, Math.max(0, Store.get('theme', 0)));
+  A.applyTheme();
+  if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => A.applyTheme());
+
+  const region = Store.get('region', 'Херцег-Нови');
+  S.region = REGIONS.some(r => r.key === region) ? region : 'Херцег-Нови';
+  S.boat = !!Store.get('boat', false);
+  S.fish = pickFish(S.boat);
+  S.selected = regionSpots(S.region)[0];
+  S.mySpots = Store.get('my_spots', []);
+  const mk = Store.get('mark', null);
+  if (mk && mk.date === nowLocal().date) { S.mark = mk.m; S.slider = mk.m; }
+  S.draft = newDraft(S);
+  S.installHint = makeInstallHint();
+
+  $('view').addEventListener('focusout', () => {
+    if (S.pending) { S.pending = false; setTimeout(() => softRender(), 80); }
+  });
+  render(true);
+  S.reload();
+  registerWorker();
+}
+document.addEventListener('DOMContentLoaded', init);

@@ -424,11 +424,17 @@ function renderSettings(S, A) {
       '“Sea”: blue, light or dark following the phone setting. “Light”: white background and dark text. “Sand”: a warm beige background.',
       '„More“: plava, svijetla ili tamna prema postavci telefona. „Svijetla“: bijela pozadina i tamni tekst. „Pijesak“: topla bež pozadina.'))));
 
-  out.push(card(tr('Анимированный фон', 'Animated background', 'Animirana pozadina'),
-    segmented([[true, tr('Вкл', 'On', 'Uključeno')], [false, tr('Выкл', 'Off', 'Isključeno')]], Bg.isOn(), v => { Bg.set(v); A.rerender(); }),
-    small(tr('Рыбки, пузыри и лучи света под водой. Выключите, если телефон быстро садится.',
-      'Fish, bubbles and light rays under water. Turn it off if your phone drains quickly.',
-      'Ribe, mjehurići i zrake svjetlosti pod vodom. Isključite ako se telefon brzo prazni.'))));
+  out.push(card(tr('Фон', 'Background', 'Pozadina'),
+    segmented([['video', tr('Видео', 'Video', 'Video')], ['fish', tr('Рыбки', 'Fish', 'Ribe')], ['off', tr('Выкл', 'Off', 'Isključeno')]], Bg.mode(), v => { Bg.set(v); A.rerender(); }),
+    small(tr('«Видео»: лодка и тунец под водой. «Рыбки»: лёгкая анимация, меньше нагрузка на телефон. Выключите, если телефон быстро садится.',
+      '“Video”: a boat and a tuna under water. “Fish”: a light animation that is easier on the phone. Turn it off if your phone drains quickly.',
+      '„Video“: čamac i tunj pod vodom. „Ribe“: lagana animacija, manje opterećuje telefon. Isključite ako se telefon brzo prazni.'))));
+
+  out.push(card(tr('Анонимная статистика', 'Anonymous statistics', 'Anonimna statistika'),
+    segmented([[true, tr('Вкл', 'On', 'Uključeno')], [false, tr('Выкл', 'Off', 'Isključeno')]], Stats.isOn(), v => { Stats.set(v); A.rerender(); }),
+    small(tr('Помогает понять, пользуются ли сайтом. Отправляются только открытие экранов, язык и страна. Дневник, фото и координаты не отправляются.',
+      'Helps understand whether the site is used. Only screen views, language and country are sent. The diary, photos and coordinates are never sent.',
+      'Pomaže da se vidi koristi li se sajt. Šalju se samo pregledi ekrana, jezik i država. Dnevnik, fotografije i koordinate se ne šalju.'))));
 
   const fromShore = tr('С берега', 'From shore', 'S obale'), fromBoat = tr('С лодки', 'From boat', 'Sa čamca');
   out.push(card(tr('Рыбалка', 'Fishing', 'Ribolov'),
@@ -523,10 +529,10 @@ function aboutCard(S, A) {
     '• Vrijeme, talasi, temperatura vode, struje: Open-Meteo.com (CC BY 4.0). Temperatura mora i talasi su modelske vrijednosti, a ne mjerenja uz vašu obalu.\n• Dubine: EMODnet Bathymetry. Mreža od oko 100–250 m, pa uz samu obalu može podcijeniti ili precijeniti dubinu.\n• Satelitska karta i nazivi: Esri World Imagery i Esri Reference.\n• Karta: biblioteka Leaflet.\n• Fotografije riba: Wikipedia i Wikimedia Commons, slobodne licence.')));
   c.appendChild(h('p', { class: 'bold' }, tr('Конфиденциальность', 'Privacy', 'Privatnost')));
   c.appendChild(h('p', null, tr(
-    'Аккаунта нет. Дневник, фото и настройки хранятся только в браузере вашего телефона и никуда не отправляются. Для данных сайт отправляет координаты выбранной точки сервисам погоды, карт и глубин. Статистику посещений это приложение не собирает; сайт размещён на GitHub Pages, и GitHub может вести собственные технические журналы. Делайте резервную копию дневника: данные Safari и значка на домашнем экране хранятся раздельно, а при очистке данных сайта дневник пропадает.',
-    'There is no account. The diary, photos and settings are stored only in your phone’s browser and are not sent anywhere. To get data, the site sends the coordinates of the selected point to the weather, map and depth services. This app does not collect visit statistics; the site is hosted on GitHub Pages, and GitHub may keep its own technical logs. Back up your diary: Safari and the home-screen icon keep their data separately, and clearing site data deletes the diary.',
-    'Nema naloga. Dnevnik, fotografije i postavke čuvaju se samo u pregledniku vašeg telefona i nigdje se ne šalju. Za podatke sajt šalje koordinate izabrane tačke servisima za vrijeme, karte i dubine. Ova aplikacija ne prikuplja statistiku posjeta; sajt je na GitHub Pages, a GitHub može voditi vlastite tehničke zapise. Pravite rezervnu kopiju dnevnika: Safari i ikona na početnom ekranu čuvaju podatke odvojeno, a brisanjem podataka sajta dnevnik nestaje.')));
+    'Аккаунта нет. Дневник, фото и настройки хранятся только в браузере вашего телефона и никуда не отправляются. Для данных сайт отправляет координаты выбранной точки сервисам погоды, карт и глубин. Если включена анонимная статистика (Google Analytics), отправляются случайный номер посетителя, открытие экранов, язык и страна; дневник, фото и координаты в статистику не попадают, её можно выключить в настройках. Сайт размещён на GitHub Pages, и GitHub может вести собственные технические журналы. Делайте резервную копию дневника: данные Safari и значка на домашнем экране хранятся раздельно, а при очистке данных сайта дневник пропадает.',
+    'There is no account. The diary, photos and settings are stored only in your phone’s browser and are not sent anywhere. To get data, the site sends the coordinates of the selected point to the weather, map and depth services. If anonymous statistics are on (Google Analytics), a random visitor ID, screen views, language and country are sent; the diary, photos and coordinates are never included, and you can turn it off in settings. The site is hosted on GitHub Pages, and GitHub may keep its own technical logs. Back up your diary: Safari and the home-screen icon keep their data separately, and clearing site data deletes the diary.',
+    'Nema naloga. Dnevnik, fotografije i postavke čuvaju se samo u pregledniku vašeg telefona i nigdje se ne šalju. Za podatke sajt šalje koordinate izabrane tačke servisima za vrijeme, karte i dubine. Ako je uključena anonimna statistika (Google Analytics), šalju se nasumičan broj posjetioca, pregledi ekrana, jezik i država; dnevnik, fotografije i koordinate nikad nisu uključeni, a statistiku možete isključiti u postavkama. Sajt je na GitHub Pages, a GitHub može voditi vlastite tehničke zapise. Pravite rezervnu kopiju dnevnika: Safari i ikona na početnom ekranu čuvaju podatke odvojeno, a brisanjem podataka sajta dnevnik nestaje.')));
   c.appendChild(h('p', { class: 'bold' }, 'Android'));
-  c.appendChild(h('p', null, h('a', { class: 'link', href: ANDROID_APK }, tr('Скачать версию для Android (APK)', 'Download the Android version (APK)', 'Preuzmi Android verziju (APK)'))));
+  c.appendChild(h('p', null, h('a', { class: 'link', href: ANDROID_APK, onclick: () => Stats.event('apk_download') }, tr('Скачать версию для Android (APK)', 'Download the Android version (APK)', 'Preuzmi Android verziju (APK)'))));
   return c;
 }

@@ -1,12 +1,12 @@
 // Service worker: приложение открывается без интернета (данные погоды всё равно нужны онлайн).
 // При выходе новой версии меняйте номер VERSION: пользователи увидят кнопку «Обновить».
-const VERSION = '1.2.0';
+const VERSION = '1.4.0';
 const CACHE = 'fishing-web-' + VERSION;
 const RUNTIME = 'fishing-runtime';
 const SHELL = [
   './', 'index.html', 'style.css', 'manifest.webmanifest',
   'data.js', 'i18n.js', 'model.js', 'api.js', 'dom.js', 'diary.js',
-  'library.js', 'map.js', 'screens.js', 'bg.js', 'app.js',
+  'library.js', 'map.js', 'screens.js', 'bg.js', 'stats.js', 'app.js',
   'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'
 ];
 
@@ -31,8 +31,8 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
 
   if (url.origin === location.origin) {
-    // APK и version.json не кэшируем
-    if (url.pathname.includes('/downloads/') || url.pathname.endsWith('version.json')) return;
+    // APK, видеофон (Safari не любит видео из кэша воркера) и version.json не кэшируем
+    if (url.pathname.includes('/downloads/') || url.pathname.endsWith('version.json') || /\.(apk|mp4)$/.test(url.pathname)) return;
     e.respondWith(
       caches.match(req, { ignoreSearch: true }).then(hit => hit || fetch(req).then(res => {
         if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }

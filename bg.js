@@ -161,7 +161,9 @@ const Bg = (() => {
 
   function run() {
     if (!cv) return;
-    const showVideo = mode === 'video', showFish = mode === 'fish';
+    // ролик вертикальный: на широком экране (компьютер) он растягивался бы в 3 раза, поэтому там показываем рыбок
+    const wide = window.innerWidth / window.innerHeight > 1.15;
+    const showVideo = mode === 'video' && !wide, showFish = mode === 'fish' || (mode === 'video' && wide);
     cv.style.display = showFish ? 'block' : 'none';
     document.body.classList.toggle('has-bg', mode !== 'off');
     if (showVideo) {
@@ -187,7 +189,8 @@ const Bg = (() => {
       ctx = cv.getContext('2d');
       if (!ctx) { cv.remove(); cv = null; return; }
       resize();
-      window.addEventListener('resize', () => { resize(); });
+      let rt = 0;
+      window.addEventListener('resize', () => { resize(); clearTimeout(rt); rt = setTimeout(run, 150); });
       document.addEventListener('visibilitychange', run);
       run();
     },

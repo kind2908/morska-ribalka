@@ -424,6 +424,12 @@ function renderSettings(S, A) {
       '“Sea”: blue, light or dark following the phone setting. “Light”: white background and dark text. “Sand”: a warm beige background.',
       '„More“: plava, svijetla ili tamna prema postavci telefona. „Svijetla“: bijela pozadina i tamni tekst. „Pijesak“: topla bež pozadina.'))));
 
+  out.push(card(tr('Анимированный фон', 'Animated background', 'Animirana pozadina'),
+    segmented([[true, tr('Вкл', 'On', 'Uključeno')], [false, tr('Выкл', 'Off', 'Isključeno')]], Bg.isOn(), v => { Bg.set(v); A.rerender(); }),
+    small(tr('Рыбки, пузыри и лучи света под водой. Выключите, если телефон быстро садится.',
+      'Fish, bubbles and light rays under water. Turn it off if your phone drains quickly.',
+      'Ribe, mjehurići i zrake svjetlosti pod vodom. Isključite ako se telefon brzo prazni.'))));
+
   const fromShore = tr('С берега', 'From shore', 'S obale'), fromBoat = tr('С лодки', 'From boat', 'Sa čamca');
   out.push(card(tr('Рыбалка', 'Fishing', 'Ribolov'),
     segmented([[false, fromShore], [true, fromBoat]], S.boat, v => A.setBoat(v)),

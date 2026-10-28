@@ -1,5 +1,5 @@
 // Главный файл: состояние, переключение вкладок, загрузка данных, запуск
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 const ANDROID_APK = 'MorskaRibalka.apk';
 const THEMES = ['sea', 'light', 'sand'];
 const THEME_COLORS = { sea: ['#0B5C8E', '#0A1822'], light: ['#F6F7F5', '#F6F7F5'], sand: ['#F5ECDD', '#F5ECDD'] };
@@ -28,6 +28,7 @@ const A = {
     const dark = name === 'sea' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
     const meta = document.querySelector('meta[name=theme-color]');
     if (meta) meta.setAttribute('content', THEME_COLORS[name][dark ? 1 : 0]);
+    if (typeof Bg !== 'undefined') Bg.theme();
   },
   setBoat(v) {
     S.boat = v; Store.set('boat', v);
@@ -130,6 +131,7 @@ function render(force) {
   if (MapUI.map || MapUI.box) MapUI.destroy();
 
   document.body.classList.toggle('in-settings', S.showSettings);
+  Bg.hold(!S.showSettings && S.tab === 3);
   view.classList.toggle('maponly', !S.showSettings && S.tab === 3);
   let content;
   if (S.showSettings) content = renderSettings(S, A);
@@ -202,6 +204,7 @@ function registerWorker() {
 function init() {
   Lang.load();
   S.theme = Math.min(2, Math.max(0, Store.get('theme', 0)));
+  Bg.init();
   A.applyTheme();
   if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => A.applyTheme());
 

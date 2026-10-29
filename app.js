@@ -1,5 +1,5 @@
 // Главный файл: состояние, переключение вкладок, загрузка данных, запуск
-const APP_VERSION = '1.8.1';
+const APP_VERSION = '1.9.0';
 const ANDROID_APK = 'app-release.apk';
 const THEMES = ['sea', 'light', 'sand'];
 const THEME_COLORS = { sea: ['#0B5C8E', '#0A1822'], light: ['#F6F7F5', '#F6F7F5'], sand: ['#F5ECDD', '#F5ECDD'] };
@@ -130,7 +130,7 @@ S.reload = function () {
     loadStation(spot).then(ok(d => { S.station = d; })).catch(ok(() => { S.station = null; }));
   };
   if (spot.snap === false) {
-    // точки «3 км» и «15 км» проверяем по карте глубин и при необходимости сдвигаем на воду
+    // точки района (берег, «3 км», «15 км») проверяем по карте глубин и при необходимости сдвигаем на воду
     const key = 'snap.' + spot.lat.toFixed(4) + ',' + spot.lon.toFixed(4);
     const cached = Store.get(key, null);
     const apply = p => {
@@ -138,7 +138,7 @@ S.reload = function () {
       spot.snap = true;
     };
     if (cached) { apply(cached); go(); return; }
-    snapToWater(spot.lat, spot.lon).then(p => {
+    snapToWater(spot.lat, spot.lon, !!spot.shore).then(p => {
       if (p) Store.set(key, p);
       apply(p);
       if (token === S.token) { render(); go(); }

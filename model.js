@@ -60,11 +60,13 @@ function interp(x, pts) {
   return pts[pts.length - 1][1];
 }
 
-const trendAdjPts = [[-8, 0], [-6, 0.5], [-3.4, 1.5], [-1.5, 1.0], [-0.5, 0.3], [0, 0], [1, -0.4], [3, -1.2], [6, -1.8]];
-const windAdjPts = [[0, -0.2], [2, 0.2], [4, 0.3], [7, -0.3], [10, -1.5], [13, -3.0], [16, -4.0]];
-const waveAdjPts = [[0, 0.2], [0.3, 0.2], [0.6, -0.3], [1.0, -1.2], [1.5, -2.5], [2.5, -4.0]];
-const surfWindAdjPts = [[0, -0.8], [3, -0.2], [6, 0.6], [9, 1.0], [11, 0.3], [13, -1.0], [16, -3.0]];
-const surfWaveAdjPts = [[0, -0.5], [0.3, 0.0], [0.6, 0.5], [1.0, 0.8], [1.5, 0.2], [2.0, -1.5], [3.0, -4.0]];
+// Давление: по исследованиям эффект слабый, поэтому вес небольшой
+const trendAdjPts = [[-8, 0], [-6, 0.3], [-3.4, 0.9], [-1.5, 0.6], [-0.5, 0.2], [0, 0], [1, -0.25], [3, -0.7], [6, -1.1]];
+// Ветер и волна больше про комфорт и безопасность, чем про клёв: рыба клюёт и в ветер, и в волну. Вес мягкий.
+const windAdjPts = [[0, -0.2], [2, 0.2], [4, 0.3], [7, 0], [10, -0.5], [13, -1.2], [16, -2.0]];
+const waveAdjPts = [[0, 0.2], [0.3, 0.2], [0.6, 0], [1.0, -0.3], [1.5, -0.8], [2.5, -1.8]];
+const surfWindAdjPts = [[0, -0.8], [3, -0.2], [6, 0.6], [9, 1.0], [11, 0.6], [13, 0], [16, -1.5]];
+const surfWaveAdjPts = [[0, -0.5], [0.3, 0.0], [0.6, 0.5], [1.0, 0.8], [1.5, 0.5], [2.0, -0.3], [3.0, -2.0]];
 const cloudAdjPts = [[0, -0.3], [30, 0.0], [60, 0.4], [90, 0.6], [100, 0.6]];
 const rainAdjPts = [[0, 0], [2, 0.1], [8, 0.0], [20, -0.8], [40, -2.0], [60, -3.0]];
 const tempChangeAdjPts = [[-3, -1.5], [-1.5, -0.8], [-0.5, -0.1], [0, 0], [1, 0.2], [2.5, 0.1], [4, -0.5]];
@@ -104,11 +106,11 @@ function biteModel(p) {
   const surf = p.fish.surf && !p.boat;
   const windRaw = isNaN_(p.windMs) ? 4.0 : p.windMs;
   const windEff0 = isNaN_(p.gustMs) ? windRaw : Math.max(windRaw, p.gustMs * 0.55);
-  const windEff = p.boat ? windEff0 * 1.3 : windEff0;
+  const windEff = p.boat ? windEff0 * 1.15 : windEff0;
   adj.push([tr('Ветер', 'Wind', 'Vjetar'), interp(windEff, surf ? surfWindAdjPts : windAdjPts)]);
 
   const waveRaw = isNaN_(p.waveM) ? 0.5 : p.waveM;
-  const waveEff = p.boat ? waveRaw * 1.5 : waveRaw;
+  const waveEff = p.boat ? waveRaw * 1.2 : waveRaw;
   adj.push([tr('Волна', 'Waves', 'Talasi'), interp(waveEff, surf ? surfWaveAdjPts : waveAdjPts)]);
 
   adj.push([tr('Облачность', 'Cloud cover', 'Oblačnost'), isNaN_(p.cloudPct) ? 0.0 : interp(p.cloudPct, cloudAdjPts)]);
@@ -130,13 +132,19 @@ function biteModel(p) {
 }
 
 function biteExplain(data, fish, boat) {
-  return biteModel({
-    fish, boat, date: nowLocal().date,
+  const now = nowLocal();
+  const r = biteModel({
+    fish, boat, date: now.date,
     waterTemp: data.waterTemp, tempChange: NaN,
     pressureHpa: data.pressure, trend3h: data.pressureTrend,
     windMs: data.wind, gustMs: data.gust, waveM: data.waveHeight,
     cloudPct: data.cloud, rainMm: data.rainNow * 3.0, thunder: false, moonDays: moonAge()
   });
+  // время суток входит и в оценку «сейчас» (раньше было только в графике по часам)
+  const tod = timeOfDayAdj(now.hour, data.sunrise, data.sunset, data.cloud);
+  r.adjustments.push([tr('Время суток', 'Time of day', 'Doba dana'), tod]);
+  r.score = clamp(r.score + tod, 1.0, 10.0);
+  return r;
 }
 
 // ---------- Предупреждение о непогоде ----------
@@ -203,13 +211,20 @@ function bestHours(d) {
 }
 
 // ---------- По часам ----------
-function timeOfDayAdj(hour, sunrise, sunset) {
+// Время суток: на зорях (утро и вечер) рыба активнее, в яркий полдень слабее (исследования и рыболовные источники сходятся в этом;
+// ночью зависит от вида, поэтому ночь не трогаем). Зоря: от получаса до восхода до полутора часов после, вечером зеркально.
+function timeOfDayAdj(hour, sunrise, sunset, cloudPct) {
   const mid = hour + 0.5;
   const sr = sunrise && sunrise !== '—' ? hm(sunrise) / 60 : null;
   const ss = sunset && sunset !== '—' ? hm(sunset) / 60 : null;
-  if (sr !== null && mid >= sr - 0.5 && mid <= sr + 1.5) return 0.8;
-  if (ss !== null && mid >= ss - 1.5 && mid <= ss + 0.5) return 0.8;
-  if (mid >= 11.0 && mid <= 16.0) return -0.3;
+  if (sr !== null && mid >= sr - 0.5 && mid <= sr + 1.5) return 1.2;
+  if (ss !== null && mid >= ss - 1.5 && mid <= ss + 0.5) return 1.2;
+  if (sr !== null && mid >= sr - 1.5 && mid <= sr + 2.5) return 0.5;
+  if (ss !== null && mid >= ss - 2.5 && mid <= ss + 1.5) return 0.5;
+  if (mid >= 11.0 && mid <= 16.0) {
+    const c = isNaN_(cloudPct) ? 0.3 : clamp(cloudPct / 100, 0, 1);
+    return -0.8 + 0.4 * c;   // ясный полдень -0.8, сплошная облачность -0.4
+  }
   return 0.0;
 }
 
@@ -229,7 +244,7 @@ function hourlyScores(raw, fish, boat, sunrise, sunset) {
       pressureHpa: pNow, trend3h: trend, windMs: raw.wind[hour], gustMs: raw.gust[hour],
       waveM: raw.wave[hour], cloudPct: raw.cloud[hour], rainMm: rain, thunder: false, moonDays: moonAge()
     });
-    res.push({ hour, score: clamp(r.score + timeOfDayAdj(hour, sunrise, sunset), 1.0, 10.0) });
+    res.push({ hour, score: clamp(r.score + timeOfDayAdj(hour, sunrise, sunset, raw.cloud[hour]), 1.0, 10.0) });
   }
   return res;
 }
@@ -293,7 +308,7 @@ const SPOT_NAMES = ['Берег', '3 км', '15 км'];
 function buildRegions() {
   return Country.regions().map((r, idx) => ({
     key: r.key,
-    spots: r.pts.map((p, i) => ({ name: (idx === 0 ? '' : '') + SPOT_NAMES[i] + (idx === 0 ? '' : ' · ' + r.key), lat: p[0], lon: p[1], snap: i > 0 ? false : true }))
+    spots: r.pts.map((p, i) => ({ name: (idx === 0 ? '' : '') + SPOT_NAMES[i] + (idx === 0 ? '' : ' · ' + r.key), lat: p[0], lon: p[1], snap: false, shore: i === 0 }))
   }));
 }
 let REGIONS = buildRegions();

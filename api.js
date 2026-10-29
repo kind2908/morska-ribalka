@@ -316,27 +316,33 @@ async function loadStation(spot) {
 }
 
 // ---------- Привязка пресетов к воде (EMODnet): точку на суше сдвигаем в ближайшее море ----------
-async function snapToWater(lat, lon) {
+async function snapToWater(lat, lon, shore) {
   const probe = async (la, lo) => {
     try {
       const r = await getJson(`https://rest.emodnet-bathymetry.eu/depth_sample?geom=POINT(${lo.toFixed(5)}%20${la.toFixed(5)})`, 7000);
       return { ok: true, v: typeof r.avg === 'number' ? r.avg : null };
     } catch (e) { return { ok: false, v: null }; }
   };
-  const water = p => p.ok && p.v !== null && p.v <= -3;
+  const water = p => p.ok && p.v !== null && p.v <= (shore ? -1.5 : -3);
   const p0 = await probe(lat, lon);
   if (!p0.ok) return null;          // сервис не ответил: оставляем как есть
   if (water(p0)) return { lat, lon };
   const kmLat = 1 / 111.32, kmLon = 1 / (111.32 * Math.cos(lat * Math.PI / 180));
-  for (const r of [0.7, 1.4, 2.2, 3.2, 4.6, 6.5, 9, 12]) {
+  const rings = shore ? [0.12, 0.25, 0.4, 0.6, 0.9, 1.3, 2, 3, 5] : [0.7, 1.4, 2.2, 3.2, 4.6, 6.5, 9, 12];
+  const nDir = shore ? 16 : 8;
+  for (const r of rings) {
     const cands = [];
-    for (let k = 0; k < 8; k++) {
-      const ang = k * Math.PI / 4;
+    for (let k = 0; k < nDir; k++) {
+      const ang = k * 2 * Math.PI / nDir;
       cands.push([lat + Math.sin(ang) * r * kmLat, lon + Math.cos(ang) * r * kmLon]);
     }
     const res = await Promise.all(cands.map(c => probe(c[0], c[1])));
     let best = -1, bestD = 0;
-    res.forEach((p, i) => { if (water(p) && -p.v > bestD) { bestD = -p.v; best = i; } });
+    res.forEach((p, i) => {
+      if (!water(p)) return;
+      // берег: берём самую мелкую воду в кольце (кромка воды); пресеты в море: самую глубокую
+      if (shore ? (best < 0 || -p.v < bestD) : -p.v > bestD) { bestD = -p.v; best = i; }
+    });
     if (best >= 0) return { lat: +cands[best][0].toFixed(5), lon: +cands[best][1].toFixed(5) };
   }
   return null;

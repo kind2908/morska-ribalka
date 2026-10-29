@@ -1048,5 +1048,6 @@ window.TRX.sq = {
 "Подводная охота разрешена с ограничениями: не ночью, не младше 16 лет, не в охраняемых зонах. Остальные правила и лимиты действуют так же.": "Peshkimi nënujor lejohet me kufizime: jo natën, jo nën 16 vjeç, jo në zona të mbrojtura. Të gjitha rregullat dhe kufijtë e tjerë vlejnë njësoj.",
 "Ловля запрещена в национальном парке Карабурун-Сазан и других охраняемых зонах. Отпускайте акул и скатов.": "Peshkimi është i ndaluar në Parkun Kombëtar Detar Karaburun-Sazan dhe zona të tjera të mbrojtura. Lini të lirë peshkaqenët dhe rrezet.",
 "Безопасность: экстренный номер 112. Берите жилет, телефон и сообщайте близким, куда идёте.": "Siguria: numri i urgjencës 112. Merrni jelek shpëtimi dhe telefon dhe u tregoni të afërmve ku shkoni.",
-"Источники: решение № 6 от 11.04.2022 (FAOLEX), fishingworldguide.com. Порядок оформления на e-Albania менялся, проверяйте на сайте.": "Burime: vendimi nr. 6 i 11.04.2022 (FAOLEX), fishingworldguide.com. Procedura në e-Albania ka ndryshuar, kontrolloni në faqe."
+"Источники: решение № 6 от 11.04.2022 (FAOLEX), fishingworldguide.com. Порядок оформления на e-Albania менялся, проверяйте на сайте.": "Burime: vendimi nr. 6 i 11.04.2022 (FAOLEX), fishingworldguide.com. Procedura në e-Albania ka ndryshuar, kontrolloni në faqe.",
+"Время суток": "Ora e ditës"
 };

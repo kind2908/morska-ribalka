@@ -147,6 +147,68 @@ function biteExplain(data, fish, boat) {
   return r;
 }
 
+// ---------- Условия для рыбака (комфорт и безопасность, это не клёв) ----------
+// Отдельная шкала 1–10: 10 всё спокойно. Клёв от неё не зависит: рыба клюёт и в дождь, но стоять под ливнем и порывами тяжело.
+const comfWindPts = [[0, 0], [6, 0], [8, -0.6], [10, -1.5], [13, -3.0], [16, -5.0], [20, -7.0]];
+const comfWavePts = [[0, 0], [0.6, 0], [1.0, -0.8], [1.5, -2.0], [2.0, -3.0], [3.0, -5.0], [4.0, -7.0]];
+const comfRainDayPts = [[0, 0], [2, -0.3], [5, -1.0], [10, -2.0], [20, -3.5], [40, -5.0], [60, -6.0]];
+const comfRainPeakPts = [[0, 0], [1, -0.2], [2.5, -0.8], [4, -1.8], [7.6, -3.5], [10, -5.0]];
+const comfTempPts = [[-5, -4.0], [0, -3.0], [5, -1.5], [10, -0.5], [14, 0], [31, 0], [35, -1.0], [39, -2.5]];
+
+// p: { windMs, gustMs, waveM, rainMm, rainPeakMmH, thunder, snow, feelsC, boat }
+function comfortModel(p) {
+  const items = [];
+  let cap = 10;
+  const w = isNaN_(p.windMs) ? 0 : p.windMs, g = isNaN_(p.gustMs) ? 0 : p.gustMs;
+  const wp = interp(Math.max(w, g * 0.7) * (p.boat ? 1.2 : 1), comfWindPts);
+  if (wp < -0.05) items.push([tr('Ветер', 'Wind', 'Vjetar'), trv('{0} км/ч, порывы {1}', '{0} km/h, gusts {1}', '{0} km/h, udari {1}', [f0(w * 3.6), f0(g * 3.6)]), wp]);
+  const wave = isNaN_(p.waveM) ? 0 : p.waveM;
+  const vp = interp(wave * (p.boat ? 1.4 : 1), comfWavePts);
+  if (vp < -0.05) items.push([tr('Волна', 'Waves', 'Talasi'), `${f1(wave)} ${U.m()}`, vp]);
+  const rain = isNaN_(p.rainMm) ? 0 : p.rainMm, peak = isNaN_(p.rainPeakMmH) ? 0 : p.rainPeakMmH;
+  const rp = Math.min(interp(rain, comfRainDayPts), interp(peak, comfRainPeakPts));
+  if (rp < -0.05) items.push([tr('Дождь', 'Rain', 'Kiša'), trv('{0} мм за день', '{0} mm per day', '{0} mm za dan', [f0(rain)]), rp]);
+  if (p.thunder) { items.push([tr('Гроза', 'Thunderstorm', 'Grmljavina'), tr('возможна', 'possible', 'moguća'), -6.0]); cap = Math.min(cap, 3.0); }
+  if (p.snow) { items.push([tr('Снег', 'Snow', 'Snijeg'), tr('возможен', 'possible', 'moguć'), -4.0]); cap = Math.min(cap, 4.5); }
+  if (!isNaN_(p.feelsC)) {
+    const tp = interp(p.feelsC, comfTempPts);
+    if (tp < -0.05) items.push([p.feelsC < 14 ? tr('Холод', 'Cold', 'Hladnoća') : tr('Жара', 'Heat', 'Vrućina'),
+      trv('ощущается {0} °C', 'feels like {0} °C', 'osjeća se {0} °C', [f0(p.feelsC)]), tp]);
+  }
+  const score = Math.min(cap, clamp(10 + items.reduce((s, i) => s + i[2], 0), 1.0, 10.0));
+  items.sort((a, b) => a[2] - b[2]);
+  return { score, items };
+}
+
+// 0 зелёный, 1 жёлтый, 2 оранжевый, 3 красный
+function comfortLevel(score) { return score >= 8 ? 0 : score >= 6 ? 1 : score >= 4 ? 2 : 3; }
+const COMFORT_COLORS = ['#2E9E5B', '#E0B000', '#F0841C', '#D9534F'];
+function comfortWord(level) {
+  return [tr('Комфортно', 'Comfortable', 'Udobno'), tr('Терпимо', 'Tolerable', 'Podnošljivo'),
+    tr('Неприятно', 'Unpleasant', 'Neugodno'), tr('Опасно', 'Dangerous', 'Opasno')][level];
+}
+
+// Условия «сейчас и сегодня»: берём худшее из текущих значений и суточных максимумов
+function comfortNow(d, today, air, boat) {
+  const nz = v => (isNaN_(v) ? 0 : v);
+  return comfortModel({
+    windMs: Math.max(nz(d.wind), today ? nz(today.windMax) * 0.75 : 0),
+    gustMs: Math.max(nz(d.gust), today ? nz(today.gustMax) : 0),
+    waveM: Math.max(nz(d.waveHeight), today ? nz(today.waveMax) * 0.8 : 0),
+    rainMm: today ? today.rain : NaN, rainPeakMmH: today ? today.rainPeakMmH : nz(d.rainNow),
+    thunder: !!(today && today.thunder), snow: !!(today && today.snow),
+    feelsC: air && air.now ? air.now.feels : NaN, boat
+  });
+}
+
+// Короткий список «из чего складывается» для карточки клёва: основа и главные поправки
+function biteTop(res) {
+  const out = [[tr('Сезон и вода', 'Season and water', 'Sezona i voda'), f1(res.base), 0]];
+  res.adjustments.filter(a => Math.abs(a[1]) >= 0.2).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 4)
+    .forEach(a => out.push([a[0], sgn(a[1], 1), a[1]]));
+  return out;
+}
+
 // ---------- Предупреждение о непогоде ----------
 // Возвращает null или [уровень (1 осторожно, 2 опасно), текст]
 function safetyWarning(windMax, gustMax, waveMax, rainMm, rainPeakMmH, thunder, boat) {

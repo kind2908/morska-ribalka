@@ -1049,5 +1049,22 @@ window.TRX.sq = {
 "Ловля запрещена в национальном парке Карабурун-Сазан и других охраняемых зонах. Отпускайте акул и скатов.": "Peshkimi është i ndaluar në Parkun Kombëtar Detar Karaburun-Sazan dhe zona të tjera të mbrojtura. Lini të lirë peshkaqenët dhe rrezet.",
 "Безопасность: экстренный номер 112. Берите жилет, телефон и сообщайте близким, куда идёте.": "Siguria: numri i urgjencës 112. Merrni jelek shpëtimi dhe telefon dhe u tregoni të afërmve ku shkoni.",
 "Источники: решение № 6 от 11.04.2022 (FAOLEX), fishingworldguide.com. Порядок оформления на e-Albania менялся, проверяйте на сайте.": "Burime: vendimi nr. 6 i 11.04.2022 (FAOLEX), fishingworldguide.com. Procedura në e-Albania ka ndryshuar, kontrolloni në faqe.",
-"Время суток": "Ora e ditës"
+"Время суток": "Ora e ditës",
+"Условия для рыбака": "Kushtet për peshkatarin",
+"Комфортно": "Rehat",
+"Терпимо": "E durueshme",
+"Неприятно": "E pakëndshme",
+"Опасно": "E rrezikshme",
+"Сезон и вода": "Sezoni dhe uji",
+"Дождь": "Shi",
+"Гроза": "Stuhi me bubullima",
+"Снег": "Borë",
+"Холод": "Ftohtë",
+"Жара": "Vapë",
+"{0} км/ч, порывы {1}": "{0} km/h, shtrëngata {1}",
+"{0} мм за день": "{0} mm në ditë",
+"возможна": "e mundur",
+"возможен": "i mundur",
+"ощущается {0} °C": "ndihet {0} °C",
+"Всё спокойно": "Gjithçka e qetë"
 };

@@ -1048,5 +1048,22 @@ window.TRX.sl = {
 "Нельзя ловить: ближе 200 м от маркированных ферм, 50 м от донных сетей и от другого рыбака с лодки, 300 м от судна со светом или кошельковым неводом, в портах и на пляжах с 1 мая по 30 октября.": "Ribolov je prepovedan: bliže od 200 m od označenih gojitvenih obratov, 50 m od pridnenih mrež in od drugega ribiča s čolna, 300 m od plovila s svetlobo ali plivaricami, v pristaniščih in na kopališčih od 1. maja do 30. oktobra.",
 "Подводная охота: годовое разрешение, выдаётся только членам морского спортивного клуба; нужен журнал уловов. Только днём, на задержке дыхания, нельзя с судна, где есть акваланг, нельзя в охраняемых зонах. Обязателен буй не менее 10 л на верёвке.": "Podvodni ribolov: letno dovoljenje, ki ga izdajo samo članom društva za morski športni ribolov; obvezen je dnevnik ulova. Samo podnevi, samo na dah, ne s plovila, ki ima potapljaško opremo, ne v zaščitenih območjih. Obvezen je signalni plovec najmanj 10 litrov na vrvi.",
 "Источники: spot.gov.si (Recreational marine fishing; Sea sport fishing with a spear gun). Размеры и тарифы смотрите на портале SPOT.": "Viri: spot.gov.si (Recreational marine fishing; Sea sport fishing with a spear gun). Velikosti in cenike poiščite na portalu SPOT.",
-"Время суток": "Čas dneva"
+"Время суток": "Čas dneva",
+"Условия для рыбака": "Razmere za ribiča",
+"Комфортно": "Udobno",
+"Терпимо": "Znosno",
+"Неприятно": "Neprijetno",
+"Опасно": "Nevarno",
+"Сезон и вода": "Sezona in voda",
+"Дождь": "Dež",
+"Гроза": "Nevihta z grmenjem",
+"Снег": "Sneg",
+"Холод": "Mraz",
+"Жара": "Vročina",
+"{0} км/ч, порывы {1}": "{0} km/h, sunki {1}",
+"{0} мм за день": "{0} mm na dan",
+"возможна": "možna",
+"возможен": "možen",
+"ощущается {0} °C": "občuti se {0} °C",
+"Всё спокойно": "Vse mirno"
 };

@@ -1050,5 +1050,22 @@ window.TRX.it = {
 "Нельзя собирать красный коралл, моллюсков и ракообразных (есть исключения), морских ежей. Действуют минимальные размеры ЕС (регламент 2019/1241). Синий тунец: случайный улов нельзя оставлять без разрешения.": "Vietato raccogliere corallo rosso, molluschi e crostacei (con alcune eccezioni) e ricci di mare. Valgono le misure minime UE (regolamento 2019/1241). Tonno rosso: una cattura accidentale non può essere trattenuta senza autorizzazione.",
 "Безопасность: экстренный номер 112, береговая охрана 1530. Берите жилет, телефон и сообщайте близким, куда идёте.": "Sicurezza: numero di emergenza 112, Guardia Costiera 1530. Porta giubbotto e telefono e di’ ai tuoi cari dove vai.",
 "Источники: studiocataldi.it (обзор правил), areasosta.com, форумы по подводной охоте. Правила отличаются по регионам и охраняемым зонам; проверяйте у Капитанерии порта.": "Fonti: studiocataldi.it (panoramica delle regole), areasosta.com, forum di pesca subacquea. Le regole cambiano per regione e aree protette; verifica presso la Capitaneria di Porto.",
-"Время суток": "Ora del giorno"
+"Время суток": "Ora del giorno",
+"Условия для рыбака": "Condizioni per il pescatore",
+"Комфортно": "Confortevole",
+"Терпимо": "Accettabile",
+"Неприятно": "Sgradevole",
+"Опасно": "Pericoloso",
+"Сезон и вода": "Stagione e acqua",
+"Дождь": "Pioggia",
+"Гроза": "Temporale",
+"Снег": "Neve",
+"Холод": "Freddo",
+"Жара": "Caldo",
+"{0} км/ч, порывы {1}": "{0} km/h, raffiche {1}",
+"{0} мм за день": "{0} mm al giorno",
+"возможна": "possibile",
+"возможен": "possibile",
+"ощущается {0} °C": "percepiti {0} °C",
+"Всё спокойно": "Tutto tranquillo"
 };

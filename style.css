@@ -187,3 +187,18 @@ h3.recs{margin:14px 0 4px;font-size:16px}
 body.picking #tabs{display:none}
 .country{display:flex;align-items:center;gap:14px;width:100%;padding:16px;margin:6px 0;border:0;border-radius:14px;background:var(--surface);color:var(--on-surface);font-size:18px;text-align:left;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .country .cc{flex:0 0 46px;text-align:center;font-weight:700;padding:8px 0;border-radius:10px;background:var(--primary);color:var(--on-primary,#fff)}
+
+/* два индикатора на главном экране: клёв и условия для рыбака */
+.indrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.card.ind { border: 3px solid transparent; padding: 12px; gap: 6px; }
+.card.ind h3 { font-size: 14px; }
+.indscore { display: flex; align-items: flex-end; }
+.card.ind .bigscore { font-size: 34px; }
+.card.ind .of10 { font-size: 15px; padding-bottom: 4px; }
+.indword { font-size: 15px; font-weight: 600; }
+.ilines { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; font-size: 12.5px; }
+.iline { display: flex; justify-content: space-between; gap: 6px; }
+.iline span:first-child { opacity: .85; }
+@media (max-width: 340px) { .indrow { grid-template-columns: 1fr; } }
+.iline { flex-wrap: wrap; }
+.iline span:last-child { text-align: right; margin-left: auto; }

@@ -215,6 +215,7 @@ async function loadDays(spot) {
       rain: weather.precipitation_sum[i] == null ? 0 : weather.precipitation_sum[i],
       rainProbMax: probs && probs[i] != null ? probs[i] : -1,
       thunder: code >= 95 && code <= 99,
+      snow: (code >= 71 && code <= 77) || code === 85 || code === 86,
       rainPeakMmH: peak,
       rainWindows: rainWindowsFor(hourly, i, date === now.date ? now.hour : 0),
       waterTemp: tNow,

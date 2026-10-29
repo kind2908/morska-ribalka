@@ -130,7 +130,7 @@ S.reload = function () {
     loadStation(spot).then(ok(d => { S.station = d; })).catch(ok(() => { S.station = null; }));
   };
   if (spot.snap === false) {
-    // точки района (берег, «3 км», «15 км») проверяем по карте глубин и при необходимости сдвигаем на воду
+    // точки района проверяем по карте глубин и при необходимости сдвигаем на воду
     const key = 'snap.' + spot.lat.toFixed(4) + ',' + spot.lon.toFixed(4);
     const cached = Store.get(key, null);
     const apply = p => {
@@ -138,7 +138,18 @@ S.reload = function () {
       spot.snap = true;
     };
     if (cached) { apply(cached); go(); return; }
-    snapToWater(spot.lat, spot.lon, !!spot.shore).then(p => {
+    if (spot.shore) {
+      // «Берег»: данные грузим сразу, а точку сдвигаем в фоне; если сдвинулась, загружаем заново
+      const la0 = spot.lat, lo0 = spot.lon;
+      go();
+      snapToWater(la0, lo0, true).then(p => {
+        if (p) Store.set(key, p);
+        apply(p);
+        if (p && token === S.token && (Math.abs(p.lat - la0) > 0.0003 || Math.abs(p.lon - lo0) > 0.0003)) S.reload();
+      }).catch(() => { spot.snap = true; });
+      return;
+    }
+    snapToWater(spot.lat, spot.lon).then(p => {
       if (p) Store.set(key, p);
       apply(p);
       if (token === S.token) { render(); go(); }

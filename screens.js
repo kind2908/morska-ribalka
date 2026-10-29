@@ -434,25 +434,8 @@ function renderSettings(S, A) {
       'Fishing rules, cities and time zone depend on the country. The language does not change with the country; choose it below.',
       'Pravila ribolova, gradovi i vremenska zona zavise od države. Jezik se ne mijenja uz državu, izaberite ga ispod.')),
     btn(tr('Включить язык страны', 'Use the country’s language', 'Uključi jezik države'), () => { Lang.set(Country.data.lang); A.rerender(); }, { cls: 'full' })));
+
   out.push(card(tr('Язык', 'Language', 'Jezik'), select(LANGS.map(l => [l.code, l.label]), Lang.current, code => { Lang.set(code); S.diaryMsg = ''; A.rerender(); })));
-
-  out.push(card(tr('Тема', 'Theme', 'Tema'),
-    segmented([[0, tr('Море', 'Sea', 'More')], [1, tr('Светлая', 'Light', 'Svijetla')], [2, tr('Песок', 'Sand', 'Pijesak')]], S.theme, k => { S.theme = k; Store.set('theme', k); A.applyTheme(); A.rerender(); }),
-    small(tr('«Море»: синяя, светлая или тёмная по настройке телефона. «Светлая»: белый фон и тёмный текст. «Песок»: тёплый бежевый фон.',
-      '“Sea”: blue, light or dark following the phone setting. “Light”: white background and dark text. “Sand”: a warm beige background.',
-      '„More“: plava, svijetla ili tamna prema postavci telefona. „Svijetla“: bijela pozadina i tamni tekst. „Pijesak“: topla bež pozadina.'))));
-
-  out.push(card(tr('Фон', 'Background', 'Pozadina'),
-    segmented([['video', tr('Видео', 'Video', 'Video')], ['fish', tr('Рыбки', 'Fish', 'Ribe')], ['off', tr('Выкл', 'Off', 'Isključeno')]], Bg.mode(), v => { Bg.set(v); A.rerender(); }),
-    small(tr('«Видео»: лодка и тунец под водой. «Рыбки»: лёгкая анимация, меньше нагрузка на телефон. Выключите, если телефон быстро садится. На компьютере показывается горизонтальный ролик.',
-      '“Video”: a boat and a tuna under water. “Fish”: a light animation that is easier on the phone. Turn it off if your phone drains quickly. A wide version of the video is used on a computer.',
-      '„Video“: čamac i tunj pod vodom. „Ribe“: lagana animacija, manje opterećuje telefon. Isključite ako se telefon brzo prazni. Na računaru se koristi široka verzija videa.'))));
-
-  out.push(card(tr('Анонимная статистика', 'Anonymous statistics', 'Anonimna statistika'),
-    segmented([[true, tr('Вкл', 'On', 'Uključeno')], [false, tr('Выкл', 'Off', 'Isključeno')]], Stats.isOn(), v => { Stats.set(v); A.rerender(); }),
-    small(tr('Помогает понять, пользуются ли сайтом. Отправляются только открытие экранов, язык и страна. Дневник, фото и координаты не отправляются.',
-      'Helps understand whether the site is used. Only screen views, language and country are sent. The diary, photos and coordinates are never sent.',
-      'Pomaže da se vidi koristi li se sajt. Šalju se samo pregledi ekrana, jezik i država. Dnevnik, fotografije i koordinate se ne šalju.'))));
 
   const fromShore = tr('С берега', 'From shore', 'S obale'), fromBoat = tr('С лодки', 'From boat', 'Sa čamca');
   out.push(card(tr('Рыбалка', 'Fishing', 'Ribolov'),
@@ -504,6 +487,24 @@ function renderSettings(S, A) {
     A.addSpot({ name, lat: S.selected.lat, lon: S.selected.lon });
   }, { primary: true }));
   out.push(my);
+
+  out.push(card(tr('Тема', 'Theme', 'Tema'),
+    segmented([[0, tr('Море', 'Sea', 'More')], [1, tr('Светлая', 'Light', 'Svijetla')], [2, tr('Песок', 'Sand', 'Pijesak')]], S.theme, k => { S.theme = k; Store.set('theme', k); A.applyTheme(); A.rerender(); }),
+    small(tr('«Море»: синяя, светлая или тёмная по настройке телефона. «Светлая»: белый фон и тёмный текст. «Песок»: тёплый бежевый фон.',
+      '“Sea”: blue, light or dark following the phone setting. “Light”: white background and dark text. “Sand”: a warm beige background.',
+      '„More“: plava, svijetla ili tamna prema postavci telefona. „Svijetla“: bijela pozadina i tamni tekst. „Pijesak“: topla bež pozadina.'))));
+
+  out.push(card(tr('Фон', 'Background', 'Pozadina'),
+    segmented([['video', tr('Видео', 'Video', 'Video')], ['fish', tr('Рыбки', 'Fish', 'Ribe')], ['off', tr('Выкл', 'Off', 'Isključeno')]], Bg.mode(), v => { Bg.set(v); A.rerender(); }),
+    small(tr('«Видео»: лодка и тунец под водой. «Рыбки»: лёгкая анимация, меньше нагрузка на телефон. Выключите, если телефон быстро садится. На компьютере показывается горизонтальный ролик.',
+      '“Video”: a boat and a tuna under water. “Fish”: a light animation that is easier on the phone. Turn it off if your phone drains quickly. A wide version of the video is used on a computer.',
+      '„Video“: čamac i tunj pod vodom. „Ribe“: lagana animacija, manje opterećuje telefon. Isključite ako se telefon brzo prazni. Na računaru se koristi široka verzija videa.'))));
+
+  out.push(card(tr('Анонимная статистика', 'Anonymous statistics', 'Anonimna statistika'),
+    segmented([[true, tr('Вкл', 'On', 'Uključeno')], [false, tr('Выкл', 'Off', 'Isključeno')]], Stats.isOn(), v => { Stats.set(v); A.rerender(); }),
+    small(tr('Помогает понять, пользуются ли сайтом. Отправляются только открытие экранов, язык и страна. Дневник, фото и координаты не отправляются.',
+      'Helps understand whether the site is used. Only screen views, language and country are sent. The diary, photos and coordinates are never sent.',
+      'Pomaže da se vidi koristi li se sajt. Šalju se samo pregledi ekrana, jezik i država. Dnevnik, fotografije i koordinate se ne šalju.'))));
 
   out.push(aboutCard(S, A));
   return out;

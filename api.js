@@ -1,6 +1,10 @@
 // Загрузка данных: Open-Meteo (погода и море). Всё как в Android-приложении.
 
 async function getJson(url, timeoutMs = 15000) {
+  return fetchRetry(url, timeoutMs, res => res.json());
+}
+
+async function fetchRetry(url, timeoutMs, read) {
   let lastErr;
   for (let attempt = 0; attempt < 2; attempt++) {
     const ctrl = new AbortController();
@@ -8,7 +12,7 @@ async function getJson(url, timeoutMs = 15000) {
     try {
       const res = await fetch(url, { signal: ctrl.signal });
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      return await res.json();
+      return await read(res);
     } catch (e) {
       lastErr = e;
     } finally {
@@ -301,25 +305,63 @@ async function fetchDepth(lat, lon) {
 }
 
 
-// ---------- Метеостанция: ближайший аэропорт (METAR, aviationweather.gov) ----------
+// ---------- Метеостанция: ближайший аэропорт (METAR, MET Norway) ----------
+// aviationweather.gov браузер не пускает (нет CORS). api.met.no разрешает простые запросы с небольших сайтов.
 async function loadStation(spot) {
   const st = nearestStation(spot.lat, spot.lon);
   if (!st) return null;
-  const r = await getJson(`https://aviationweather.gov/api/data/metar?ids=${st.icao}&format=json&hours=3`, 9000);
-  const m = Array.isArray(r) && r.length ? r[0] : null;
+  const text = await fetchRetry(`https://api.met.no/weatherapi/tafmetar/1.0/metar.txt?icao=${st.icao}`, 9000, res => res.text());
+  // В ответе все сводки за сутки, берём самую свежую
+  const now = new Date();
+  let m = null;
+  text.split('\n').forEach(line => {
+    const p = parseMetar(line, now);
+    if (p && p.icao === st.icao && (!m || p.t >= m.t)) m = p;
+  });
   if (!m) return null;
-  const KT = 0.514444;
-  const num = v => (typeof v === 'number' && !Number.isNaN(v) ? v : NaN);
-  const t = typeof m.obsTime === 'number' ? new Date(m.obsTime * 1000) : (m.reportTime ? new Date(m.reportTime) : null);
-  const ageMin = t ? (Date.now() - t.getTime()) / 60000 : 0;
-  if (ageMin > 360) return null; // старше 6 часов не показываем
-  const vis = typeof m.visib === 'number' ? m.visib * 1.609 : (m.visib === '10+' ? 10 : NaN);
+  if ((now - m.t) / 60000 > 360) return null; // старше 6 часов не показываем
   return {
     icao: st.icao, name: st.name, km: Math.round(st.km),
-    time: t ? hmStr(t.getHours() * 60 + t.getMinutes()) : '', // время в часовом поясе устройства
-    temp: num(m.temp), windDir: num(m.wdir), wind: num(m.wspd) * KT, gust: num(m.wgst) * KT,
-    pressure: num(m.altim), vis
+    time: hmStr(m.t.getHours() * 60 + m.t.getMinutes()), // время в часовом поясе устройства
+    temp: m.temp, windDir: m.windDir, wind: m.wind, gust: m.gust,
+    pressure: m.pressure, vis: m.vis
   };
+}
+
+// Разбор строки METAR, например: LBBG 012000Z 07017G27KT 9000 -RA BKN010 15/13 Q1020 NOSIG=
+function parseMetar(line, now) {
+  const tokens = line.replace(/=/g, ' ').trim().split(/\s+/);
+  const time = /^(\d{2})(\d{2})(\d{2})Z$/.exec(tokens[1] || '');
+  if (!time || tokens.includes('NIL')) return null;
+  // В сводке только день месяца: дата из будущего значит прошлый месяц
+  const at = month => new Date(Date.UTC(now.getUTCFullYear(), month, +time[1], +time[2], +time[3]));
+  let t = at(now.getUTCMonth());
+  if (t - now > 86400000) t = at(now.getUTCMonth() - 1);
+  const out = { icao: tokens[0], t, temp: NaN, windDir: NaN, wind: NaN, gust: NaN, pressure: NaN, vis: NaN };
+  const KT = 0.514444;
+  const signed = s => (s[0] === 'M' ? -Number(s.slice(1)) : Number(s));
+  for (const tk of tokens.slice(2)) {
+    // Дальше прогноз на ближайшие часы (TEMPO, BECMG), а не измерение
+    if (/^(NOSIG|TEMPO|BECMG|RMK)$/.test(tk)) break;
+    let r;
+    if (Number.isNaN(out.wind) && (r = /^(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?(KT|MPS)$/.exec(tk))) {
+      const k = r[4] === 'KT' ? KT : 1;
+      out.wind = Number(r[2]) * k;
+      if (r[3]) out.gust = Number(r[3]) * k;
+      if (r[1] !== 'VRB' && out.wind > 0) out.windDir = Number(r[1]); // у штиля и переменного ветра направления нет
+    } else if (Number.isNaN(out.vis) && tk === 'CAVOK') {
+      out.vis = 10;
+    } else if (Number.isNaN(out.vis) && (r = /^(\d{4})(NDV|[NSEW]{1,2})?$/.exec(tk))) {
+      out.vis = r[1] === '9999' ? 10 : Number(r[1]) / 1000;
+    } else if ((r = /^(M?\d{2})\/(M?\d{2}|\/\/)?$/.exec(tk))) {
+      out.temp = signed(r[1]);
+    } else if ((r = /^Q(\d{4})$/.exec(tk))) {
+      out.pressure = Number(r[1]);
+    } else if ((r = /^A(\d{4})$/.exec(tk))) {
+      out.pressure = Number(r[1]) / 100 * 33.8639;
+    }
+  }
+  return out;
 }
 
 // ---------- Привязка пресетов к воде (EMODnet): точку на суше сдвигаем в ближайшее море ----------

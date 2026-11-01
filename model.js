@@ -290,25 +290,84 @@ function timeOfDayAdj(hour, sunrise, sunset, cloudPct) {
   return 0.0;
 }
 
-function hourlyScores(raw, fish, boat, sunrise, sunset) {
+function addDays(dateStr, n) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().substring(0, 10);
+}
+
+// Выбранный момент прогноза: абсолютный час от полуночи сегодня
+function forecastSlots(nowHour) {
+  return [
+    { label: tr('Сейчас', 'Now', 'Sada'), hourIndex: nowHour },
+    { label: tr('+3 ч', '+3 h', '+3 h'), hourIndex: nowHour + 3 },
+    { label: tr('+6 ч', '+6 h', '+6 h'), hourIndex: nowHour + 6 },
+    { label: tr('Завтра утром', 'Tomorrow morning', 'Sutra ujutru'), hourIndex: 24 + 7 }
+  ];
+}
+
+// Оценка на конкретный час (hourIndex считается от полуночи сегодня), с объяснением
+function hourExplain(raw, fish, boat, hourIndex) {
+  if (hourIndex < 0 || hourIndex >= raw.wind.length) return null;
+  const pNow = raw.pressure[hourIndex + 3] ?? NaN;
+  const pBefore = raw.pressure[hourIndex] ?? NaN;
+  const trend = (Number.isNaN(pNow) || Number.isNaN(pBefore)) ? NaN : pNow - pBefore;
+  // осадки: сумма за час до и два часа после
+  let rain = 0;
+  for (let k = -1; k <= 2; k++) {
+    const v = raw.rain[hourIndex + k];
+    if (v != null && !Number.isNaN(v)) rain += v;
+  }
+  const dayIndex = Math.floor(hourIndex / 24);
+  const r = biteModel({
+    fish, boat, date: addDays(raw.date, dayIndex), waterTemp: raw.waterTemp[hourIndex], tempChange: NaN,
+    pressureHpa: pNow, trend3h: trend, windMs: raw.wind[hourIndex], gustMs: raw.gust[hourIndex],
+    waveM: raw.wave[hourIndex], cloudPct: raw.cloud[hourIndex], rainMm: rain, thunder: false, moonDays: moonAge(dayIndex)
+  });
+  const tod = timeOfDayAdj(hourIndex % 24, raw.sunrise[dayIndex], raw.sunset[dayIndex], raw.cloud[hourIndex]);
+  r.adjustments.push([tr('Время суток', 'Time of day', 'Doba dana'), tod]);
+  r.score = clamp(r.score + tod, 1.0, 10.0);
+  return r;
+}
+
+function hourlyScores(raw, fish, boat) {
   const res = [];
   for (let hour = 0; hour < 24; hour++) {
-    const pNow = raw.pressure[hour + 3] ?? NaN;
-    const pBefore = raw.pressure[hour] ?? NaN;
-    const trend = (Number.isNaN(pNow) || Number.isNaN(pBefore)) ? NaN : pNow - pBefore;
-    let rain = 0;
-    for (let k = -1; k <= 2; k++) {
-      const v = raw.rain[hour + k];
-      if (v != null && !Number.isNaN(v)) rain += v;
-    }
-    const r = biteModel({
-      fish, boat, date: raw.date, waterTemp: raw.waterTemp[hour], tempChange: NaN,
-      pressureHpa: pNow, trend3h: trend, windMs: raw.wind[hour], gustMs: raw.gust[hour],
-      waveM: raw.wave[hour], cloudPct: raw.cloud[hour], rainMm: rain, thunder: false, moonDays: moonAge()
-    });
-    res.push({ hour, score: clamp(r.score + timeOfDayAdj(hour, sunrise, sunset, raw.cloud[hour]), 1.0, 10.0) });
+    const r = hourExplain(raw, fish, boat, hour);
+    if (r) res.push({ hour, score: r.score });
   }
   return res;
+}
+
+// Те же данные экрана, но ветер, волна, давление, вода и осадки взяты на выбранный час
+function forecastAt(d, raw, hourIndex) {
+  const pick = (a, old) => (isNaN_(a[hourIndex] ?? NaN) ? old : a[hourIndex]);
+  const pNow = raw.pressure[hourIndex + 3] ?? NaN;
+  const pBefore = raw.pressure[hourIndex] ?? NaN;
+  return Object.assign({}, d, {
+    wind: pick(raw.wind, d.wind),
+    gust: pick(raw.gust, d.gust),
+    waveHeight: pick(raw.wave, d.waveHeight),
+    waterTemp: pick(raw.waterTemp, d.waterTemp),
+    cloud: pick(raw.cloud, d.cloud),
+    rainNow: pick(raw.rain, d.rainNow),
+    pressure: Number.isNaN(pNow) ? d.pressure : pNow,
+    pressureTrend: (Number.isNaN(pNow) || Number.isNaN(pBefore)) ? d.pressureTrend : pNow - pBefore
+  });
+}
+
+// Средняя оценка за утро, день и вечер выбранных суток
+function dayParts(raw, date, fish, boat) {
+  const dayIndex = daysBetween(raw.date, date);
+  if (dayIndex < 0 || dayIndex >= HOURLY_DAYS) return null;
+  const avg = (from, to) => {
+    const v = [];
+    for (let h = from; h <= to; h++) {
+      const r = hourExplain(raw, fish, boat, dayIndex * 24 + h);
+      if (r) v.push(r.score);
+    }
+    return v.length ? v.reduce((s, x) => s + x, 0) / v.length : NaN;
+  };
+  return { morning: avg(5, 10), day: avg(11, 16), evening: avg(17, 21) };
 }
 
 function bestWindow(points, fromHour) {

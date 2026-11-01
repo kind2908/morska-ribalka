@@ -26,19 +26,46 @@ function gate(S, build) {
   return build(S.data);
 }
 
+// Выбранное время прогноза; будущие часы доступны, когда загружены почасовые данные
+function forecastChoice(S) {
+  const nowHour = nowLocal().hour;
+  const slots = forecastSlots(nowHour), slot = slots[S.slot], raw = S.hourly;
+  const future = S.slot > 0 && !!raw;
+  return { nowHour, slots, slot, raw, future, dayIndex: future ? Math.floor(slot.hourIndex / 24) : 0 };
+}
+
+// Строка «на какое время это показано» и кнопки выбора времени
+function timePicker(S, A, f) {
+  const at = S.loadedAt ? nowLocal(S.loadedAt) : null;
+  const updated = at ? `${pad2(at.hour)}:${pad2(at.minute)}` : '—';
+  const forDate = dayLabel(addDays(nowLocal().date, f.dayIndex));
+  return card(null,
+    h('div', { class: 'slots' }, f.slots.map((s, i) =>
+      btn(s.label, () => { if (i !== S.slot) { S.slot = i; A.rerender(); } }, { primary: i === S.slot, disabled: i > 0 && !f.raw }))),
+    h('p', { class: 'bold' }, f.future
+      ? trv('Прогноз на {0} · обновлено в {1}', 'Forecast for {0} · updated at {1}', 'Prognoza za {0} · ažurirano u {1}', [`${forDate}, ${pad2(f.slot.hourIndex % 24)}:00`, updated])
+      : trv('Клёв и условия сейчас, {0} · обновлено в {1}', 'Bite and conditions now, {0} · updated at {1}', 'Ribolov i uslovi sada, {0} · ažurirano u {1}', [`${pad2(f.nowHour)}:00`, updated])),
+    f.future ? small(tr('Ветер, волна, давление, вода и оценка показаны на выбранный час. Воздух, течение, уровень моря и метеостанция остаются текущими.',
+      'Wind, waves, pressure, water and the score are for the selected hour. Air, current, sea level and the weather station stay current.',
+      'Vjetar, talasi, pritisak, voda i ocjena su za izabrani sat. Zrak, struja, nivo mora i meteo stanica ostaju trenutni.')) : null);
+}
+
 // ---------------- Клёв ----------------
 function renderBite(S, A) {
   const out = [contextBar(S, A)];
   if (S.installHint) out.push(S.installHint);
   if (S.updateReady) out.push(A.updateBanner());
 
-  out.push(gate(S, d => {
+  out.push(gate(S, d0 => {
     const wrap = h('div', { class: 'stack' });
-    const res = biteExplain(d, S.fish, S.boat);
+    const f = forecastChoice(S);
+    wrap.appendChild(timePicker(S, A, f));
+    const d = f.future ? forecastAt(d0, f.raw, f.slot.hourIndex) : d0;
+    const res = (f.future ? hourExplain(f.raw, S.fish, S.boat, f.slot.hourIndex) : null) || biteExplain(d0, S.fish, S.boat);
     const scoreD = res.score, score = Math.round(scoreD);
     const col = scoreColor(score);
-    const today = S.days[0];
-    const cm = comfortNow(d, today, S.air, S.boat);
+    const today = S.days[0], slotDay = S.days[f.dayIndex];
+    const cm = comfortNow(d, slotDay, S.air, S.boat);
     const clv = comfortLevel(cm.score), ccol = COMFORT_COLORS[clv];
     const lines = rows => h('div', { class: 'ilines' }, rows.map(r =>
       h('div', { class: 'iline' }, h('span', null, r[0]), h('span', { class: 'bold', style: r[2] > 0.05 ? { color: '#2E9E5B' } : r[2] < -0.05 ? { color: '#D9534F' } : null }, r[1]))));
@@ -53,11 +80,14 @@ function renderBite(S, A) {
       indicator(tr('Условия для рыбака', 'Conditions for anglers', 'Uslovi za ribolovca'), cm.score, comfortWord(clv), ccol,
         cm.items.length ? cm.items.map(i => [i[0], i[1], i[2]]) : [[tr('Всё спокойно', 'All calm', 'Sve mirno'), '', 0]])));
 
-    if (today) {
-      const w = safetyWarning(today.windMax, Math.max(isNaN_(today.gustMax) ? 0 : today.gustMax, isNaN_(d.gust) ? 0 : d.gust),
-        today.waveMax, today.rain, today.rainPeakMmH, today.thunder, S.boat);
+    if (slotDay) {
+      // учитываем и порывы на выбранный час, если они выше дневного максимума
+      const w = safetyWarning(slotDay.windMax, Math.max(isNaN_(slotDay.gustMax) ? 0 : slotDay.gustMax, isNaN_(d.gust) ? 0 : d.gust),
+        slotDay.waveMax, slotDay.rain, slotDay.rainPeakMmH, slotDay.thunder, S.boat);
       if (w) wrap.appendChild(h('div', { class: 'warn ' + (w[0] === 2 ? 'danger' : 'caution') }, w[1]));
+    }
 
+    if (today) {
       const rc = card(tr('Осадки сегодня', 'Rain today', 'Padavine danas'));
       const level = rainLevelText(today);
       if (!level && !today.thunder) {
@@ -76,7 +106,7 @@ function renderBite(S, A) {
       wrap.appendChild(rc);
     }
 
-    wrap.appendChild(card(tr('Сейчас', 'Now', 'Sada'),
+    wrap.appendChild(card(f.slot.label,
       h('div', { class: 'tiles' },
         statTile(tr('Воздух', 'Air', 'Zrak'), S.air ? fmt(S.air.now.temp, '°C') : noData()),
         statTile(tr('Вода', 'Water', 'Voda'), fmt(d.waterTemp, '°C')),
@@ -87,13 +117,13 @@ function renderBite(S, A) {
       small(tr('Подробности на вкладке «Условия»', 'Details on the “Conditions” tab', 'Detalji na kartici „Uslovi“'))));
 
     const bh = card(tr('Лучшие часы сегодня', 'Best hours today', 'Najbolji sati danas'));
-    const hours = bestHours(d);
+    const hours = bestHours(d0);
     if (!hours.length) bh.appendChild(h('p', null, noData()));
     hours.forEach(x => bh.appendChild(h('p', null, '• ' + x)));
     if (S.hourly) {
-      const nowHour = nowLocal().hour;
-      const dir = S.hourly.windDir[nowHour];
-      const info = windVsShore(dir, S.hourly.wind[nowHour]);
+      const windHour = f.future ? f.slot.hourIndex : f.nowHour;
+      const dir = S.hourly.windDir[windHour];
+      const info = windVsShore(dir, S.hourly.wind[windHour]);
       if (info) {
         const cc = info[0] === 0 ? '#F0A030' : info[0] === 2 ? '#3B8FD1' : '';
         bh.appendChild(h('p', { style: cc ? { color: cc } : null }, `${tr('Ветер', 'Wind', 'Vjetar')} (${windFrom(dir)}): ${info[1]}`));
@@ -113,14 +143,14 @@ function renderBite(S, A) {
       'Ukupno: osnova plus korekcije, od 1 do 10. Sezona i temperatura vode daju osnovu, ostalo je pomjera gore ili dolje.')));
     wrap.appendChild(ex);
 
-    if (S.hourly) wrap.appendChild(hourlyCard(S, d));
+    if (S.hourly) wrap.appendChild(hourlyCard(S));
     return wrap;
   }));
   return out;
 }
 
-function hourlyCard(S, d) {
-  const points = hourlyScores(S.hourly, S.fish, S.boat, d.sunrise, d.sunset);
+function hourlyCard(S) {
+  const points = hourlyScores(S.hourly, S.fish, S.boat);
   const nowHour = nowLocal().hour;
   const c = card(tr('Клёв по часам сегодня', 'Bite by hour today', 'Ribolov po satima danas'));
   const bars = h('div', { class: 'hbars' }, points.map(p => {
@@ -134,17 +164,20 @@ function hourlyCard(S, d) {
   if (best) {
     c.appendChild(h('p', { class: 'bold' }, trv('Лучшее время из оставшегося: {0}:00–{1}:00 (оценка {2})', 'Best of the rest of the day: {0}:00–{1}:00 (score {2})', 'Najbolje do kraja dana: {0}:00–{1}:00 (ocjena {2})', [pad2(best[0]), pad2(best[0] + 2), f1(best[1])])));
   }
-  c.appendChild(small(tr('Высота столбца это оценка в этот час. Прошедшие часы бледные. На зорях добавлено +0.8, в яркий полдень −0.3.',
-    'Bar height is the score for that hour. Past hours are faded. Dawn and dusk add +0.8, bright midday −0.3.',
-    'Visina stupca je ocjena za taj sat. Prošli sati su blijedi. Zora i sumrak daju +0.8, jarki podne −0.3.')));
+  c.appendChild(small(tr('Высота столбца это оценка в этот час. Прошедшие часы бледные. На зорях добавлено до +1.2, в яркий полдень до −0.8.',
+    'Bar height is the score for that hour. Past hours are faded. Dawn and dusk add up to +1.2, bright midday down to −0.8.',
+    'Visina stupca je ocjena za taj sat. Prošli sati su blijedi. Zora i sumrak daju do +1.2, jarki podne do −0.8.')));
   return c;
 }
 
 // ---------------- Условия ----------------
 function renderConditions(S, A) {
   const out = [contextBar(S, A)];
-  out.push(gate(S, d => {
+  out.push(gate(S, d0 => {
     const wrap = h('div', { class: 'stack' });
+    const f = forecastChoice(S);
+    wrap.appendChild(timePicker(S, A, f));
+    const d = f.future ? forecastAt(d0, f.raw, f.slot.hourIndex) : d0;
     const trend = d.tideRising === true ? tr('уровень растёт', 'rising', 'raste') : d.tideRising === false ? tr('уровень падает', 'falling', 'opada') : '';
     wrap.appendChild(card(tr('Море', 'Sea', 'More'),
       infoRow(tr('Температура воды', 'Water temperature', 'Temperatura vode'), fmt(d.waterTemp, '°C')),
@@ -226,6 +259,7 @@ function renderDays(S, A) {
   const c = card(trv('Прогноз на {0} дней', '{0}-day forecast', 'Prognoza za {0} dana', [S.days.length]));
   S.days.forEach(day => {
     const dayScore = dayBite(day, S.fish, S.boat);
+    const parts = S.hourly ? dayParts(S.hourly, day.date, S.fish, S.boat) : null;
     const warn = safetyWarning(day.windMax, day.gustMax, day.waveMax, day.rain, day.rainPeakMmH, day.thunder, S.boat);
     const flag = warn ? (warn[0] === 2 ? ' ' + tr('⚠ опасно', '⚠ dangerous', '⚠ opasno') : ' ⚠') : '';
     const gustText = isNaN_(day.gustMax) ? '' : ', ' + tr('порывы', 'gusts', 'udari') + ' ' + f0(day.gustMax * 3.6);
@@ -235,12 +269,20 @@ function renderDays(S, A) {
     c.appendChild(h('div', { class: 'dayrow' },
       h('div', { class: 'daymain' },
         h('span', { class: 'dl' }, dayLabel(day.date)),
-        h('span', { class: 'ds bold', style: { color: scoreColor(Math.round(dayScore)) } }, f1(dayScore)),
+        parts ? null : h('span', { class: 'ds bold', style: { color: scoreColor(Math.round(dayScore)) } }, f1(dayScore)),
         h('span', { class: 'dt small' }, `${windFrom(day.windDir)} ${fmt(day.windMax, U.ms)}${gustText}, ${tr('волна', 'waves', 'talasi')} ${fmt(day.waveMax, U.m())}${flag}`)),
+      parts ? h('div', { class: 'dayparts' }, [
+        [tr('Утро', 'Morning', 'Jutro'), parts.morning],
+        [tr('День', 'Day', 'Dan'), parts.day],
+        [tr('Вечер', 'Evening', 'Veče'), parts.evening]
+      ].map(([name, v]) => h('span', { style: isNaN_(v) ? null : { color: scoreColor(Math.round(v)) } }, name + ' ' + (isNaN_(v) ? '—' : f1(v))))) : null,
       extra ? h('div', { class: 'small sec' }, extra) : null));
   });
   out.push(c);
-  out.push(small(tr('Цифра у дня это оценка клёва из 10. ⚠ значит осторожно или опасно для выбранного режима (берег или лодка): ветер, порывы, волна, ливень или гроза. Оценки на дальние дни грубее, чем на сегодня.',
+  if (S.hourly) out.push(small(tr('Цифры это средняя оценка клёва из 10 за утро (5–10 ч), день (11–16 ч) и вечер (17–21 ч). ⚠ значит осторожно или опасно для выбранного режима (берег или лодка): ветер, порывы, волна, ливень или гроза. Оценки на дальние дни грубее, чем на сегодня.',
+    'The numbers are the average bite score out of 10 for morning (5–10), day (11–16) and evening (17–21). ⚠ means caution or danger for the selected mode (shore or boat): wind, gusts, waves, downpour or thunderstorm. Scores for later days are rougher than for today.',
+    'Brojevi su prosječna ocjena ulova od 10 za jutro (5–10), dan (11–16) i veče (17–21). ⚠ znači oprez ili opasnost za odabrani režim (obala ili čamac): vjetar, udari, talasi, pljusak ili grmljavina. Ocjene za dalje dane su grublje nego za danas.')));
+  else out.push(small(tr('Цифра у дня это оценка клёва из 10. ⚠ значит осторожно или опасно для выбранного режима (берег или лодка): ветер, порывы, волна, ливень или гроза. Оценки на дальние дни грубее, чем на сегодня.',
     'The number next to each day is the bite score out of 10. ⚠ means caution or danger for the selected mode (shore or boat): wind, gusts, waves, downpour or thunderstorm. Scores for later days are rougher than for today.',
     'Broj uz dan je ocjena ulova od 10. ⚠ znači oprez ili opasnost za odabrani režim (obala ili čamac): vjetar, udari, talasi, pljusak ili grmljavina. Ocjene za dalje dane su grublje nego za danas.')));
   return out;

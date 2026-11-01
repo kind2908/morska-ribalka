@@ -121,6 +121,10 @@ h2.group { margin: 10px 0 0; font-size: 20px; }
 .dl { flex: 0 0 27%; font-size: 15px; }
 .ds { flex: 0 0 13%; }
 .dt { flex: 1; }
+.dayparts { display: flex; gap: 8px; margin-top: 2px; font-size: 13px; font-weight: 700; }
+.dayparts span { flex: 1; }
+.slots { display: flex; flex-wrap: wrap; gap: 8px; }
+.slots .btn { padding-left: 12px; padding-right: 12px; white-space: nowrap; }
 
 .btn {
   border: 1px solid var(--outline); background: transparent; color: var(--primary); border-radius: 20px;

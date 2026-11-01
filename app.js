@@ -1,5 +1,6 @@
 // Главный файл: состояние, переключение вкладок, загрузка данных, запуск
-const APP_VERSION = '1.10.1';
+const APP_VERSION = '1.12.0';
+const STALE_MS = 30 * 60 * 1000;
 const ANDROID_APK = 'app-release.apk';
 const THEMES = ['sea', 'light', 'sand'];
 const THEME_COLORS = { sea: ['#0B5C8E', '#0A1822'], light: ['#F6F7F5', '#F6F7F5'], sand: ['#F5ECDD', '#F5ECDD'] };
@@ -7,6 +8,7 @@ const THEME_COLORS = { sea: ['#0B5C8E', '#0A1822'], light: ['#F6F7F5', '#F6F7F5'
 const S = {
   region: 'Херцег-Нови', selected: null, boat: false, fish: null,
   data: null, error: false, days: [], hourly: null, air: null,
+  slot: 0, loadedAt: 0, staleTry: 0,
   mySpots: [], tab: 0, showSettings: false, mapFocus: null, pick: null,
   diarySub: 0, draft: null, editNote: null, mark: null, slider: 10,
   rulesOpen: false, libOpen: null, aboutOpen: false, theme: 0,
@@ -117,17 +119,21 @@ function pickFish(boat) {
 }
 
 // ---------- Загрузка данных ----------
-S.reload = function () {
+// keepOld: та же точка, данные просто устарели; старое остаётся на экране, пока не придёт новое
+S.reload = function (keepOld) {
   const token = ++S.token, spot = S.selected;
-  S.data = null; S.error = false; S.days = []; S.hourly = null; S.air = null; S.station = null;
-  render();
+  if (!keepOld) {
+    S.data = null; S.error = false; S.days = []; S.hourly = null; S.air = null; S.station = null; S.loadedAt = 0;
+    render();
+  }
   const ok = fn => v => { if (token === S.token) { fn(v); softRender(); } };
+  const fail = fn => ok(() => { if (!keepOld) fn(); });
   const go = () => {
-    loadSeaData(spot).then(ok(d => { S.data = d; })).catch(ok(() => { S.error = true; }));
-    loadDays(spot).then(ok(d => { S.days = d; })).catch(ok(() => { S.days = []; }));
-    loadHourly(spot).then(ok(d => { S.hourly = d; })).catch(ok(() => { S.hourly = null; }));
-    loadAir(spot).then(ok(d => { S.air = d; })).catch(ok(() => { S.air = null; }));
-    loadStation(spot).then(ok(d => { S.station = d; })).catch(ok(() => { S.station = null; }));
+    loadSeaData(spot).then(ok(d => { S.data = d; S.loadedAt = Date.now(); })).catch(fail(() => { S.error = true; }));
+    loadDays(spot).then(ok(d => { S.days = d; })).catch(fail(() => { S.days = []; }));
+    loadHourly(spot).then(ok(d => { S.hourly = d; })).catch(fail(() => { S.hourly = null; }));
+    loadAir(spot).then(ok(d => { S.air = d; })).catch(fail(() => { S.air = null; }));
+    loadStation(spot).then(ok(d => { S.station = d; })).catch(fail(() => { S.station = null; }));
   };
   if (spot.snap === false) {
     // точки района проверяем по карте глубин и при необходимости сдвигаем на воду
@@ -158,6 +164,14 @@ S.reload = function () {
   }
   go();
 };
+
+// Вернулись на страницу, а данным больше получаса: обновляем. События приходят парами, поэтому не чаще раза в минуту
+function refreshIfStale() {
+  const now = Date.now();
+  if (document.hidden || S.picker || !S.loadedAt || now - S.loadedAt <= STALE_MS || now - S.staleTry < 60000) return;
+  S.staleTry = now;
+  S.reload(true);
+}
 
 // не перерисовываем под руками, пока человек печатает
 function softRender() {
@@ -286,6 +300,9 @@ function init() {
   $('view').addEventListener('focusout', () => {
     if (S.pending) { S.pending = false; setTimeout(() => softRender(), 80); }
   });
+  document.addEventListener('visibilitychange', refreshIfStale);
+  window.addEventListener('focus', refreshIfStale);
+  window.addEventListener('pageshow', refreshIfStale);
   render(true);
   if (!S.picker) S.reload();
   registerWorker();

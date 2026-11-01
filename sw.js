@@ -1,6 +1,6 @@
 // Service worker: приложение открывается без интернета (данные погоды всё равно нужны онлайн).
 // При выходе новой версии меняйте номер VERSION: пользователи увидят кнопку «Обновить».
-const VERSION = '1.11.0';
+const VERSION = '1.12.0';
 const CACHE = 'fishing-web-' + VERSION;
 const RUNTIME = 'fishing-runtime';
 const SHELL = [
@@ -11,7 +11,8 @@ const SHELL = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)));
+  // cache: 'reload': мимо кэша браузера, иначе в новую версию попадут старые файлы (Pages отдаёт их с max-age=600)
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))));
 });
 
 self.addEventListener('activate', e => {

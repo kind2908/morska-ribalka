@@ -197,11 +197,11 @@ function windWord(ms) {
 }
 
 // ---------- время в Черногории (как в запросах к погоде) ----------
-function nowLocal() {
+function nowLocal(atMs) {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: TZ_NAME, year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
-  }).formatToParts(new Date());
+  }).formatToParts(atMs ? new Date(atMs) : new Date());
   const g = t => parts.find(p => p.type === t).value;
   return { date: `${g('year')}-${g('month')}-${g('day')}`, hour: parseInt(g('hour'), 10), minute: parseInt(g('minute'), 10) };
 }

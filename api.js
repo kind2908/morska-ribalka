@@ -104,13 +104,17 @@ async function loadSeaData(spot) {
   };
 }
 
-// ---------- По часам на сегодня ----------
+// ---------- По часам: сегодня и следующие дни ----------
+const HOURLY_DAYS = 5;
 async function loadHourly(spot) {
   const root = await getJson(
     `https://api.open-meteo.com/v1/forecast?latitude=${spot.lat}&longitude=${spot.lon}` +
     `&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,cloud_cover,precipitation,pressure_msl` +
-    `&past_days=1&forecast_days=1&wind_speed_unit=ms&timezone=${TZ}`);
+    `&daily=sunrise,sunset&past_days=1&forecast_days=${HOURLY_DAYS}&wind_speed_unit=ms&timezone=${TZ}`);
   const h = root.hourly;
+  // первый элемент это вчера; оставляем только время
+  const sunTimes = name => ((root.daily && root.daily[name]) || []).slice(1).map(t => t.substring(11, 16));
+  const hours = HOURLY_DAYS * 24;
   const today = nowLocal().date;
   let start = h.time.findIndex(t => t.startsWith(today));
   if (start < 0) start = 0;
@@ -119,21 +123,23 @@ async function loadHourly(spot) {
   try {
     const m = await getJson(
       `https://marine-api.open-meteo.com/v1/marine?latitude=${spot.lat}&longitude=${spot.lon}` +
-      `&hourly=wave_height,sea_surface_temperature&past_days=1&forecast_days=1&timezone=${TZ}`);
+      `&hourly=wave_height,sea_surface_temperature&past_days=1&forecast_days=${HOURLY_DAYS}&timezone=${TZ}`);
     mh = m.hourly;
     mStart = Math.max(0, mh.time.findIndex(t => t.startsWith(today)));
   } catch (e) { mh = null; }
 
   return {
     date: today,
-    wind: seriesOf(h, 'wind_speed_10m', start, 24),
-    gust: seriesOf(h, 'wind_gusts_10m', start, 24),
-    windDir: seriesOf(h, 'wind_direction_10m', start, 24),
-    cloud: seriesOf(h, 'cloud_cover', start, 24),
-    rain: seriesOf(h, 'precipitation', start, 24),
-    wave: seriesOf(mh, 'wave_height', mStart, 24),
-    waterTemp: seriesOf(mh, 'sea_surface_temperature', mStart, 24),
-    pressure: seriesOf(h, 'pressure_msl', Math.max(start - 3, 0), 27)
+    wind: seriesOf(h, 'wind_speed_10m', start, hours),
+    gust: seriesOf(h, 'wind_gusts_10m', start, hours),
+    windDir: seriesOf(h, 'wind_direction_10m', start, hours),
+    cloud: seriesOf(h, 'cloud_cover', start, hours),
+    rain: seriesOf(h, 'precipitation', start, hours),
+    wave: seriesOf(mh, 'wave_height', mStart, hours),
+    waterTemp: seriesOf(mh, 'sea_surface_temperature', mStart, hours),
+    pressure: seriesOf(h, 'pressure_msl', Math.max(start - 3, 0), hours + 3),
+    sunrise: sunTimes('sunrise'),
+    sunset: sunTimes('sunset')
   };
 }
 

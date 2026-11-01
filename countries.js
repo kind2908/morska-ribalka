@@ -1,8 +1,5 @@
 // Страны, города (районы) с точками, часовой пояс, правила рыбалки.
 // Названия мест: ru, en (латиница), loc (на языке страны).
-const BLACK_SEA_FISH = new Set(['Любая рыба (общий сезон)', 'Сибас', 'Луфарь', 'Пеламида', 'Кальмар', 'Сарган', 'Скумбрия',
-  'Кефаль', 'Барабуля', 'Горбыль тёмный', 'Ставрида', 'Анчоус', 'Сардина', 'Морской петух (тригла)', 'Морской дракон',
-  'Скорпена чёрная', 'Морской язык (морская камбала)', 'Каракатица']);
 
 const ME_REGIONS = [
   { key: 'Херцег-Нови', ru: 'Херцег-Нови', en: 'Herceg Novi', loc: 'Herceg Novi', pts: [[42.4490, 18.5685], [42.4300, 18.5550], [42.2785, 18.4673]] },
@@ -179,42 +176,6 @@ const COUNTRIES = [
       ['Источники: решение № 6 от 11.04.2022 (FAOLEX), fishingworldguide.com. Порядок оформления на e-Albania менялся, проверяйте на сайте.',
        'Sources: Decision No. 6 of 11 April 2022 (FAOLEX), fishingworldguide.com. The e-Albania procedure has changed over time, so check the site.',
        'Izvori: Odluka br. 6 od 11. travnja 2022. (FAOLEX), fishingworldguide.com. Postupak na e-Albania se mijenjao, provjerite na stranici.']
-    ]
-  },
-  {
-    code: 'BG', name: ['Болгария', 'Bulgaria', 'Bugarska'], native: 'България', lang: 'bg', tz: 'Europe/Sofia',
-    sea: ['Чёрное море', 'Black Sea', 'Crno more'], fishFilter: BLACK_SEA_FISH, noLionfish: true,
-    authority: ['Исполнительное агентство по рыболовству и аквакультуре Болгарии (ИАРА)', 'the Bulgarian Executive Agency for Fisheries and Aquaculture (EAFA)', 'Izvršna agencija za ribarstvo i akvakulturu Bugarske (IARA)'],
-    regions: [
-      { key: 'Балчик', ru: 'Балчик', en: 'Balchik', loc: 'Балчик', pts: [[43.4000, 28.1700], [43.4100, 28.2000], [43.4200, 28.3200]] },
-      { key: 'Варна', ru: 'Варна', en: 'Varna', loc: 'Варна', pts: [[43.2000, 27.9400], [43.1900, 27.9800], [43.2000, 28.1000]] },
-      { key: 'Несебр', ru: 'Несебр', en: 'Nessebar', loc: 'Несебър', pts: [[42.6600, 27.7350], [42.6600, 27.7700], [42.6600, 27.9000]] },
-      { key: 'Бургас', ru: 'Бургас', en: 'Burgas', loc: 'Бургас', pts: [[42.4800, 27.4800], [42.4800, 27.5400], [42.4800, 27.7000]] },
-      { key: 'Созопол', ru: 'Созопол', en: 'Sozopol', loc: 'Созопол', pts: [[42.4200, 27.6950], [42.4200, 27.7300], [42.4000, 27.8500]] }
-    ],
-    rules: [
-      ['Для любительской рыбалки в Чёрном море отдельное разрешение, по доступным данным, не требуется. Продавать улов нельзя. Уточните в ИАРА, так как порядок менялся.',
-       'According to available information, recreational fishing in the Black Sea does not need a separate permit. Selling the catch is forbidden. Check with EAFA, as the rules have changed.',
-       'Prema dostupnim podacima, za rekreacijski ribolov u Crnom moru nije potrebna posebna dozvola. Prodaja ulova je zabranjena. Provjerite u IARA jer su se pravila mijenjala.'],
-      ['Разрешены удочки и ручные лески. Сети, электричество, взрывчатка и акваланг запрещены. Ориентировочный суточный лимит около 3 кг на человека или одна крупная рыба. Это данные из обзора, не официальный источник.',
-       'Rods and handlines are allowed. Nets, electricity, explosives and scuba are prohibited. A rough daily limit is about 3 kg per person or one large fish. This comes from a review, not an official source.',
-       'Dopušteni su štapovi i ručne panule. Mreže, struja, eksploziv i autonomni aparat su zabranjeni. Okvirno dnevno ograničenje je oko 3 kg po osobi ili jedna velika riba. Podatak je iz pregleda, a ne iz službenog izvora.'],
-      ['Калкан (тюрбо): полный запрет, включая хранение на борту, с 15 апреля по 15 июня (даты 2026 года, меняются ежегодно). Для бычков запрет сетей с 15 апреля по 15 мая.',
-       'Turbot: full ban, including keeping it on board, from 15 April to 15 June (2026 dates; they change every year). Net ban for gobies from 15 April to 15 May.',
-       'Kalkan (turbot): potpuna zabrana, uključujući držanje na plovilu, od 15. travnja do 15. lipnja (datumi za 2026., mijenjaju se svake godine). Zabrana mreža za glavoče od 15. travnja do 15. svibnja.'],
-      ['Подводная охота: надёжных сведений я не нашёл. Уточните в ИАРА, прежде чем нырять с ружьём.',
-       'Spearfishing: I did not find reliable information. Ask EAFA before diving with a speargun.',
-       'Podvodni ribolov: nisam našao pouzdane podatke. Provjerite kod IARA prije ronjenja s puškom.'],
-      ['Охраняемые виды (в том числе дельфины, осетровые) нельзя оставлять себе, отпускайте сразу. Минимальные размеры ЕС и правила для Чёрного моря действуют, проверяйте их по виду.',
-       'Protected species (including dolphins and sturgeons) must not be kept, release them at once. EU minimum sizes and Black Sea rules apply; check them per species.',
-       'Zaštićene vrste (uključujući dupine i jesetre) ne smiju se zadržati, pustite ih odmah. Vrijede minimalne veličine EU i pravila za Crno more; provjerite ih po vrsti.'],
-      ['Безопасность: экстренный номер 112. Берите жилет, телефон и сообщайте близким, куда идёте.',
-       'Safety: emergency number 112. Take a life jacket and a phone and tell someone where you are going.',
-       'Sigurnost: broj hitnih službi 112. Ponesite prsluk i telefon i javite bliskima kamo idete.'],
-      DISCLAIMER,
-      ['Источники: BTA (запрет на лов, апрель 2026), fishingworldguide.com, ИАРА. Для Болгарии я нашёл меньше официальных данных, чем для других стран.',
-       'Sources: BTA (spawning ban, April 2026), fishingworldguide.com, EAFA. I found less official information for Bulgaria than for the other countries.',
-       'Izvori: BTA (zabrana ribolova, travanj 2026.), fishingworldguide.com, IARA. Za Bugarsku sam našao manje službenih podataka nego za ostale zemlje.']
     ]
   },
   {

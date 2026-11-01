@@ -536,7 +536,7 @@ function gpsText(S) {
 function renderCountryPicker(S, A) {
   const out = [];
   out.push(h('h2', { class: 'page' }, 'Выберите страну · Choose your country'));
-  out.push(small('Odaberite zemlju · Scegli il paese · Επιλέξτε χώρα · Zgjidhni shtetin · Изберете държава · Izberite državo'));
+  out.push(small('Odaberite zemlju · Scegli il paese · Επιλέξτε χώρα · Zgjidhni shtetin · Izberite državo'));
   Country.all.forEach(c => {
     out.push(h('button', { class: 'country', type: 'button', onclick: () => A.setCountry(c.code, true) },
       h('span', { class: 'cc' }, c.code),

@@ -7,7 +7,6 @@ const LANGS = [
   { code: 'it', label: 'Italiano' },
   { code: 'el', label: 'Ελληνικά' },
   { code: 'sq', label: 'Shqip' },
-  { code: 'bg', label: 'Български' },
   { code: 'sl', label: 'Slovenščina' }
 ];
 // Словари для новых языков: TRX[язык][русская строка] = перевод (файлы trx-*.js)
@@ -102,7 +101,15 @@ function spotLabel(name) {
   }
 }
 
+// Названия вида на языке интерфейса: сначала основное, дальше ходовые. Для ru и en их нет.
+function fishNames(key) {
+  const n = window.SITE_DATA && SITE_DATA.names[key];
+  return n ? n[Lang.current] : null;
+}
+
 function fishLabel(name) {
+  const names = fishNames(name);
+  if (names && names.length) return names[0];
   const l = DATA.fishLabels[name];
   return l ? t3(l) : name;
 }

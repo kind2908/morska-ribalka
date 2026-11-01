@@ -122,7 +122,29 @@ function recipeBlock(S, fkey, r, idx, rerender) {
   return box;
 }
 
-const libTitle = f => (f.en ? tr(f.key, f.en, f.sr || f.en) : fishLabel(f.key));
+const libTitle = f => {
+  const names = fishNames(f.key);
+  if (names && names.length) return names.length > 1 ? `${names[0]} (${names[1]})` : names[0];
+  return f.en ? tr(f.key, f.en, f.sr || f.en) : fishLabel(f.key);
+};
+
+// Виды, у которых в общем поле rule лежит предупреждение о безопасности, а не норма закона
+const safetyRuleKeys = new Set(['Скорпена чёрная', 'Скорпена красная', 'Морской дракон', 'Морской угорь', 'Мурена', 'Рыба-лев (крылатка)']);
+
+const sizeText = s => (Lang.current !== 'ru' ? s
+  : s.replace(' cm', ' см').replace(' mm', ' мм').replace(' kg', ' кг').replace(' g', ' г'));
+
+// Текст правил вида для выбранной страны: размер, запрет, примечание, безопасность
+function fishRuleText(f, code) {
+  const byCountry = SITE_DATA.fish[code] || {};
+  const r = byCountry[f.key];
+  const parts = [];
+  if (r && r.min) parts.push(tr('Минимальный размер', 'Minimum size', 'Minimalna veličina') + ' ' + sizeText(r.min) + ' (' + r.src + ').');
+  if (r && r.closed) parts.push(tr('Запрет ловли', 'Closed season', 'Lovostaj') + ': ' + r.closed + '.');
+  if (r && r.note) parts.push(t3(SITE_DATA.notes[r.note]));
+  if (safetyRuleKeys.has(f.key)) parts.push(t3(f.rule));
+  return parts.join(' ');
+}
 
 function renderLibrary(S, rerender) {
   const groups = [
@@ -161,7 +183,7 @@ function renderLibrary(S, rerender) {
         c.appendChild(infoRow(tr('Наживка и приманки', 'Bait and lures', 'Mamci i varalice'), t3(f.bait)));
         c.appendChild(infoRow(tr('Часы активности', 'Active hours', 'Aktivni sati'), t3(f.hours)));
         c.appendChild(infoRow(tr('Сезон', 'Season', 'Sezona'), t3(f.season)));
-        c.appendChild(infoRow(tr('Правила', 'Rules', 'Pravila'), t3(f.rule)));
+        c.appendChild(infoRow(tr('Правила', 'Rules', 'Pravila'), fishRuleText(f, Country.code)));
         const x = window.FISHX && FISHX.sp[f.key];
         if (x) {
           c.appendChild(infoRow(tr('Повадки', 'Habits', 'Navike'), t3(x.habits)));
@@ -178,9 +200,6 @@ function renderLibrary(S, rerender) {
     });
   });
 
-  out.push(small(tr(
-    'Названия по таблице иллюстраций «Рыбы Адриатики» (для других морей список сокращён). Фото загружаются из Википедии (свободные лицензии, авторы указаны на страницах статей) при первом показе. Фото может не совпасть с видом, поэтому ориентируйтесь на латинское название. Если фото не загрузилось, нажмите на серую плашку. Правила для моллюсков и крабов я не проверял и в библиотеку не включил.',
-    'Names follow the “Fish of the Adriatic” illustration table. Photos are loaded from Wikipedia (free licences, authors are listed on the article pages) on first view. A photo may not match the species, so go by the Latin name. If a photo does not load, tap the grey box. I did not check the rules for shellfish and crabs and left them out.',
-    'Nazivi prema tabeli ilustracija „Ribe Jadrana“. Fotografije se učitavaju s Wikipedije (slobodne licence, autori su navedeni na stranicama članaka) pri prvom prikazu. Fotografija se može ne poklapati s vrstom, pa se držite latinskog naziva. Ako se fotografija ne učita, dodirnite sivu pločicu. Pravila za školjke i rakove nisam provjeravao i nisam ih uključio.')));
+  out.push(small(t3(SITE_DATA.footnote)));
   return out;
 }

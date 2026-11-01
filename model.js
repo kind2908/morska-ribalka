@@ -149,7 +149,7 @@ function biteExplain(data, fish, boat) {
 
 // ---------- Условия для рыбака (комфорт и безопасность, это не клёв) ----------
 // Отдельная шкала 1–10: 10 всё спокойно. Клёв от неё не зависит: рыба клюёт и в дождь, но стоять под ливнем и порывами тяжело.
-const comfWindPts = [[0, 0], [6, 0], [8, -0.6], [10, -1.5], [13, -3.0], [16, -5.0], [20, -7.0]];
+const comfWindPts = [[0, 0], [3, 0], [5, -0.8], [7, -2.3], [9, -3.5], [11, -5.0], [12, -6.2], [14, -7.0], [17, -8.0]];
 const comfWavePts = [[0, 0], [0.6, 0], [1.0, -0.8], [1.5, -2.0], [2.0, -3.0], [3.0, -5.0], [4.0, -7.0]];
 const comfRainDayPts = [[0, 0], [2, -0.3], [5, -1.0], [10, -2.0], [20, -3.5], [40, -5.0], [60, -6.0]];
 const comfRainPeakPts = [[0, 0], [1, -0.2], [2.5, -0.8], [4, -1.8], [7.6, -3.5], [10, -5.0]];
@@ -160,7 +160,7 @@ function comfortModel(p) {
   const items = [];
   let cap = 10;
   const w = isNaN_(p.windMs) ? 0 : p.windMs, g = isNaN_(p.gustMs) ? 0 : p.gustMs;
-  const wp = interp(Math.max(w, g * 0.7) * (p.boat ? 1.2 : 1), comfWindPts);
+  const wp = interp(Math.max(w, g * 0.8) * (p.boat ? 1.2 : 1), comfWindPts);
   if (wp < -0.05) items.push([tr('Ветер', 'Wind', 'Vjetar'), trv('{0} км/ч, порывы {1}', '{0} km/h, gusts {1}', '{0} km/h, udari {1}', [f0(w * 3.6), f0(g * 3.6)]), wp]);
   const wave = isNaN_(p.waveM) ? 0 : p.waveM;
   const vp = interp(wave * (p.boat ? 1.4 : 1), comfWavePts);

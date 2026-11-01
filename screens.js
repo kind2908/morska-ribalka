@@ -64,16 +64,18 @@ function renderBite(S, A) {
     const res = (f.future ? hourExplain(f.raw, S.fish, S.boat, f.slot.hourIndex) : null) || biteExplain(d0, S.fish, S.boat);
     const scoreD = res.score, score = Math.round(scoreD);
     const col = scoreColor(score);
-    const today = S.days[0], slotDay = S.days[f.dayIndex];
-    const cm = comfortNow(d, slotDay, S.air, S.boat);
+    const slotDay = S.days[f.dayIndex];
+    const hourIndex = f.future ? f.slot.hourIndex : f.nowHour;
+    const cm = f.raw ? comfortOuting(d, f.raw, hourIndex, slotDay, S.air, S.boat) : comfortNow(d, slotDay, S.air, S.boat);
     const clv = comfortLevel(cm.score), ccol = COMFORT_COLORS[clv];
     const signColor = v => (v > 0.05 ? '#2E9E5B' : v < -0.05 ? '#D9534F' : null);
     const lines = (rows, colorOf) => h('div', { class: 'ilines' }, rows.map(r => {
       const c = colorOf(r[2]);
       return h('div', { class: 'iline' }, h('span', null, r[0]), h('span', { class: 'bold', style: c ? { color: c } : null }, r[1]));
     }));
-    const indicator = (title, score, word, col, rows, colorOf = signColor) => h('div', { class: 'card ind', style: { borderColor: col } },
+    const indicator = (title, score, word, col, rows, colorOf = signColor, note = null) => h('div', { class: 'card ind', style: { borderColor: col } },
       h('h3', null, title),
+      note ? small(note) : null,
       h('div', { class: 'indscore' }, h('span', { class: 'bigscore', style: { color: col } }, f1(score)), h('span', { class: 'of10' }, '/10')),
       h('div', { class: 'indword', style: { color: col } }, word),
       h('div', { class: 'bar' }, h('div', { style: { width: (clamp(score / 10, 0.03, 1) * 100) + '%', background: col } })),
@@ -81,31 +83,31 @@ function renderBite(S, A) {
     wrap.appendChild(h('div', { class: 'indrow' },
       indicator(tr('Клёв', 'Bite', 'Ribolov'), scoreD, scoreWord(score), col, biteTop(res)),
       indicator(tr('Условия для рыбака', 'Conditions for anglers', 'Uslovi za ribolovca'), cm.score, comfortWord(clv), ccol,
-        cm.items.length ? cm.items.map(i => [i[0], i[1], i[2]]) : [[tr('Всё спокойно', 'All calm', 'Sve mirno'), '', 0]], penaltyColor)));
+        cm.items.length ? cm.items.map(i => [i[0], i[1], i[2]]) : [[tr('Всё спокойно', 'All calm', 'Sve mirno'), '', 0]], penaltyColor,
+        f.raw ? trv('На 3 часа с {0}:00', 'For 3 hours from {0}:00', 'Za 3 sata od {0}:00', [pad2(hourIndex % 24)]) : null)));
+
+    let warning = null;
+    if (f.raw) warning = outlookWarning(f.raw, hourIndex, slotDay, S.boat);
+    else if (slotDay) warning = safetyWarning(slotDay.windMax, slotDay.gustMax, slotDay.waveMax, slotDay.rain, slotDay.rainPeakMmH, slotDay.thunder, S.boat);
+    if (warning) wrap.appendChild(h('div', { class: 'warn ' + (warning[0] === 2 ? 'danger' : 'caution') }, warning[1]));
 
     if (slotDay) {
-      // учитываем и порывы на выбранный час, если они выше дневного максимума
-      const w = safetyWarning(slotDay.windMax, Math.max(isNaN_(slotDay.gustMax) ? 0 : slotDay.gustMax, isNaN_(d.gust) ? 0 : d.gust),
-        slotDay.waveMax, slotDay.rain, slotDay.rainPeakMmH, slotDay.thunder, S.boat);
-      if (w) wrap.appendChild(h('div', { class: 'warn ' + (w[0] === 2 ? 'danger' : 'caution') }, w[1]));
-    }
-
-    if (today) {
-      const rc = card(tr('Осадки сегодня', 'Rain today', 'Padavine danas'));
-      const level = rainLevelText(today);
-      if (!level && !today.thunder) {
-        rc.appendChild(h('p', null, tr('Заметных осадков не ожидается.', 'No significant rain expected.', 'Ne očekuju se značajne padavine.')));
-      } else {
-        if (level) {
-          const head = level.charAt(0).toUpperCase() + level.slice(1);
-          const total = f0(today.rain);
-          rc.appendChild(h('p', { class: 'bold' }, trv('{0}, всего за день ≈ {1} мм', '{0}, total for the day ≈ {1} mm', '{0}, ukupno za dan ≈ {1} mm', [head, total])));
-        }
-        if (!today.rainWindows.length && level) rc.appendChild(h('p', null, tr('Основная часть дождя уже прошла.', 'Most of the rain has already passed.', 'Najveći dio kiše je već prošao.')));
-        today.rainWindows.forEach(w2 => rc.appendChild(h('p', null, '☔ ' + rainWindowText(w2))));
-        if (today.thunder) rc.appendChild(h('p', null, tr('⛈ Возможна гроза.', '⛈ Thunderstorm possible.', '⛈ Moguća je grmljavina.')));
+      const isToday = f.dayIndex === 0;
+      const rv = f.raw ? rainView(f.raw, f.dayIndex, isToday ? f.nowHour : 0, slotDay) : slotDay;
+      const rc = card(isToday ? tr('Осадки сегодня', 'Rain today', 'Padavine danas') : tr('Осадки завтра', 'Rain tomorrow', 'Padavine sutra'));
+      const level = rainLevelText(rv);
+      if (level) {
+        const head = level.charAt(0).toUpperCase() + level.slice(1);
+        rc.appendChild(h('p', { class: 'bold' }, trv('{0}, всего ≈ {1} мм', '{0}, total ≈ {1} mm', '{0}, ukupno ≈ {1} mm', [head, f0(rv.rain)])));
       }
-      if (today.rainProbMax >= 0) rc.appendChild(small(trv('Вероятность осадков до {0}%', 'Chance of rain up to {0}%', 'Vjerovatnoća padavina do {0}%', [today.rainProbMax])));
+      if (!rv.rainWindows.length && isToday && rainLevelText(slotDay) && (!level || !f.raw)) {
+        rc.appendChild(h('p', null, tr('Основная часть дождя уже прошла.', 'Most of the rain has already passed.', 'Najveći dio kiše je već prošao.')));
+      } else if (!level && !rv.rainWindows.length && !rv.thunder) {
+        rc.appendChild(h('p', null, tr('Заметных осадков не ожидается.', 'No significant rain expected.', 'Ne očekuju se značajne padavine.')));
+      }
+      rv.rainWindows.forEach(w2 => rc.appendChild(h('p', null, '☔ ' + rainWindowText(w2))));
+      if (rv.thunder) rc.appendChild(h('p', null, tr('⛈ Возможна гроза.', '⛈ Thunderstorm possible.', '⛈ Moguća je grmljavina.')));
+      if (rv.rainProbMax >= 0) rc.appendChild(small(trv('Вероятность осадков до {0}%', 'Chance of rain up to {0}%', 'Vjerovatnoća padavina do {0}%', [rv.rainProbMax])));
       wrap.appendChild(rc);
     }
 

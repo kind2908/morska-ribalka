@@ -113,7 +113,7 @@ const HOURLY_DAYS = 5;
 async function loadHourly(spot) {
   const root = await getJson(
     `https://api.open-meteo.com/v1/forecast?latitude=${spot.lat}&longitude=${spot.lon}` +
-    `&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,cloud_cover,precipitation,pressure_msl` +
+    `&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,cloud_cover,precipitation,precipitation_probability,weather_code,pressure_msl` +
     `&daily=sunrise,sunset&past_days=1&forecast_days=${HOURLY_DAYS}&wind_speed_unit=ms&timezone=${TZ}`);
   const h = root.hourly;
   // первый элемент это вчера; оставляем только время
@@ -139,6 +139,8 @@ async function loadHourly(spot) {
     windDir: seriesOf(h, 'wind_direction_10m', start, hours),
     cloud: seriesOf(h, 'cloud_cover', start, hours),
     rain: seriesOf(h, 'precipitation', start, hours),
+    prob: seriesOf(h, 'precipitation_probability', start, hours),
+    code: seriesOf(h, 'weather_code', start, hours),
     wave: seriesOf(mh, 'wave_height', mStart, hours),
     waterTemp: seriesOf(mh, 'sea_surface_temperature', mStart, hours),
     pressure: seriesOf(h, 'pressure_msl', Math.max(start - 3, 0), hours + 3),
@@ -167,7 +169,8 @@ function rainWindowsFor(hourly, dayIndex, fromHour) {
     start = -1; last = -1; sum = 0; peak = 0;
   };
   for (let h = 0; h <= 23; h++) {
-    const raw = hourly[dayIndex * 24 + h];
+    // Open-Meteo пишет осадки на конец часа: дождь с h до h+1 лежит в следующей ячейке
+    const raw = hourly[dayIndex * 24 + h + 1];
     const v = raw == null ? 0 : raw;
     if (v >= 0.2) {
       if (start < 0) start = h;

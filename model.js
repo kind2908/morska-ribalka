@@ -152,10 +152,12 @@ function biteExplain(data, fish, boat) {
 const comfWindPts = [[0, 0], [3, 0], [5, -0.8], [7, -2.3], [9, -3.5], [11, -5.0], [12, -6.2], [14, -7.0], [17, -8.0]];
 const comfWavePts = [[0, 0], [0.6, 0], [1.0, -0.8], [1.5, -2.0], [2.0, -3.0], [3.0, -5.0], [4.0, -7.0]];
 const comfRainDayPts = [[0, 0], [2, -0.3], [5, -1.0], [10, -2.0], [20, -3.5], [40, -5.0], [60, -6.0]];
+const comfRainOutingPts = [[0, 0], [1, -0.5], [3, -1.5], [6, -2.5], [10, -3.5], [20, -5.0], [30, -6.0]];
 const comfRainPeakPts = [[0, 0], [1, -0.2], [2.5, -0.8], [4, -1.8], [7.6, -3.5], [10, -5.0]];
 const comfTempPts = [[-5, -4.0], [0, -3.0], [5, -1.5], [10, -0.5], [14, 0], [31, 0], [35, -1.0], [39, -2.5]];
 
-// p: { windMs, gustMs, waveM, rainMm, rainPeakMmH, thunder, snow, feelsC, boat }
+// p: { windMs, gustMs, waveM, rainMm, rainPeakMmH, thunder, snow, feelsC, boat, rainOuting }
+// rainOuting: rainMm это сумма за выход на 3 часа, а не за день
 function comfortModel(p) {
   const items = [];
   let cap = 10;
@@ -166,8 +168,10 @@ function comfortModel(p) {
   const vp = interp(wave * (p.boat ? 1.4 : 1), comfWavePts);
   if (vp < -0.05) items.push([tr('Волна', 'Waves', 'Talasi'), `${f1(wave)} ${U.m()}`, vp]);
   const rain = isNaN_(p.rainMm) ? 0 : p.rainMm, peak = isNaN_(p.rainPeakMmH) ? 0 : p.rainPeakMmH;
-  const rp = Math.min(interp(rain, comfRainDayPts), interp(peak, comfRainPeakPts));
-  if (rp < -0.05) items.push([tr('Дождь', 'Rain', 'Kiša'), trv('{0} мм за день', '{0} mm per day', '{0} mm za dan', [f0(rain)]), rp]);
+  const rp = Math.min(interp(rain, p.rainOuting ? comfRainOutingPts : comfRainDayPts), interp(peak, comfRainPeakPts));
+  if (rp < -0.05) items.push([tr('Дождь', 'Rain', 'Kiša'), p.rainOuting
+    ? trv('{0} мм за 3 ч', '{0} mm in 3 h', '{0} mm za 3 h', [f1(rain)])
+    : trv('{0} мм за день', '{0} mm per day', '{0} mm za dan', [f0(rain)]), rp]);
   if (p.thunder) { items.push([tr('Гроза', 'Thunderstorm', 'Grmljavina'), tr('возможна', 'possible', 'moguća'), -6.0]); cap = Math.min(cap, 3.0); }
   if (p.snow) { items.push([tr('Снег', 'Snow', 'Snijeg'), tr('возможен', 'possible', 'moguć'), -4.0]); cap = Math.min(cap, 4.5); }
   if (!isNaN_(p.feelsC)) {
@@ -193,7 +197,43 @@ function comfortWord(level) {
     tr('Неприятно', 'Unpleasant', 'Neugodno'), tr('Опасно', 'Dangerous', 'Opasno')][level];
 }
 
-// Условия «сейчас и сегодня»: берём худшее из текущих значений и суточных максимумов
+const OUTING_HOURS = 3;
+const hourVal = (a, i) => { const v = a ? a[i] : null; return v == null || Number.isNaN(v) ? 0 : v; };
+
+// Гроза и снег по часовым кодам погоды; если кодов нет, берём значения за день
+function weatherFlags(raw, from, to, day) {
+  const codes = [];
+  for (let i = from; i <= to; i++) {
+    const c = raw.code ? raw.code[i] : null;
+    if (c != null && !Number.isNaN(c)) codes.push(c);
+  }
+  if (!codes.length) return { thunder: !!(day && day.thunder), snow: !!(day && day.snow) };
+  return {
+    thunder: codes.some(c => c >= 95 && c <= 99),
+    snow: codes.some(c => (c >= 71 && c <= 77) || c === 85 || c === 86)
+  };
+}
+
+// Условия на выход: худшее за 3 часа начиная с выбранного часа. Что было раньше и что будет позже, на оценку не влияет.
+// Open-Meteo пишет осадки на конец часа, поэтому дождь первого часа лежит в hourIndex + 1.
+function comfortOuting(d, raw, hourIndex, day, air, boat) {
+  const nz = v => (isNaN_(v) ? 0 : v);
+  let wind = nz(d.wind), gust = nz(d.gust), wave = nz(d.waveHeight), rain = 0, peak = 0;
+  for (let k = 0; k <= OUTING_HOURS; k++) {
+    const i = hourIndex + k;
+    wind = Math.max(wind, hourVal(raw.wind, i));
+    gust = Math.max(gust, hourVal(raw.gust, i));
+    wave = Math.max(wave, hourVal(raw.wave, i));
+    if (k > 0) { const v = hourVal(raw.rain, i); rain += v; peak = Math.max(peak, v); }
+  }
+  const flags = weatherFlags(raw, hourIndex, hourIndex + OUTING_HOURS, day);
+  return comfortModel({
+    windMs: wind, gustMs: gust, waveM: wave, rainMm: rain, rainPeakMmH: peak, rainOuting: true,
+    thunder: flags.thunder, snow: flags.snow, feelsC: air && air.now ? air.now.feels : NaN, boat
+  });
+}
+
+// Условия, пока часовые данные не загрузились: худшее из текущих значений и суточных максимумов
 function comfortNow(d, today, air, boat) {
   const nz = v => (isNaN_(v) ? 0 : v);
   return comfortModel({
@@ -215,8 +255,8 @@ function biteTop(res) {
 }
 
 // ---------- Предупреждение о непогоде ----------
-// Возвращает null или [уровень (1 осторожно, 2 опасно), текст]
-function safetyWarning(windMax, gustMax, waveMax, rainMm, rainPeakMmH, thunder, boat) {
+// Возвращает null или [уровень (1 осторожно, 2 опасно), текст]; peakAt: когда пик, для предупреждения на 24 часа вперёд
+function safetyWarning(windMax, gustMax, waveMax, rainMm, rainPeakMmH, thunder, boat, peakAt) {
   const wind = isNaN_(windMax) ? 0 : windMax;
   const gust = isNaN_(gustMax) ? 0 : gustMax;
   const wave = isNaN_(waveMax) ? 0 : waveMax;
@@ -237,16 +277,75 @@ function safetyWarning(windMax, gustMax, waveMax, rainMm, rainPeakMmH, thunder, 
   const reasons = [];
   if (thunder) reasons.push(tr('гроза', 'thunderstorm', 'grmljavina'));
   if (rainDanger) reasons.push(tr('ливень', 'downpour', 'pljusak'));
-  else if (rainCaution) reasons.push(tr('сильный дождь', 'heavy rain', 'jaka kiša'));
+  else if (peak >= 4.0) reasons.push(tr('сильный дождь', 'heavy rain', 'jaka kiša'));
+  else if (rainCaution) reasons.push(tr('дождь', 'rain', 'kiša'));
   if (windDanger || windCaution) {
     reasons.push(boat ? tr('сильный ветер', 'strong wind', 'jak vjetar') : tr('порывистый ветер', 'gusty wind', 'udarni vjetar'));
   }
   if (waveDanger || waveCaution) reasons.push(tr('высокая волна', 'high waves', 'visoki talasi'));
 
   const w = f0(wind * 3.6), g = f0(gust * 3.6), wv = f1(wave), r = f0(rain), p = f1(peak);
-  const details = trv('Максимум за день: ветер {0} км/ч, порывы {1} км/ч, волна {2} м, осадки {3} мм (до {4} мм/ч).', 'Daily maximum: wind {0} km/h, gusts {1} km/h, waves {2} m, rain {3} mm (up to {4} mm/h).', 'Dnevni maksimum: vjetar {0} km/h, udari {1} km/h, talasi {2} m, padavine {3} mm (do {4} mm/h).', [w, g, wv, r, p]);
+  const details = peakAt
+    ? trv('Пик: {0}. Ветер {1} км/ч, порывы {2} км/ч, волна {3} м, осадки за 24 ч {4} мм (до {5} мм/ч).', 'Peak: {0}. Wind {1} km/h, gusts {2} km/h, waves {3} m, rain in 24 h {4} mm (up to {5} mm/h).', 'Vrhunac: {0}. Vjetar {1} km/h, udari {2} km/h, talasi {3} m, padavine za 24 h {4} mm (do {5} mm/h).', [peakAt, w, g, wv, r, p])
+    : trv('Максимум за день: ветер {0} км/ч, порывы {1} км/ч, волна {2} м, осадки {3} мм (до {4} мм/ч).', 'Daily maximum: wind {0} km/h, gusts {1} km/h, waves {2} m, rain {3} mm (up to {4} mm/h).', 'Dnevni maksimum: vjetar {0} km/h, udari {1} km/h, talasi {2} m, padavine {3} mm (do {4} mm/h).', [w, g, wv, r, p]);
   const head = danger ? tr('⚠ Опасно: ', '⚠ Dangerous: ', '⚠ Opasno: ') : tr('⚠ Осторожно: ', '⚠ Caution: ', '⚠ Oprez: ');
   return [danger ? 2 : 1, head + reasons.join(', ') + '. ' + details];
+}
+
+// Предупреждение на 24 часа от выбранного часа: с указанием дня и времени пика
+function outlookWarning(raw, hourIndex, day, boat) {
+  const end = Math.min(hourIndex + 24, raw.wind.length - 1);
+  let wind = 0, gust = 0, gustI = hourIndex, wave = 0, waveI = hourIndex, rain = 0, peak = 0, peakI = hourIndex, thunderI = -1;
+  for (let i = hourIndex; i <= end; i++) {
+    wind = Math.max(wind, hourVal(raw.wind, i));
+    if (hourVal(raw.gust, i) > gust) { gust = hourVal(raw.gust, i); gustI = i; }
+    if (hourVal(raw.wave, i) > wave) { wave = hourVal(raw.wave, i); waveI = i; }
+    if (i > hourIndex) {
+      const v = hourVal(raw.rain, i);
+      rain += v;
+      if (v > peak) { peak = v; peakI = i - 1; }   // на конец часа, сам дождь на час раньше
+    }
+    if (thunderI < 0 && raw.code && raw.code[i] >= 95 && raw.code[i] <= 99) thunderI = i;
+  }
+  const thunder = weatherFlags(raw, hourIndex, end, day).thunder;
+  // время пика берём по главной причине предупреждения
+  const windLevel = safetyWarning(wind, gust, 0, 0, 0, false, boat);
+  const waveLevel = safetyWarning(0, 0, wave, 0, 0, false, boat);
+  const rainLevel = safetyWarning(0, 0, 0, rain, peak, false, boat);
+  const levelOf = x => (x ? x[0] : 0);
+  const top = Math.max(levelOf(windLevel), levelOf(waveLevel), levelOf(rainLevel));
+  const at = thunderI >= 0 ? thunderI : levelOf(windLevel) === top ? gustI : levelOf(waveLevel) === top ? waveI : peakI;
+  const peakAt = `${dayLabel(addDays(raw.date, Math.floor(at / 24)))}, ${pad2(at % 24)}:00`;
+  return safetyWarning(wind, gust, wave, rain, peak, thunder, boat, peakAt);
+}
+
+// Осадки выбранного дня для карточки: только оставшиеся часы, а дождь, идущий через полночь, показываем до конца.
+// Open-Meteo пишет осадки и вероятность на конец часа, поэтому час i это значения raw.rain[i + 1].
+function rainView(raw, dayIndex, fromHour, day) {
+  const from = dayIndex * 24 + fromHour, dayEnd = (dayIndex + 1) * 24;
+  let end = dayEnd;
+  while (end < dayEnd + 12 && hourVal(raw.rain, end + 1) >= 0.2) end++;
+  const windows = [];
+  let start = -1, last = -1, sum = 0, wPeak = 0, rain = 0, peak = 0, prob = -1;
+  const close = () => {
+    if (start >= 0 && sum >= 0.5) windows.push({ fromHour: start % 24, toHour: (last + 1) % 24, mm: sum, peakMmH: wPeak });
+    start = -1; last = -1; sum = 0; wPeak = 0;
+  };
+  for (let i = from; i < end; i++) {
+    const v = hourVal(raw.rain, i + 1);
+    rain += v; peak = Math.max(peak, v);
+    const pr = raw.prob ? raw.prob[i + 1] : null;
+    if (pr != null && !Number.isNaN(pr)) prob = Math.max(prob, pr);
+    if (v >= 0.2) {
+      if (start < 0) start = i;
+      last = i; sum += v; wPeak = Math.max(wPeak, v);
+    } else if (start >= 0 && i - last > 1) close();
+  }
+  close();
+  return Object.assign({}, day, {
+    rain, rainPeakMmH: peak, rainWindows: windows, rainProbMax: prob,
+    thunder: weatherFlags(raw, from, end, day).thunder
+  });
 }
 
 // ---------- Лучшие часы ----------

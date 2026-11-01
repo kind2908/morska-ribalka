@@ -183,6 +183,11 @@ function comfortModel(p) {
 // 0 зелёный, 1 жёлтый, 2 оранжевый, 3 красный
 function comfortLevel(score) { return score >= 8 ? 0 : score >= 6 ? 1 : score >= 4 ? 2 : 3; }
 const COMFORT_COLORS = ['#2E9E5B', '#E0B000', '#F0841C', '#D9534F'];
+// Цвет строки по силе штрафа: мелкий штраф не красим, иначе он выглядит как тревога
+function penaltyColor(p) {
+  if (p > -0.5) return null;
+  return COMFORT_COLORS[p > -2 ? 1 : p >= -4 ? 2 : 3];
+}
 function comfortWord(level) {
   return [tr('Комфортно', 'Comfortable', 'Udobno'), tr('Терпимо', 'Tolerable', 'Podnošljivo'),
     tr('Неприятно', 'Unpleasant', 'Neugodno'), tr('Опасно', 'Dangerous', 'Opasno')][level];

@@ -67,18 +67,21 @@ function renderBite(S, A) {
     const today = S.days[0], slotDay = S.days[f.dayIndex];
     const cm = comfortNow(d, slotDay, S.air, S.boat);
     const clv = comfortLevel(cm.score), ccol = COMFORT_COLORS[clv];
-    const lines = rows => h('div', { class: 'ilines' }, rows.map(r =>
-      h('div', { class: 'iline' }, h('span', null, r[0]), h('span', { class: 'bold', style: r[2] > 0.05 ? { color: '#2E9E5B' } : r[2] < -0.05 ? { color: '#D9534F' } : null }, r[1]))));
-    const indicator = (title, score, word, col, rows) => h('div', { class: 'card ind', style: { borderColor: col } },
+    const signColor = v => (v > 0.05 ? '#2E9E5B' : v < -0.05 ? '#D9534F' : null);
+    const lines = (rows, colorOf) => h('div', { class: 'ilines' }, rows.map(r => {
+      const c = colorOf(r[2]);
+      return h('div', { class: 'iline' }, h('span', null, r[0]), h('span', { class: 'bold', style: c ? { color: c } : null }, r[1]));
+    }));
+    const indicator = (title, score, word, col, rows, colorOf = signColor) => h('div', { class: 'card ind', style: { borderColor: col } },
       h('h3', null, title),
       h('div', { class: 'indscore' }, h('span', { class: 'bigscore', style: { color: col } }, f1(score)), h('span', { class: 'of10' }, '/10')),
       h('div', { class: 'indword', style: { color: col } }, word),
       h('div', { class: 'bar' }, h('div', { style: { width: (clamp(score / 10, 0.03, 1) * 100) + '%', background: col } })),
-      lines(rows));
+      lines(rows, colorOf));
     wrap.appendChild(h('div', { class: 'indrow' },
       indicator(tr('Клёв', 'Bite', 'Ribolov'), scoreD, scoreWord(score), col, biteTop(res)),
       indicator(tr('Условия для рыбака', 'Conditions for anglers', 'Uslovi za ribolovca'), cm.score, comfortWord(clv), ccol,
-        cm.items.length ? cm.items.map(i => [i[0], i[1], i[2]]) : [[tr('Всё спокойно', 'All calm', 'Sve mirno'), '', 0]])));
+        cm.items.length ? cm.items.map(i => [i[0], i[1], i[2]]) : [[tr('Всё спокойно', 'All calm', 'Sve mirno'), '', 0]], penaltyColor)));
 
     if (slotDay) {
       // учитываем и порывы на выбранный час, если они выше дневного максимума

@@ -101,7 +101,7 @@ function spotLabel(name) {
   }
 }
 
-// Названия вида на языке интерфейса: сначала основное, дальше ходовые. Для ru и en их нет.
+// Названия вида на языке интерфейса: сначала основное, дальше ходовые. Для en их нет, для ru только там, где ключ неточен.
 function fishNames(key) {
   const n = window.SITE_DATA && SITE_DATA.names[key];
   return n ? n[Lang.current] : null;

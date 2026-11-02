@@ -1,14 +1,14 @@
 {
-  "versionCode": 11,
-  "versionName": "1.5.4",
+  "versionCode": 12,
+  "versionName": "1.5.5",
   "url": "https://kind2908.github.io/morska-ribalka/app-release.apk",
-  "note": "RU: Условия для рыбака теперь считаются на 3 часа от выбранного времени, предупреждение показывает день и час пика, а осадки идут по выбранному дню. Красным выделено только то, что действительно мешает.\nEN: Angler conditions now cover 3 hours from the selected time, the warning shows the day and hour of the peak, and rain follows the selected day. Red marks only what really gets in the way.\nSR/HR: Uslovi za ribolovca sada se računaju za 3 sata od izabranog vremena, upozorenje pokazuje dan i sat vrhunca, a padavine prate izabrani dan. Crveno je samo ono što zaista smeta.\nIT: Le condizioni per il pescatore ora valgono per 3 ore dall'orario scelto, l'avviso indica giorno e ora del picco e le precipitazioni seguono il giorno scelto. In rosso solo ciò che disturba davvero.\nEL: Οι συνθήκες για τον ψαρά υπολογίζονται πλέον για 3 ώρες από την επιλεγμένη ώρα, η προειδοποίηση δείχνει ημέρα και ώρα κορύφωσης και οι βροχοπτώσεις ακολουθούν την επιλεγμένη ημέρα. Κόκκινο μόνο ό,τι πραγματικά ενοχλεί.\nSQ: Kushtet për peshkatarin tani llogariten për 3 orë nga koha e zgjedhur, paralajmërimi tregon ditën dhe orën e kulmit, ndërsa reshjet ndjekin ditën e zgjedhur. E kuqe vetëm ajo që pengon vërtet.\nSL: Razmere za ribiča se zdaj računajo za 3 ure od izbranega časa, opozorilo kaže dan in uro vrha, padavine pa sledijo izbranemu dnevu. Rdeče je le tisto, kar res moti.",
-  "note_ru": "Условия для рыбака теперь считаются на 3 часа от выбранного времени, предупреждение показывает день и час пика, а осадки идут по выбранному дню. Красным выделено только то, что действительно мешает.",
-  "note_en": "Angler conditions now cover 3 hours from the selected time, the warning shows the day and hour of the peak, and rain follows the selected day. Red marks only what really gets in the way.",
-  "note_sr": "Uslovi za ribolovca sada se računaju za 3 sata od izabranog vremena, upozorenje pokazuje dan i sat vrhunca, a padavine prate izabrani dan. Crveno je samo ono što zaista smeta.",
-  "note_hr": "Uvjeti za ribolovca sada se računaju za 3 sata od odabranog vremena, upozorenje pokazuje dan i sat vrhunca, a padaline prate odabrani dan. Crveno je samo ono što zaista smeta.",
-  "note_it": "Le condizioni per il pescatore ora valgono per 3 ore dall'orario scelto, l'avviso indica giorno e ora del picco e le precipitazioni seguono il giorno scelto. In rosso solo ciò che disturba davvero.",
-  "note_el": "Οι συνθήκες για τον ψαρά υπολογίζονται πλέον για 3 ώρες από την επιλεγμένη ώρα, η προειδοποίηση δείχνει ημέρα και ώρα κορύφωσης και οι βροχοπτώσεις ακολουθούν την επιλεγμένη ημέρα. Κόκκινο μόνο ό,τι πραγματικά ενοχλεί.",
-  "note_sq": "Kushtet për peshkatarin tani llogariten për 3 orë nga koha e zgjedhur, paralajmërimi tregon ditën dhe orën e kulmit, ndërsa reshjet ndjekin ditën e zgjedhur. E kuqe vetëm ajo që pengon vërtet.",
-  "note_sl": "Razmere za ribiča se zdaj računajo za 3 ure od izbranega časa, opozorilo kaže dan in uro vrha, padavine pa sledijo izbranemu dnevu. Rdeče je le tisto, kar res moti."
+  "note": "RU: Обновлены законы Италии и Греции по официальным источникам. В библиотеке 14 новых видов, в том числе ядовитый иглобрюх, групер и меч-рыба.\nEN: The rules for Italy and Greece are updated from official sources. The library has 14 new species, including the poisonous pufferfish, grouper and swordfish.\nSR: Pravila za Italiju i Grčku ažurirana su prema zvaničnim izvorima. U biblioteci je 14 novih vrsta, među njima otrovna napuhača, kernja i sabljarka.",
+  "note_ru": "Обновлены законы Италии и Греции по официальным источникам. В библиотеке 14 новых видов, в том числе ядовитый иглобрюх, групер и меч-рыба.",
+  "note_en": "The rules for Italy and Greece are updated from official sources. The library has 14 new species, including the poisonous pufferfish, grouper and swordfish.",
+  "note_sr": "Pravila za Italiju i Grčku ažurirana su prema zvaničnim izvorima. U biblioteci je 14 novih vrsta, među njima otrovna napuhača, kernja i sabljarka.",
+  "note_hr": "Pravila za Italiju i Grčku ažurirana su prema službenim izvorima. U knjižnici je 14 novih vrsta, među njima otrovna napuhača, kirnja i iglun.",
+  "note_it": "Le regole di Italia e Grecia sono aggiornate secondo le fonti ufficiali. Nella libreria ci sono 14 nuove specie, tra cui il velenoso pesce palla, la cernia e il pesce spada.",
+  "note_el": "Οι κανόνες για Ιταλία και Ελλάδα ενημερώθηκαν από επίσημες πηγές. Στη βιβλιοθήκη υπάρχουν 14 νέα είδη, ανάμεσά τους ο δηλητηριώδης λαγοκέφαλος, ο ροφός και ο ξιφίας.",
+  "note_sq": "Rregullat për Italinë dhe Greqinë u përditësuan nga burimet zyrtare. Në bibliotekë ka 14 lloje të reja, mes tyre peshku balonë helmues, kerri dhe peshku shtizë.",
+  "note_sl": "Pravila za Italijo in Grčijo so posodobljena po uradnih virih. V knjižnici je 14 novih vrst, med njimi strupena napihovalka, kirnja in mečarica."
 }

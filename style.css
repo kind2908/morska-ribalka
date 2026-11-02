@@ -206,3 +206,4 @@ body.picking #tabs{display:none}
 @media (max-width: 340px) { .indrow { grid-template-columns: 1fr; } }
 .iline { flex-wrap: wrap; }
 .iline span:last-child { text-align: right; margin-left: auto; }
+.err { color: #D9534F; }

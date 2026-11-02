@@ -5,17 +5,69 @@ const Diary = {
     return Array.isArray(list) ? list : [];
   },
   save(list) { Store.set('diary', list); },
-  add(entry) { const l = this.load(); l.unshift(entry); this.save(l); },
+  add(entry) { const l = this.load(); l.unshift(entry); this.save(sortEntries(l)); },
   update(id, patch) {
     const l = this.load();
     const i = l.findIndex(e => e.id === id);
-    if (i >= 0) { l[i] = Object.assign({}, l[i], patch); this.save(l); }
+    if (i >= 0) { l[i] = Object.assign({}, l[i], patch); this.save(sortEntries(l)); }
   },
   remove(id) {
     this.save(this.load().filter(e => e.id !== id));
     Photos.del(id);
   }
 };
+
+// Новые сверху. Записи задним числом встают на своё место по времени улова
+function sortEntries(list) { return list.sort((a, b) => (a.time < b.time ? 1 : a.time > b.time ? -1 : 0)); }
+
+// Насколько назад можно указать время улова: дальше данные для условий могут быть неполными
+const DIARY_BACK_DAYS = 30;
+const canReload = iso => Date.now() - new Date(iso).getTime() <= DIARY_BACK_DAYS * 86400000;
+
+// Час во времени страны в виде, в котором его отдаёт Open-Meteo
+function localHourIso(ms) {
+  const n = nowLocal(ms);
+  return `${n.date}T${pad2(n.hour)}:00`;
+}
+
+// Значение для поля datetime-local (время браузера, без секунд)
+function toLocalInput(ms) {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+
+// Поля записи с условиями на момент ms. NaN в JSON не хранится, поэтому null
+function conditionFields(d, fish, boat, ms, fromModel, lat, lon) {
+  const num = v => (isNaN_(v) ? null : v);
+  return {
+    forecast: Math.round(biteExplain(d, fish, boat, ms).score),
+    wind: num(d.wind), wave: num(d.waveHeight), pressure: num(d.pressure), trend: num(d.pressureTrend),
+    waterTemp: num(d.waterTemp), moon: moonAgeAtMs(ms), gust: num(d.gust), rain: num(d.rainNow),
+    seaLevel: num(d.seaLevel), tideRising: d.tideRising == null ? null : d.tideRising,
+    condLat: lat, condLon: lon, model: fromModel, pending: false
+  };
+}
+
+// Подтягивает условия записям, которым их ещё не загрузили: без интернета, с изменённым временем или точкой
+async function fillPending(S, A) {
+  const todo = Diary.load().filter(e => e.pending);
+  if (!todo.length || S.pendingBusy || Date.now() - (S.pendingTriedAt || 0) < 60000) return;
+  S.pendingBusy = true;
+  S.pendingTriedAt = Date.now();
+  let changed = false;
+  for (const e of todo) {
+    const ms = new Date(e.time).getTime();
+    const lat = !isNaN_(e.lat) ? e.lat : !isNaN_(e.condLat) ? e.condLat : S.selected.lat;
+    const lon = !isNaN_(e.lon) ? e.lon : !isNaN_(e.condLon) ? e.condLon : S.selected.lon;
+    const d = await loadConditionsAt(lat, lon, localHourIso(ms));
+    if (!d) continue;
+    const f = fishFor(e.boat).find(x => x.name === e.fish) || S.fish;
+    Diary.update(e.id, conditionFields(d, f, e.boat, ms, true, lat, lon));
+    changed = true;
+  }
+  S.pendingBusy = false;
+  if (changed) A.rerender();
+}
 
 // ---------- Фото в IndexedDB ----------
 const Photos = {
@@ -188,7 +240,7 @@ function diaryText(list) {
 
 function diaryCsv(list) {
   const esc = v => '"' + String(v == null || Number.isNaN(v) ? '' : v).replace(/"/g, '""') + '"';
-  const head = ['time', 'spot', 'mode', 'fish', 'count', 'weight_kg', 'forecast', 'wind_ms', 'wave_m', 'pressure_hpa', 'trend_3h', 'water_c', 'moon_age', 'lat', 'lon', 'note'];
-  const rows = list.map(e => [e.time, e.spot, e.boat ? 'boat' : 'shore', e.fish, e.count, e.weightKg, e.forecast, e.wind, e.wave, e.pressure, e.trend, e.waterTemp, e.moon, e.lat, e.lon, e.note].map(esc).join(','));
+  const head = ['time', 'spot', 'mode', 'fish', 'count', 'weight_kg', 'forecast', 'wind_ms', 'wave_m', 'pressure_hpa', 'trend_3h', 'water_c', 'moon_age', 'lat', 'lon', 'note', 'gust_ms', 'rain_mm', 'sea_level_m', 'tide_rising', 'conditions'];
+  const rows = list.map(e => [e.time, e.spot, e.boat ? 'boat' : 'shore', e.fish, e.count, e.weightKg, e.forecast, e.wind, e.wave, e.pressure, e.trend, e.waterTemp, e.moon, e.lat, e.lon, e.note, e.gust, e.rain, e.seaLevel, e.tideRising, e.pending ? 'not_loaded' : e.model ? 'model' : 'at_entry'].map(esc).join(','));
   return '﻿' + [head.join(',')].concat(rows).join('\n');
 }

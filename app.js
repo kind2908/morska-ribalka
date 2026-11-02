@@ -1,5 +1,5 @@
 // Главный файл: состояние, переключение вкладок, загрузка данных, запуск
-const APP_VERSION = '1.12.3';
+const APP_VERSION = '1.12.5';
 const STALE_MS = 30 * 60 * 1000;
 const ANDROID_APK = 'app-release.apk';
 const THEMES = ['sea', 'light', 'sand'];
@@ -106,7 +106,13 @@ const mapHooks = {
     if (!p) return;
     if (p.kind === 'location') { S.selected = { name: 'Точка на карте', lat: point.lat, lon: point.lon }; S.tab = 0; S.reload(); render(true); }
     else if (p.kind === 'diary') { S.draft.point = point; S.diarySub = 0; S.tab = 4; render(true); }
-    else if (p.kind === 'entry') { Diary.update(p.id, { lat: point.lat, lon: point.lon }); S.diarySub = 1; S.tab = 4; render(true); }
+    else if (p.kind === 'entry') {
+      // новая точка: условия подтянутся заново, если данные за этот день ещё доступны
+      const e = Diary.load().find(x => x.id === p.id);
+      Diary.update(p.id, { lat: point.lat, lon: point.lon, pending: !!(e && (e.pending || canReload(e.time))) });
+      S.pendingTriedAt = 0;
+      S.diarySub = 1; S.tab = 4; render(true);
+    }
   },
   useSpot(spot) { S.pick = null; S.tab = 0; S.selected = spot; S.reload(); render(true); },
   saveSpot(spot) { A.addSpot(spot); }

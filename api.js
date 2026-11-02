@@ -34,6 +34,68 @@ function seriesOf(h, name, start, count) {
   return Array.from({ length: count }, (_, i) => nv(arr, start + i));
 }
 
+// Уровень моря на час: значение, растёт или падает, ближайшие прилив и отлив за следующие сутки
+function tideAt(levels, times, idx) {
+  const level = nv(levels, idx), next = nv(levels, idx + 1);
+  const rising = Number.isNaN(level) || Number.isNaN(next) ? null : next > level;
+  let high = '—', low = '—';
+  const end = Math.min(idx + 24, levels.length - 2);
+  for (let i = Math.max(idx + 1, 1); i <= end; i++) {
+    const p = nv(levels, i - 1), c = nv(levels, i), n = nv(levels, i + 1);
+    if (Number.isNaN(p) || Number.isNaN(c) || Number.isNaN(n) || !times[i]) continue;
+    if (high === '—' && c > p && c >= n) high = times[i].substring(11, 16);
+    if (low === '—' && c < p && c <= n) low = times[i].substring(11, 16);
+  }
+  return { level, rising, high, low };
+}
+
+// Условия на заданный час и место, для записи дневника задним числом. localIso: 'YYYY-MM-DDTHH:mm' во времени страны.
+// null, если погоду загрузить не удалось
+async function loadConditionsAt(lat, lon, localIso) {
+  const day = localIso.substring(0, 10);
+  const key = localIso.substring(0, 13) + ':00';
+  const range = `&start_date=${addDays(day, -1)}&end_date=${addDays(day, 1)}&timezone=${TZ}`;
+  try {
+    const root = await getJson(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&hourly=wind_speed_10m,wind_gusts_10m,cloud_cover,precipitation,pressure_msl` +
+      `&daily=sunrise,sunset&wind_speed_unit=ms${range}`);
+    const h = root.hourly;
+    const i = h.time.indexOf(key);
+    if (i < 0 || h.wind_speed_10m[i] == null) return null;
+    const pNow = nv(h.pressure_msl, i), pBefore = nv(h.pressure_msl, i - 3);
+    const sun = name => (root.daily && root.daily[name] && root.daily[name][1] ? root.daily[name][1].substring(11, 16) : '—');
+
+    // волны, вода и уровень: если точка на суше, сервис вернёт ошибку, тогда просто без них
+    let m = null, mi = -1;
+    try {
+      m = (await getJson(
+        `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}` +
+        `&hourly=wave_height,sea_surface_temperature,sea_level_height_msl,ocean_current_velocity,ocean_current_direction${range}`)).hourly;
+      mi = m.time.indexOf(key);
+    } catch (e) { m = null; }
+    const marine = name => (m && mi >= 0 ? nv(m[name], mi) : NaN);
+    const tide = m && mi >= 0 ? tideAt(m.sea_level_height_msl, m.time, mi) : { level: NaN, rising: null, high: '—', low: '—' };
+
+    return {
+      waveHeight: marine('wave_height'),
+      waterTemp: marine('sea_surface_temperature'),
+      wind: nv(h.wind_speed_10m, i),
+      gust: nv(h.wind_gusts_10m, i),
+      cloud: nv(h.cloud_cover, i),
+      pressure: pNow,
+      pressureTrend: Number.isNaN(pNow) || Number.isNaN(pBefore) ? NaN : pNow - pBefore,
+      currentSpeed: marine('ocean_current_velocity'),
+      currentDir: marine('ocean_current_direction'),
+      seaLevel: tide.level, tideRising: tide.rising, nextHigh: tide.high, nextLow: tide.low,
+      rain3d: NaN,
+      // Open-Meteo пишет осадки на конец часа: дождь с h до h+1 лежит в следующей ячейке
+      rainNow: h.precipitation[i + 1] == null ? 0 : h.precipitation[i + 1],
+      sunrise: sun('sunrise'), sunset: sun('sunset')
+    };
+  } catch (e) { return null; }
+}
+
 // ---------- «Сейчас» ----------
 async function loadSeaData(spot) {
   const marineRoot = await getJson(
@@ -78,16 +140,8 @@ async function loadSeaData(spot) {
     const nowKey = marine.time.substring(0, 13);
     const idx = times.findIndex(t => t.startsWith(nowKey));
     if (idx >= 0 && idx + 1 < levels.length) {
-      seaLevel = nv(levels, idx);
-      const next = nv(levels, idx + 1);
-      if (!Number.isNaN(seaLevel) && !Number.isNaN(next)) rising = next > seaLevel;
-      const end = Math.min(idx + 24, levels.length - 2);
-      for (let i = idx + 1; i <= end; i++) {
-        const p = nv(levels, i - 1), c = nv(levels, i), n = nv(levels, i + 1);
-        if (Number.isNaN(p) || Number.isNaN(c) || Number.isNaN(n)) continue;
-        if (high === '—' && c > p && c >= n) high = times[i].substring(11, 16);
-        if (low === '—' && c < p && c <= n) low = times[i].substring(11, 16);
-      }
+      const tide = tideAt(levels, times, idx);
+      seaLevel = tide.level; rising = tide.rising; high = tide.high; low = tide.low;
     }
   }
 
@@ -127,7 +181,7 @@ async function loadHourly(spot) {
   try {
     const m = await getJson(
       `https://marine-api.open-meteo.com/v1/marine?latitude=${spot.lat}&longitude=${spot.lon}` +
-      `&hourly=wave_height,sea_surface_temperature&past_days=1&forecast_days=${HOURLY_DAYS}&timezone=${TZ}`);
+      `&hourly=wave_height,sea_surface_temperature,sea_level_height_msl,ocean_current_velocity,ocean_current_direction&past_days=1&forecast_days=${HOURLY_DAYS}&timezone=${TZ}`);
     mh = m.hourly;
     mStart = Math.max(0, mh.time.findIndex(t => t.startsWith(today)));
   } catch (e) { mh = null; }
@@ -143,6 +197,10 @@ async function loadHourly(spot) {
     code: seriesOf(h, 'weather_code', start, hours),
     wave: seriesOf(mh, 'wave_height', mStart, hours),
     waterTemp: seriesOf(mh, 'sea_surface_temperature', mStart, hours),
+    seaLevel: seriesOf(mh, 'sea_level_height_msl', mStart, hours),
+    currentSpeed: seriesOf(mh, 'ocean_current_velocity', mStart, hours),
+    currentDir: seriesOf(mh, 'ocean_current_direction', mStart, hours),
+    times: Array.from({ length: hours }, (_, i) => (mh && mh.time[mStart + i]) || ''),
     pressure: seriesOf(h, 'pressure_msl', Math.max(start - 3, 0), hours + 3),
     sunrise: sunTimes('sunrise'),
     sunset: sunTimes('sunset')

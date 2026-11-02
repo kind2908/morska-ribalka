@@ -45,9 +45,9 @@ function timePicker(S, A, f) {
     h('p', { class: 'bold' }, f.future
       ? trv('Прогноз на {0} · обновлено в {1}', 'Forecast for {0} · updated at {1}', 'Prognoza za {0} · ažurirano u {1}', [`${forDate}, ${pad2(f.slot.hourIndex % 24)}:00`, updated])
       : trv('Клёв и условия сейчас, {0} · обновлено в {1}', 'Bite and conditions now, {0} · updated at {1}', 'Ribolov i uslovi sada, {0} · ažurirano u {1}', [`${pad2(f.nowHour)}:00`, updated])),
-    f.future ? small(tr('Ветер, волна, давление, вода и оценка показаны на выбранный час. Воздух, течение, уровень моря и метеостанция остаются текущими.',
-      'Wind, waves, pressure, water and the score are for the selected hour. Air, current, sea level and the weather station stay current.',
-      'Vjetar, talasi, pritisak, voda i ocjena su za izabrani sat. Zrak, struja, nivo mora i meteo stanica ostaju trenutni.')) : null);
+    f.future ? small(tr('Ветер, волна, давление, вода, течение, уровень моря и оценка показаны на выбранный час. Воздух и метеостанция остаются текущими.',
+      'Wind, waves, pressure, water, current, sea level and the score are for the selected hour. Air and the weather station stay current.',
+      'Vjetar, talasi, pritisak, voda, struja, nivo mora i ocjena su za izabrani sat. Zrak i meteo stanica ostaju trenutni.')) : null);
 }
 
 // ---------------- Клёв ----------------
@@ -303,6 +303,7 @@ function renderDiary(S, A) {
     [2, tr('Статистика', 'Statistics', 'Statistika')]
   ], S.diarySub, k => { S.diarySub = k; S.diaryMsg = ''; A.rerender(); }));
 
+  fillPending(S, A);
   if (S.diarySub === 0) out.push(diaryNewEntry(S, A));
   else if (S.diarySub === 1) out.push(diaryList(S, A, entries));
   else out.push(diaryStatsView(S, A, entries));
@@ -323,6 +324,47 @@ function diaryNewEntry(S, A) {
   c.appendChild(h('div', { class: 'two' },
     h('label', { class: 'lab' }, tr('Штук', 'Count', 'Komada'), countInput),
     h('label', { class: 'lab' }, tr('Вес, кг', 'Weight, kg', 'Težina, kg'), weightInput)));
+
+  // когда поймал
+  const setWhen = (kind, ms) => { dr.whenKind = kind; dr.whenMs = ms; A.rerender(); };
+  const nowMs = Date.now();
+  c.appendChild(h('div', { class: 'lab' }, tr('Когда поймал', 'When caught', 'Kada je ulovljeno')));
+  c.appendChild(h('div', { class: 'slots' },
+    btn(tr('Сейчас', 'Now', 'Sada'), () => setWhen(0, null), { primary: !dr.whenKind }),
+    btn(tr('3 ч назад', '3 h ago', 'Prije 3 h'), () => setWhen(1, Date.now() - 3 * 3600000), { primary: dr.whenKind === 1 }),
+    btn(tr('6 ч назад', '6 h ago', 'Prije 6 h'), () => setWhen(2, Date.now() - 6 * 3600000), { primary: dr.whenKind === 2 }),
+    btn(tr('Вчера', 'Yesterday', 'Juče'), () => setWhen(3, Date.now() - 86400000), { primary: dr.whenKind === 3 }),
+    btn(tr('Другая дата', 'Other date', 'Drugi datum'), () => setWhen(4, dr.whenMs || Date.now()), { primary: dr.whenKind === 4 })));
+  if (dr.whenKind >= 3) c.appendChild(whenInput(dr.whenMs, nowMs, ms => setWhen(dr.whenKind, ms)));
+  else if (dr.whenMs) c.appendChild(h('p', { class: 'bold' }, fmtTime(new Date(dr.whenMs).toISOString())));
+
+  // условия на это время и по месту улова; «сейчас» на текущей точке берём готовые данные
+  const place = dr.point || S.selected;
+  const useCurrent = !dr.whenMs && place.lat === S.selected.lat && place.lon === S.selected.lon && !!S.data;
+  const condLine = h('p', { class: 'small' });
+  const showCond = (d, loading) => {
+    condLine.classList.toggle('err', !d && !loading);
+    condLine.textContent = d ? trv('Условия: ветер {0}, порывы {1}, волна {2}, давление {3}, вода {4}',
+      'Conditions: wind {0}, gusts {1}, waves {2}, pressure {3}, water {4}',
+      'Uslovi: vjetar {0}, udari {1}, talasi {2}, pritisak {3}, voda {4}',
+      [fmt(d.wind, U.ms), fmt(d.gust, U.ms), fmt(d.waveHeight, U.m()), fmt(d.pressure, U.hpa()), fmt(d.waterTemp, '°C')])
+      : loading ? tr('Загружаю условия на это время…', 'Loading conditions for this time…', 'Učitavam uslove za ovo vrijeme…')
+      : tr('Условия загрузить не удалось. Запись сохранится, а условия подтянутся, когда появится интернет.',
+        'Could not load conditions. The entry will be saved and they will be filled in when you are online.',
+        'Uslove nije moguće učitati. Zapis će biti sačuvan, a uslovi dopunjeni kada budeš na internetu.');
+  };
+  c.appendChild(condLine);
+  const condKey = `${dr.whenMs ? localHourIso(dr.whenMs) : 'now'}|${place.lat}|${place.lon}`;
+  if (useCurrent) { dr.cond = S.data; dr.condKey = condKey; showCond(S.data); }
+  else if (dr.condKey === condKey && dr.cond) showCond(dr.cond);
+  else {
+    dr.cond = null; dr.condKey = condKey;
+    showCond(null, true);
+    loadConditionsAt(place.lat, place.lon, localHourIso(dr.whenMs || Date.now())).then(d => {
+      if (dr.condKey !== condKey) return;
+      dr.cond = d; showCond(d);
+    });
+  }
 
   // место улова
   c.appendChild(h('div', { class: 'lab' }, tr('Место улова', 'Catch location', 'Mjesto ulova')));
@@ -356,18 +398,16 @@ function diaryNewEntry(S, A) {
     const count = noCatch ? 0 : Math.max(0, parseInt(dr.count, 10) || 0);
     if (!noCatch && count === 0) { countInput.focus(); return; }
     const w = parseFloat(String(dr.weight).replace(',', '.'));
-    const d = S.data;
+    const d = dr.cond;
+    const ms = dr.whenMs || Date.now();
     const id = 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const entry = {
-      id, time: new Date().toISOString(), spot: S.selected.name, boat: S.boat,
+    const entry = Object.assign({
+      id, time: new Date(ms).toISOString(), spot: dr.point ? '' : S.selected.name, boat: S.boat,
       fish: noCatch ? '—' : fishName, count, weightKg: noCatch || Number.isNaN(w) ? null : w,
-      forecast: d ? Math.round(biteExplain(d, S.fish, S.boat).score) : -1,
-      wind: d ? nn(d.wind) : null, wave: d ? nn(d.waveHeight) : null, pressure: d ? nn(d.pressure) : null,
-      trend: d ? nn(d.pressureTrend) : null, waterTemp: d ? nn(d.waterTemp) : null, moon: moonAge(),
-      photo: !!dr.photo, lat: dr.point ? dr.point.lat : null, lon: dr.point ? dr.point.lon : null, note: dr.note.trim()
-    };
-    // NaN не хранится в JSON
-    Object.keys(entry).forEach(k => { if (typeof entry[k] === 'number' && Number.isNaN(entry[k])) entry[k] = null; });
+      forecast: -1, wind: null, wave: null, pressure: null, trend: null, waterTemp: null, moon: moonAgeAtMs(ms),
+      photo: !!dr.photo, lat: dr.point ? dr.point.lat : null, lon: dr.point ? dr.point.lon : null, note: dr.note.trim(),
+      condLat: place.lat, condLon: place.lon, pending: true
+    }, d ? conditionFields(d, fishes.find(f => f.name === fishName) || S.fish, S.boat, ms, d !== S.data, place.lat, place.lon) : {});
     if (dr.photo) { try { await Photos.put(id, dr.photo); } catch (e) { entry.photo = false; } }
     Diary.add(entry);
     S.draft = newDraft(S);
@@ -377,13 +417,26 @@ function diaryNewEntry(S, A) {
   c.appendChild(h('div', { class: 'row wrap' },
     btn(tr('Сохранить улов', 'Save catch', 'Sačuvaj ulov'), () => save(false), { primary: true }),
     btn(tr('Без улова', 'No catch', 'Bez ulova'), () => save(true))));
-  c.appendChild(small(tr('К записи автоматически прикрепятся условия на этот момент (прогноз клёва, ветер, волна, давление, температура воды, луна). Фото уменьшается и хранится только в этом браузере.',
-    'The conditions at this moment (bite forecast, wind, waves, pressure, water temperature, moon) are attached automatically. The photo is shrunk and stored only in this browser.',
-    'Uslovi u ovom trenutku (prognoza ulova, vjetar, talasi, pritisak, temperatura vode, mjesec) prilažu se automatski. Fotografija se smanjuje i čuva samo u ovom pregledniku.')));
+  c.appendChild(small(tr('К записи автоматически прикрепятся условия на указанное время (прогноз клёва, ветер, волна, давление, температура воды, луна, уровень моря). Фото уменьшается и хранится только в этом браузере.',
+    'The conditions for the selected time (bite forecast, wind, waves, pressure, water temperature, moon, sea level) are attached automatically. The photo is shrunk and stored only in this browser.',
+    'Uslovi za izabrano vrijeme (prognoza ulova, vjetar, talasi, pritisak, temperatura vode, mjesec, nivo mora) prilažu se automatski. Fotografija se smanjuje i čuva samo u ovom pregledniku.')));
   return c;
 }
 
-function newDraft(S) { return { fish: null, count: '1', weight: '', note: '', point: null, photo: null, photoUrl: null }; }
+function newDraft(S) { return { fish: null, count: '1', weight: '', note: '', point: null, photo: null, photoUrl: null, whenKind: 0, whenMs: null, cond: null, condKey: null }; }
+
+// Поле даты и времени улова: не раньше DIARY_BACK_DAYS и не позже текущего момента
+function whenInput(ms, nowMs, onPick) {
+  return h('input', {
+    class: 'field', type: 'datetime-local', value: toLocalInput(ms),
+    min: toLocalInput(nowMs - DIARY_BACK_DAYS * 86400000), max: toLocalInput(nowMs),
+    onchange: e => {
+      const t = new Date(e.target.value).getTime();
+      if (Number.isNaN(t)) return;
+      onPick(clamp(t, nowMs - DIARY_BACK_DAYS * 86400000, Date.now()));
+    }
+  });
+}
 
 function diaryList(S, A, entries) {
   const wrap = h('div', { class: 'stack' });
@@ -391,6 +444,15 @@ function diaryList(S, A, entries) {
   entries.forEach(e => {
     const c = card(entryTitle(e));
     c.appendChild(h('p', { class: 'small' }, `${fmtTime(e.time)} · ${e.spot ? spotLabel(e.spot) + ' · ' : ''}${e.boat ? tr('с лодки', 'from boat', 'sa čamca') : tr('с берега', 'from shore', 's obale')}`));
+    if (S.editTime === e.id) {
+      c.appendChild(whenInput(new Date(e.time).getTime(), Date.now(), ms => {
+        Diary.update(e.id, { time: new Date(ms).toISOString(), moon: moonAgeAtMs(ms), pending: true });
+        S.editTime = null; S.pendingTriedAt = 0; A.rerender();
+      }));
+      c.appendChild(btn(tr('Отмена', 'Cancel', 'Otkaži'), () => { S.editTime = null; A.rerender(); }, { flat: true }));
+    } else if (canReload(e.time)) {
+      c.appendChild(btn(tr('Изменить время', 'Change time', 'Promijeni vrijeme'), () => { S.editTime = e.id; A.rerender(); }, { flat: true }));
+    }
     if (e.photo) {
       const img = h('img', { class: 'catchimg', alt: '' });
       Photos.get(e.id).then(b => { if (b) img.src = URL.createObjectURL(b); else img.remove(); });
@@ -411,7 +473,17 @@ function diaryList(S, A, entries) {
       statTile(tr('Ветер', 'Wind', 'Vjetar'), fmt(e.wind, U.ms)),
       statTile(tr('Волна', 'Waves', 'Talasi'), fmt(e.wave, U.m())),
       statTile(tr('Давление', 'Pressure', 'Pritisak'), fmt(e.pressure, U.hpa())),
-      statTile(tr('Тренд давления', 'Pressure trend', 'Trend pritiska'), trendLabel(e.trend))));
+      statTile(tr('Тренд давления', 'Pressure trend', 'Trend pritiska'), trendLabel(e.trend)),
+      isNaN_(e.gust) ? null : statTile(tr('Порывы', 'Gusts', 'Udari'), fmt(e.gust, U.ms)),
+      isNaN_(e.rain) ? null : statTile(tr('Осадки', 'Rain', 'Padavine'), fmt(e.rain, U.mm())),
+      isNaN_(e.seaLevel) ? null : statTile(tr('Уровень моря', 'Sea level', 'Nivo mora'), `${sgn(e.seaLevel * 100, 0)} ${U.cm()}` +
+        (e.tideRising === true ? ', ' + tr('уровень растёт', 'rising', 'raste') : e.tideRising === false ? ', ' + tr('уровень падает', 'falling', 'opada') : ''))));
+    if (e.pending) c.appendChild(h('p', { class: 'small err' }, tr('Условия на это время ещё не загружены. Они подтянутся, когда появится интернет.',
+      'Conditions for this time are not loaded yet. They will be filled in when you are online.',
+      'Uslovi za ovo vrijeme još nisu učitani. Biće dopunjeni kada budeš na internetu.')));
+    else if (e.model) c.appendChild(small(tr('Условия и оценка клёва посчитаны по данным погодной модели на это время, это не замеры на месте и не прогноз, который был виден в тот день.',
+      'Conditions and the bite score are calculated from weather-model data for this time. They are not on-site measurements or the forecast shown that day.',
+      'Uslovi i ocjena ribolova izračunati su iz podataka vremenskog modela za ovo vrijeme. To nisu mjerenja na licu mjesta niti prognoza prikazana tog dana.')));
     c.appendChild(small(tr('Луна', 'Moon', 'Mjesec') + ': ' + moonPhaseName(e.moon == null ? 0 : e.moon)));
 
     if (S.editNote === e.id) {

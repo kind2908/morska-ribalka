@@ -1,12 +1,17 @@
 // Расчёты: клёв, видимость, непогода, луна. Это точный перенос формул из Android-приложения.
 
 // ---------- Луна ----------
-function moonAge(daysAhead = 0) {
+function moonAgeAtMs(ms) {
   const newMoonRef = 947182440000;
   const synodic = 29.530588853;
-  const days = (Date.now() - newMoonRef) / 86400000 + daysAhead;
+  const days = (ms - newMoonRef) / 86400000;
   const age = days % synodic;
   return age < 0 ? age + synodic : age;
+}
+
+// daysAhead: на сколько дней вперёд считать (0 = сейчас)
+function moonAge(daysAhead = 0) {
+  return moonAgeAtMs(Date.now() + daysAhead * 86400000);
 }
 
 function moonPhaseName(age) {
@@ -131,14 +136,15 @@ function biteModel(p) {
   return { score, base, adjustments: adj };
 }
 
-function biteExplain(data, fish, boat) {
-  const now = nowLocal();
+// ms: момент оценки, по умолчанию сейчас
+function biteExplain(data, fish, boat, ms) {
+  const now = nowLocal(ms);
   const r = biteModel({
     fish, boat, date: now.date,
     waterTemp: data.waterTemp, tempChange: NaN,
     pressureHpa: data.pressure, trend3h: data.pressureTrend,
     windMs: data.wind, gustMs: data.gust, waveM: data.waveHeight,
-    cloudPct: data.cloud, rainMm: data.rainNow * 3.0, thunder: false, moonDays: moonAge()
+    cloudPct: data.cloud, rainMm: data.rainNow * 3.0, thunder: false, moonDays: moonAgeAtMs(ms || Date.now())
   });
   // время суток входит и в оценку «сейчас» (раньше было только в графике по часам)
   const tod = timeOfDayAdj(now.hour, data.sunrise, data.sunset, data.cloud);
@@ -442,12 +448,19 @@ function hourlyScores(raw, fish, boat) {
   return res;
 }
 
-// Те же данные экрана, но ветер, волна, давление, вода и осадки взяты на выбранный час
+// Те же данные экрана, но ветер, волна, давление, вода, осадки, течение и уровень моря взяты на выбранный час
 function forecastAt(d, raw, hourIndex) {
   const pick = (a, old) => (isNaN_(a[hourIndex] ?? NaN) ? old : a[hourIndex]);
   const pNow = raw.pressure[hourIndex + 3] ?? NaN;
   const pBefore = raw.pressure[hourIndex] ?? NaN;
+  const tide = tideAt(raw.seaLevel, raw.times, hourIndex);
   return Object.assign({}, d, {
+    seaLevel: tide.level,
+    tideRising: tide.rising,
+    nextHigh: tide.high,
+    nextLow: tide.low,
+    currentSpeed: pick(raw.currentSpeed, d.currentSpeed),
+    currentDir: pick(raw.currentDir, d.currentDir),
     wind: pick(raw.wind, d.wind),
     gust: pick(raw.gust, d.gust),
     waveHeight: pick(raw.wave, d.waveHeight),

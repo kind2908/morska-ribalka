@@ -1,14 +1,14 @@
 {
-  "versionCode": 14,
-  "versionName": "1.5.7",
+  "versionCode": 15,
+  "versionName": "1.5.8",
   "url": "https://kind2908.github.io/morska-ribalka/app-release.apk",
-  "note": "RU: Если сервис погоды не отвечает, приложение теперь показывает данные о море и понятное сообщение, а когда сервис заработает, обновится само.\nEN: If the weather service is not responding, the app now shows sea data and a clear message, and updates by itself once the service is back.\nSR/HR: Ako servis za vremensku prognozu ne odgovara, aplikacija sada prikazuje podatke o moru i jasnu poruku, a sama se ažurira kada servis ponovo proradi.\nIT: Se il servizio meteo non risponde, l'app ora mostra i dati del mare e un messaggio chiaro, e si aggiorna da sola quando il servizio torna disponibile.\nEL: Αν η υπηρεσία καιρού δεν αποκρίνεται, η εφαρμογή δείχνει πλέον τα δεδομένα της θάλασσας και ένα σαφές μήνυμα, και ενημερώνεται μόνη της όταν η υπηρεσία επανέλθει.\nSQ: Nëse shërbimi i motit nuk përgjigjet, aplikacioni tani shfaq të dhënat e detit dhe një mesazh të qartë, dhe përditësohet vetë kur shërbimi rikthehet.\nSL: Če vremenska storitev ne odgovarja, aplikacija zdaj prikaže podatke o morju in jasno sporočilo ter se sama posodobi, ko storitev spet deluje.",
-  "note_ru": "Если сервис погоды не отвечает, приложение теперь показывает данные о море и понятное сообщение, а когда сервис заработает, обновится само.",
-  "note_en": "If the weather service is not responding, the app now shows sea data and a clear message, and updates by itself once the service is back.",
-  "note_sr": "Ako servis za vremensku prognozu ne odgovara, aplikacija sada prikazuje podatke o moru i jasnu poruku, a sama se ažurira kada servis ponovo proradi.",
-  "note_hr": "Ako servis za vremensku prognozu ne odgovara, aplikacija sada prikazuje podatke o moru i jasnu poruku, a sama se ažurira kada servis ponovno proradi.",
-  "note_it": "Se il servizio meteo non risponde, l'app ora mostra i dati del mare e un messaggio chiaro, e si aggiorna da sola quando il servizio torna disponibile.",
-  "note_el": "Αν η υπηρεσία καιρού δεν αποκρίνεται, η εφαρμογή δείχνει πλέον τα δεδομένα της θάλασσας και ένα σαφές μήνυμα, και ενημερώνεται μόνη της όταν η υπηρεσία επανέλθει.",
-  "note_sq": "Nëse shërbimi i motit nuk përgjigjet, aplikacioni tani shfaq të dhënat e detit dhe një mesazh të qartë, dhe përditësohet vetë kur shërbimi rikthehet.",
-  "note_sl": "Če vremenska storitev ne odgovarja, aplikacija zdaj prikaže podatke o morju in jasno sporočilo ter se sama posodobi, ko storitev spet deluje."
+  "note": "RU: Хорватский язык: интерфейс и тексты теперь на хорватском, а не на сербском.\nEN: Croatian language: the interface and texts are now in Croatian instead of Serbian.\nSR/HR: Hrvatski jezik: sučelje i tekstovi sada su na hrvatskom umjesto na srpskom.\nIT: Lingua croata: l'interfaccia e i testi ora sono in croato invece che in serbo.\nEL: Κροατική γλώσσα: η διεπαφή και τα κείμενα είναι πλέον στα κροατικά αντί για τα σερβικά.\nSQ: Gjuha kroate: ndërfaqja dhe tekstet tani janë në kroatisht në vend të serbishtes.\nSL: Hrvaščina: vmesnik in besedila so zdaj v hrvaščini namesto v srbščini.",
+  "note_ru": "Хорватский язык: интерфейс и тексты теперь на хорватском, а не на сербском.",
+  "note_en": "Croatian language: the interface and texts are now in Croatian instead of Serbian.",
+  "note_sr": "Hrvatski jezik: interfejs i tekstovi su sada na hrvatskom umjesto na srpskom.",
+  "note_hr": "Hrvatski jezik: sučelje i tekstovi sada su na hrvatskom umjesto na srpskom.",
+  "note_it": "Lingua croata: l'interfaccia e i testi ora sono in croato invece che in serbo.",
+  "note_el": "Κροατική γλώσσα: η διεπαφή και τα κείμενα είναι πλέον στα κροατικά αντί για τα σερβικά.",
+  "note_sq": "Gjuha kroate: ndërfaqja dhe tekstet tani janë në kroatisht në vend të serbishtes.",
+  "note_sl": "Hrvaščina: vmesnik in besedila so zdaj v hrvaščini namesto v srbščini."
 }

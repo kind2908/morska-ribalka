@@ -26,6 +26,15 @@ function gate(S, build) {
   return build(S.data);
 }
 
+// Сервер погоды не ответил: море показываем, а оценки и «всё спокойно» нет, они были бы ложными
+function weatherDownCard(S) {
+  return card(tr('Сервис погоды сейчас не отвечает', 'The weather service is not responding right now', 'Servis za vremensku prognozu trenutno ne odgovara'),
+    h('p', null, tr('Ветер, порывы, дождь и давление сейчас неизвестны, поэтому оценка клёва и условий не показана. Показаны только данные о море. Перед выходом проверьте погоду в другом источнике.',
+      'Wind, gusts, rain and pressure are unknown right now, so the bite and conditions scores are not shown. Only sea data is shown. Check the weather in another source before going out.',
+      'Vjetar, udari, kiša i pritisak trenutno nisu poznati, pa ocjena ribolova i uslova nije prikazana. Prikazani su samo podaci o moru. Prije izlaska provjerite vrijeme u drugom izvoru.')),
+    btn(tr('Повторить', 'Retry', 'Ponovi'), () => S.reload(true)));
+}
+
 // Выбранное время прогноза; будущие часы доступны, когда загружены почасовые данные
 function forecastChoice(S) {
   const nowHour = nowLocal().hour;
@@ -61,6 +70,15 @@ function renderBite(S, A) {
     const f = forecastChoice(S);
     wrap.appendChild(timePicker(S, A, f));
     const d = f.future ? forecastAt(d0, f.raw, f.slot.hourIndex) : d0;
+    if (!d0.weatherOk) {
+      wrap.appendChild(weatherDownCard(S));
+      wrap.appendChild(card(f.slot.label,
+        h('div', { class: 'tiles' },
+          statTile(tr('Вода', 'Water', 'Voda'), fmt(d.waterTemp, '°C')),
+          statTile(tr('Волна', 'Waves', 'Talasi'), fmt(d.waveHeight, U.m()))),
+        small(tr('Подробности на вкладке «Условия»', 'Details on the “Conditions” tab', 'Detalji na kartici „Uslovi“'))));
+      return wrap;
+    }
     const res = (f.future ? hourExplain(f.raw, S.fish, S.boat, f.slot.hourIndex) : null) || biteExplain(d0, S.fish, S.boat);
     const scoreD = res.score, score = Math.round(scoreD);
     const col = scoreColor(score);
@@ -183,6 +201,7 @@ function renderConditions(S, A) {
     const f = forecastChoice(S);
     wrap.appendChild(timePicker(S, A, f));
     const d = f.future ? forecastAt(d0, f.raw, f.slot.hourIndex) : d0;
+    if (!d0.weatherOk) wrap.appendChild(weatherDownCard(S));
     const trend = d.tideRising === true ? tr('уровень растёт', 'rising', 'raste') : d.tideRising === false ? tr('уровень падает', 'falling', 'opada') : '';
     wrap.appendChild(card(tr('Море', 'Sea', 'More'),
       infoRow(tr('Температура воды', 'Water temperature', 'Temperatura vode'), fmt(d.waterTemp, '°C')),
@@ -191,7 +210,7 @@ function renderConditions(S, A) {
       infoRow(tr('Уровень моря', 'Sea level', 'Nivo mora'), isNaN_(d.seaLevel) ? noData() : `${sgn(d.seaLevel * 100, 0)} ${U.cm()}, ${trend}`),
       infoRow(tr('Прилив / отлив', 'High / low tide', 'Plima / oseka'), `${d.nextHigh} / ${d.nextLow}`)));
 
-    wrap.appendChild(card(tr('Ветер и давление', 'Wind and pressure', 'Vjetar i pritisak'),
+    if (d0.weatherOk) wrap.appendChild(card(tr('Ветер и давление', 'Wind and pressure', 'Vjetar i pritisak'),
       infoRow(tr('Ветер', 'Wind', 'Vjetar'), withNorm(d.wind, U.ms, WIND_LOW, WIND_HIGH, 1)),
       infoRow(tr('Порывы', 'Gusts', 'Udari'), fmt(d.gust, U.ms)),
       infoRow(tr('По шкале Бофорта', 'Beaufort scale', 'Po Boforovoj skali'), windWord(d.wind) + '; ' + tr('порывы', 'gusts', 'udari') + ' ' + windWord(d.gust)),
@@ -215,30 +234,32 @@ function renderConditions(S, A) {
           'Ovo je stvarno mjerenje aerodroma (METAR), a ne prognoza. Stanica može biti desetinama kilometara od vaše tačke, a na obali se vjetar često razlikuje.'))));
     }
 
-    const clarity = clarityScore(d), vis = visibilityMeters(clarity);
-    const vc = card(tr('Видимость под водой', 'Underwater visibility', 'Vidljivost pod vodom'));
-    vc.appendChild(h('div', { class: 'headline' }, `≈ ${vis} ${U.m()}`));
-    const from = Math.round(vis * 0.8), to = Math.round(vis * 1.2), clar = clarityLabel(clarity);
-    vc.appendChild(h('p', null, trv('Диапазон {0}–{1} м, вода {2}', 'Range {0}–{1} m, water: {2}', 'Raspon {0}–{1} m, voda: {2}', [from, to, clar])));
-    const rain3 = f0(d.rain3d);
-    vc.appendChild(small(trv('Оценка по волне, ветру и осадкам за 3 дня ({0} мм)', 'Estimated from waves, wind and 3-day rainfall ({0} mm)', 'Procjena prema talasima, vjetru i padavinama za 3 dana ({0} mm)', [rain3])));
-    const mineLabel = h('p', null);
-    const setMine = () => { mineLabel.textContent = trv('Твоя оценка: {0} м', 'Your estimate: {0} m', 'Tvoja procjena: {0} m', [S.slider]); };
-    setMine();
-    vc.appendChild(mineLabel);
-    vc.appendChild(h('input', { type: 'range', min: 0, max: 30, step: 1, value: S.slider, class: 'range',
-      oninput: e => { S.slider = parseInt(e.target.value, 10); setMine(); } }));
-    vc.appendChild(btn(tr('Сохранить мою оценку', 'Save my estimate', 'Sačuvaj moju procjenu'), () => {
-      S.mark = S.slider; Store.set('mark', { date: nowLocal().date, m: S.mark }); A.rerender();
-    }, { primary: true }));
-    if (S.mark != null) {
-      const diff = S.mark - vis;
-      const verdict = diff === 0 ? tr('расчёт совпал', 'estimate matched', 'procjena se poklapa')
-        : diff > 0 ? trv('расчёт занижен на {0} м', 'estimate is {0} m too low', 'procjena je preniska za {0} m', [Math.abs(diff)])
-          : trv('расчёт завышен на {0} м', 'estimate is {0} m too high', 'procjena je previsoka za {0} m', [Math.abs(diff)]);
-      vc.appendChild(h('p', null, trv('Сохранено: {0} м ({1})', 'Saved: {0} m ({1})', 'Sačuvano: {0} m ({1})', [S.mark, verdict])));
+    if (d0.weatherOk) {
+      const clarity = clarityScore(d), vis = visibilityMeters(clarity);
+      const vc = card(tr('Видимость под водой', 'Underwater visibility', 'Vidljivost pod vodom'));
+      vc.appendChild(h('div', { class: 'headline' }, `≈ ${vis} ${U.m()}`));
+      const from = Math.round(vis * 0.8), to = Math.round(vis * 1.2), clar = clarityLabel(clarity);
+      vc.appendChild(h('p', null, trv('Диапазон {0}–{1} м, вода {2}', 'Range {0}–{1} m, water: {2}', 'Raspon {0}–{1} m, voda: {2}', [from, to, clar])));
+      const rain3 = f0(d.rain3d);
+      vc.appendChild(small(trv('Оценка по волне, ветру и осадкам за 3 дня ({0} мм)', 'Estimated from waves, wind and 3-day rainfall ({0} mm)', 'Procjena prema talasima, vjetru i padavinama za 3 dana ({0} mm)', [rain3])));
+      const mineLabel = h('p', null);
+      const setMine = () => { mineLabel.textContent = trv('Твоя оценка: {0} м', 'Your estimate: {0} m', 'Tvoja procjena: {0} m', [S.slider]); };
+      setMine();
+      vc.appendChild(mineLabel);
+      vc.appendChild(h('input', { type: 'range', min: 0, max: 30, step: 1, value: S.slider, class: 'range',
+        oninput: e => { S.slider = parseInt(e.target.value, 10); setMine(); } }));
+      vc.appendChild(btn(tr('Сохранить мою оценку', 'Save my estimate', 'Sačuvaj moju procjenu'), () => {
+        S.mark = S.slider; Store.set('mark', { date: nowLocal().date, m: S.mark }); A.rerender();
+      }, { primary: true }));
+      if (S.mark != null) {
+        const diff = S.mark - vis;
+        const verdict = diff === 0 ? tr('расчёт совпал', 'estimate matched', 'procjena se poklapa')
+          : diff > 0 ? trv('расчёт занижен на {0} м', 'estimate is {0} m too low', 'procjena je preniska za {0} m', [Math.abs(diff)])
+            : trv('расчёт завышен на {0} м', 'estimate is {0} m too high', 'procjena je previsoka za {0} m', [Math.abs(diff)]);
+        vc.appendChild(h('p', null, trv('Сохранено: {0} м ({1})', 'Saved: {0} m ({1})', 'Sačuvano: {0} m ({1})', [S.mark, verdict])));
+      }
+      wrap.appendChild(vc);
     }
-    wrap.appendChild(vc);
 
     const sky = card(tr('Небо и воздух', 'Sky and air', 'Nebo i zrak'));
     const a = S.air;
@@ -256,6 +277,10 @@ function renderConditions(S, A) {
 // ---------------- Дни ----------------
 function renderDays(S, A) {
   const out = [contextBar(S, A)];
+  if (!S.days.length && S.data && !S.data.weatherOk) {
+    out.push(weatherDownCard(S));
+    return out;
+  }
   if (!S.days.length) {
     out.push(card(tr('Прогноз по дням', 'Daily forecast', 'Dnevna prognoza'),
       h('p', null, tr('Загрузка или нет данных для этой точки.', 'Loading, or no data for this point.', 'Učitavanje ili nema podataka za ovu tačku.'))));
@@ -340,7 +365,7 @@ function diaryNewEntry(S, A) {
 
   // условия на это время и по месту улова; «сейчас» на текущей точке берём готовые данные
   const place = dr.point || S.selected;
-  const useCurrent = !dr.whenMs && place.lat === S.selected.lat && place.lon === S.selected.lon && !!S.data;
+  const useCurrent = !dr.whenMs && place.lat === S.selected.lat && place.lon === S.selected.lon && !!S.data && S.data.weatherOk;
   const condLine = h('p', { class: 'small' });
   const showCond = (d, loading) => {
     condLine.classList.toggle('err', !d && !loading);

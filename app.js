@@ -1,6 +1,7 @@
 // Главный файл: состояние, переключение вкладок, загрузка данных, запуск
-const APP_VERSION = '1.12.6';
+const APP_VERSION = '1.12.7';
 const STALE_MS = 30 * 60 * 1000;
+const WEATHER_RETRY_MS = 2 * 60 * 1000;
 const ANDROID_APK = 'app-release.apk';
 const THEMES = ['sea', 'light', 'sand'];
 const THEME_COLORS = { sea: ['#0B5C8E', '#0A1822'], light: ['#F6F7F5', '#F6F7F5'], sand: ['#F5ECDD', '#F5ECDD'] };
@@ -135,7 +136,12 @@ S.reload = function (keepOld) {
   const ok = fn => v => { if (token === S.token) { fn(v); softRender(); } };
   const fail = fn => ok(() => { if (!keepOld) fn(); });
   const go = () => {
-    loadSeaData(spot).then(ok(d => { S.data = d; S.loadedAt = Date.now(); })).catch(fail(() => { S.error = true; }));
+    loadSeaData(spot).then(ok(d => {
+      // Погода не пришла: через пару минут пробуем снова, море пока остаётся на экране
+      if (!d.weatherOk) setTimeout(() => { if (token === S.token) S.reload(true); }, WEATHER_RETRY_MS);
+      // Полные данные той же точки не заменяем неполными
+      if (d.weatherOk || !keepOld || !S.data || !S.data.weatherOk) { S.data = d; S.loadedAt = Date.now(); }
+    })).catch(fail(() => { S.error = true; }));
     loadDays(spot).then(ok(d => { S.days = d; })).catch(fail(() => { S.days = []; }));
     loadHourly(spot).then(ok(d => { S.hourly = d; })).catch(fail(() => { S.hourly = null; }));
     loadAir(spot).then(ok(d => { S.air = d; })).catch(fail(() => { S.air = null; }));

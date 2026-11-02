@@ -105,16 +105,19 @@ async function loadSeaData(spot) {
   const marine = marineRoot.current;
   if (!marine) throw new Error('no marine data');
 
-  const weatherRoot = await getJson(
-    `https://api.open-meteo.com/v1/forecast?latitude=${spot.lat}&longitude=${spot.lon}` +
-    `&current=wind_speed_10m,wind_gusts_10m,cloud_cover,pressure_msl,precipitation` +
-    `&hourly=pressure_msl&daily=precipitation_sum,sunrise,sunset` +
-    `&past_days=2&forecast_days=1&wind_speed_unit=ms&timezone=${TZ}`);
-  const weather = weatherRoot.current;
-  if (!weather) throw new Error('no weather data');
+  // Погода и море идут с разных серверов: если погода не ответила, море всё равно показываем
+  let weatherRoot = null;
+  try {
+    weatherRoot = await getJson(
+      `https://api.open-meteo.com/v1/forecast?latitude=${spot.lat}&longitude=${spot.lon}` +
+      `&current=wind_speed_10m,wind_gusts_10m,cloud_cover,pressure_msl,precipitation` +
+      `&hourly=pressure_msl&daily=precipitation_sum,sunrise,sunset` +
+      `&past_days=2&forecast_days=1&wind_speed_unit=ms&timezone=${TZ}`);
+  } catch (e) { weatherRoot = null; }
+  const weather = weatherRoot && weatherRoot.current;
 
   let rain = 0, sunrise = '—', sunset = '—';
-  const daily = weatherRoot.daily;
+  const daily = weatherRoot && weatherRoot.daily;
   if (daily) {
     (daily.precipitation_sum || []).forEach(v => { rain += v == null ? 0 : v; });
     const sr = daily.sunrise, ss = daily.sunset;
@@ -123,8 +126,8 @@ async function loadSeaData(spot) {
   }
 
   let pTrend = NaN;
-  const wh = weatherRoot.hourly;
-  if (wh) {
+  const wh = weatherRoot && weatherRoot.hourly;
+  if (wh && weather) {
     const key = weather.time.substring(0, 13);
     const wi = wh.time.findIndex(t => t.startsWith(key));
     if (wi >= 3) {
@@ -148,17 +151,18 @@ async function loadSeaData(spot) {
   return {
     waveHeight: nn(marine.wave_height),
     waterTemp: nn(marine.sea_surface_temperature),
-    wind: nn(weather.wind_speed_10m),
-    gust: nn(weather.wind_gusts_10m),
-    cloud: nn(weather.cloud_cover),
-    pressure: nn(weather.pressure_msl),
+    wind: weather ? nn(weather.wind_speed_10m) : NaN,
+    gust: weather ? nn(weather.wind_gusts_10m) : NaN,
+    cloud: weather ? nn(weather.cloud_cover) : NaN,
+    pressure: weather ? nn(weather.pressure_msl) : NaN,
     pressureTrend: pTrend,
     currentSpeed: nn(marine.ocean_current_velocity),
     currentDir: nn(marine.ocean_current_direction),
     seaLevel, tideRising: rising, nextHigh: high, nextLow: low,
-    rain3d: rain,
-    rainNow: weather.precipitation == null ? 0 : weather.precipitation,
-    sunrise, sunset
+    rain3d: weather ? rain : NaN,
+    rainNow: !weather ? NaN : weather.precipitation == null ? 0 : weather.precipitation,
+    sunrise, sunset,
+    weatherOk: !!weather
   };
 }
 

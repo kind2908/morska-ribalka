@@ -657,6 +657,7 @@ function renderSettings(S, A) {
       'Helps understand whether the site is used. Only screen views, language and country are sent. The diary, photos and coordinates are never sent.',
       'Pomaže da se vidi koristi li se sajt. Šalju se samo pregledi ekrana, jezik i država. Dnevnik, fotografije i koordinate se ne šalju.'))));
 
+  out.push(feedbackCard(S, A.rerender));
   out.push(aboutCard(S, A));
   return out;
 }

@@ -1,14 +1,14 @@
 {
-  "versionCode": 15,
-  "versionName": "1.5.8",
+  "versionCode": 16,
+  "versionName": "1.5.9",
   "url": "https://kind2908.github.io/morska-ribalka/app-release.apk",
-  "note": "RU: Хорватский язык: интерфейс и тексты теперь на хорватском, а не на сербском.\nEN: Croatian language: the interface and texts are now in Croatian instead of Serbian.\nSR/HR: Hrvatski jezik: sučelje i tekstovi sada su na hrvatskom umjesto na srpskom.\nIT: Lingua croata: l'interfaccia e i testi ora sono in croato invece che in serbo.\nEL: Κροατική γλώσσα: η διεπαφή και τα κείμενα είναι πλέον στα κροατικά αντί για τα σερβικά.\nSQ: Gjuha kroate: ndërfaqja dhe tekstet tani janë në kroatisht në vend të serbishtes.\nSL: Hrvaščina: vmesnik in besedila so zdaj v hrvaščini namesto v srbščini.",
-  "note_ru": "Хорватский язык: интерфейс и тексты теперь на хорватском, а не на сербском.",
-  "note_en": "Croatian language: the interface and texts are now in Croatian instead of Serbian.",
-  "note_sr": "Hrvatski jezik: interfejs i tekstovi su sada na hrvatskom umjesto na srpskom.",
-  "note_hr": "Hrvatski jezik: sučelje i tekstovi sada su na hrvatskom umjesto na srpskom.",
-  "note_it": "Lingua croata: l'interfaccia e i testi ora sono in croato invece che in serbo.",
-  "note_el": "Κροατική γλώσσα: η διεπαφή και τα κείμενα είναι πλέον στα κροατικά αντί για τα σερβικά.",
-  "note_sq": "Gjuha kroate: ndërfaqja dhe tekstet tani janë në kroatisht në vend të serbishtes.",
-  "note_sl": "Hrvaščina: vmesnik in besedila so zdaj v hrvaščini namesto v srbščini."
+  "note": "RU: Новый район Пореч (Хорватия). В настройках появилась обратная связь: можно написать нам письмом или в Telegram.\nEN: New area: Poreč (Croatia). Settings now have a feedback form: write to us by email or in Telegram.\nSR/HR: Novo područje Poreč (Hrvatska). U postavkama su povratne informacije: pišite nam e-poštom ili u Telegram.\nIT: Nuova zona: Parenzo/Poreč (Croazia). Nelle impostazioni puoi scriverci per email o su Telegram.\nEL: Νέα περιοχή: Πόρετς (Κροατία). Στις ρυθμίσεις μπορείτε να μας γράψετε με email ή στο Telegram.\nSQ: Zonë e re: Poreç (Kroaci). Te cilësimet mund të na shkruani me email ose në Telegram.\nSL: Novo območje Poreč (Hrvaška). V nastavitvah nam lahko pišete po e-pošti ali v Telegram.",
+  "note_ru": "Новый район Пореч (Хорватия). В настройках появилась обратная связь: можно написать нам письмом или в Telegram, а в карточках рыб и в правилах сообщить о неточности.",
+  "note_en": "New area: Poreč (Croatia). Settings now have a feedback form: write to us by email or in Telegram, or report a mistake right from a fish card or the rules.",
+  "note_sr": "Nova oblast Poreč (Hrvatska). U podešavanjima možete da nam pišete e-poštom ili u Telegram, a na karticama riba i u pravilima da prijavite grešku.",
+  "note_hr": "Novo područje Poreč (Hrvatska). U postavkama nam možete pisati e-poštom ili u Telegram, a na karticama riba i u pravilima prijaviti pogrešku.",
+  "note_it": "Nuova zona: Parenzo/Poreč (Croazia). Nelle impostazioni puoi scriverci per email o su Telegram, oppure segnalare un errore dalla scheda di un pesce o dalle regole.",
+  "note_el": "Νέα περιοχή: Πόρετς (Κροατία). Στις ρυθμίσεις μπορείτε να μας γράψετε με email ή στο Telegram ή να αναφέρετε λάθος από την καρτέλα ψαριού ή τους κανόνες.",
+  "note_sq": "Zonë e re: Poreç (Kroaci). Te cilësimet mund të na shkruani me email ose në Telegram, ose të raportoni një gabim nga karta e peshkut ose rregullat.",
+  "note_sl": "Novo območje Poreč (Hrvaška). V nastavitvah nam lahko pišete po e-pošti ali v Telegram ali sporočite napako iz kartice ribe ali pravil."
 }

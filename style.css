@@ -141,6 +141,8 @@ h2.group { margin: 10px 0 0; font-size: 20px; }
 .chips .btn { flex: 0 0 auto; }
 .row { display: flex; align-items: center; gap: 8px; }
 .row.wrap { flex-wrap: wrap; }
+.fb { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.fb .chips { flex-wrap: wrap; }
 .row.head { margin-bottom: 2px; }
 .row.click { cursor: pointer; }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

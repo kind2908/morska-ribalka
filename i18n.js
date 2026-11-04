@@ -7,7 +7,8 @@ const LANGS = [
   { code: 'it', label: 'Italiano' },
   { code: 'el', label: 'Ελληνικά' },
   { code: 'sq', label: 'Shqip' },
-  { code: 'sl', label: 'Slovenščina' }
+  { code: 'sl', label: 'Slovenščina' },
+  { code: 'de', label: 'Deutsch' }
 ];
 // Словари для новых языков: TRX[язык][русская строка] = перевод (файлы trx-*.js)
 window.TRX = window.TRX || {};
@@ -79,7 +80,9 @@ function regionLabel(key) {
     if (r) {
       if (Lang.current === 'ru') return r.ru;
       if (Lang.current === c.lang || (c.lang === 'hr' && Lang.current === 'sr')) return r.loc;
-      return r.en;
+      // для немецкого в словаре свои названия (Neapel, Korfu, Triest)
+      const d = window.TRX[Lang.current];
+      return (d && d[r.ru]) || r.en;
     }
   }
   return key;
@@ -153,7 +156,8 @@ function compass(deg) {
     el: ['βορράς', 'βορειοανατολικά', 'ανατολή', 'νοτιοανατολικά', 'νότος', 'νοτιοδυτικά', 'δύση', 'βορειοδυτικά'],
     sq: ['veri', 'verilindje', 'lindje', 'juglindje', 'jug', 'jugperëndim', 'perëndim', 'veriperëndim'],
     bg: ['север', 'североизток', 'изток', 'югоизток', 'юг', 'югозапад', 'запад', 'северозапад'],
-    sl: ['sever', 'severovzhod', 'vzhod', 'jugovzhod', 'jug', 'jugozahod', 'zahod', 'severozahod']
+    sl: ['sever', 'severovzhod', 'vzhod', 'jugovzhod', 'jug', 'jugozahod', 'zahod', 'severozahod'],
+    de: ['Norden', 'Nordosten', 'Osten', 'Südosten', 'Süden', 'Südwesten', 'Westen', 'Nordwesten']
   };
   return byLang(names)[Math.floor((deg + 22.5) / 45) % 8];
 }
@@ -168,7 +172,8 @@ function windFrom(deg) {
     el: ['Β', 'ΒΑ (μπόρα)', 'Α', 'ΝΑ (σιρόκος)', 'Ν', 'ΝΔ', 'Δ', 'ΒΔ'],
     sq: ['V', 'VL (bora)', 'L', 'JL (siroko)', 'J', 'JP', 'P', 'VP'],
     bg: ['С', 'СИ (бора)', 'И', 'ЮИ (юго)', 'Ю', 'ЮЗ', 'З', 'СЗ'],
-    sl: ['S', 'SV (burja)', 'V', 'JV (jugo)', 'J', 'JZ', 'Z', 'SZ']
+    sl: ['S', 'SV (burja)', 'V', 'JV (jugo)', 'J', 'JZ', 'Z', 'SZ'],
+    de: ['N', 'NO (Bora)', 'O', 'SO (Jugo)', 'S', 'SW', 'W', 'NW']
   };
   return byLang(names)[Math.floor((deg + 22.5) / 45) % 8];
 }
@@ -192,7 +197,8 @@ function windWord(ms) {
   const sq = ['qetësi', 'erë shumë e lehtë', 'erë e lehtë', 'erë e butë', 'erë e moderuar', 'erë e freskët', 'erë e fortë', 'erë shumë e fortë', 'stuhi', 'stuhi e fortë', 'furtunë', 'furtunë e dhunshme', 'uragan'];
   const bg = ['тихо', 'лек полъх', 'слаб вятър', 'умерен слаб вятър', 'умерен вятър', 'свеж вятър', 'силен вятър', 'много силен вятър', 'буря', 'силна буря', 'щормов вятър', 'жесток щорм', 'ураган'];
   const sl = ['brezvetrje', 'rahel veter', 'lahen veter', 'šibek veter', 'zmeren veter', 'svež veter', 'močan veter', 'zelo močan veter', 'vihar', 'močan vihar', 'nevihta', 'silovita nevihta', 'orkan'];
-  const word = byLang({ ru, en, sr, it, el, sq, bg, sl })[b];
+  const de = ['Windstille', 'leiser Zug', 'leichte Brise', 'schwache Brise', 'mäßige Brise', 'frische Brise', 'starker Wind', 'steifer Wind', 'stürmischer Wind', 'Sturm', 'schwerer Sturm', 'orkanartiger Sturm', 'Orkan'];
+  const word = byLang({ ru, en, sr, it, el, sq, bg, sl, de })[b];
   return `${word}, ${b} ${tr('Бф', 'Bft', 'Bf')}`;
 }
 
@@ -209,7 +215,7 @@ function nowLocal(atMs) {
 function dayLabel(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d, 12));
-  const loc = { ru: 'ru', en: 'en', sr: 'sr-Latn', hr: 'hr', it: 'it', el: 'el', sq: 'sq', bg: 'bg', sl: 'sl' }[Lang.current] || 'en';
+  const loc = { ru: 'ru', en: 'en', sr: 'sr-Latn', hr: 'hr', it: 'it', el: 'el', sq: 'sq', bg: 'bg', sl: 'sl', de: 'de' }[Lang.current] || 'en';
   let w;
   try { w = new Intl.DateTimeFormat(loc, { weekday: 'short', timeZone: 'UTC' }).format(dt); } catch (e) { w = ''; }
   return `${w} ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}`;

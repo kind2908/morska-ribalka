@@ -222,7 +222,7 @@ function entryTitle(e) {
 }
 function fmtTime(iso) {
   try {
-    const loc = { ru: 'ru-RU', en: 'en-GB', sr: 'sr-Latn-ME', hr: 'hr-HR', it: 'it-IT', el: 'el-GR', sq: 'sq-AL', bg: 'bg-BG', sl: 'sl-SI' }[Lang.current] || 'en-GB';
+    const loc = { ru: 'ru-RU', en: 'en-GB', sr: 'sr-Latn-ME', hr: 'hr-HR', it: 'it-IT', el: 'el-GR', sq: 'sq-AL', bg: 'bg-BG', sl: 'sl-SI', de: 'de-DE' }[Lang.current] || 'en-GB';
     return new Date(iso).toLocaleString(loc, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   } catch (e) { return iso; }
 }

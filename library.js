@@ -98,7 +98,7 @@ function seasonBar(months) {
   const names = [tr('Нет','No','Ne'), tr('Слабо','Weak','Slabo'), tr('Хорошо','Good','Dobro'), tr('Пик','Peak','Vrhunac')];
   let m;
   try {
-    const loc = { ru: 'ru', en: 'en', sr: 'sr-Latn', hr: 'hr', it: 'it', el: 'el', sq: 'sq', bg: 'bg', sl: 'sl', de: 'de' }[Lang.current] || 'en';
+    const loc = { ru: 'ru', en: 'en', sr: 'sr-Latn', hr: 'hr', it: 'it', el: 'el', sq: 'sq', bg: 'bg', sl: 'sl', de: 'de', es: 'es', tr: 'tr' }[Lang.current] || 'en';
     const f = new Intl.DateTimeFormat(loc, { month: 'narrow', timeZone: 'UTC' });
     m = Array.from({ length: 12 }, (_, i) => f.format(new Date(Date.UTC(2026, i, 15))));
   } catch (e) { m = MONTHS[1]; }

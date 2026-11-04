@@ -8,7 +8,9 @@ const LANGS = [
   { code: 'el', label: 'Ελληνικά' },
   { code: 'sq', label: 'Shqip' },
   { code: 'sl', label: 'Slovenščina' },
-  { code: 'de', label: 'Deutsch' }
+  { code: 'de', label: 'Deutsch' },
+  { code: 'es', label: 'Español' },
+  { code: 'tr', label: 'Türkçe' }
 ];
 // Словари для новых языков: TRX[язык][русская строка] = перевод (файлы trx-*.js)
 window.TRX = window.TRX || {};
@@ -35,7 +37,7 @@ const Lang = {
     const guess = known.includes(phone) ? phone : (phone === 'bs' || phone === 'cnr' ? 'sr' : 'ru');
     this.current = LANGS.some(l => l.code === saved) ? saved : guess;
   },
-  // язык страны может быть ещё не переведён (tr, es): тогда оставляем текущий
+  // неизвестный код (язык страны без перевода) не меняет текущий язык
   set(code) { if (!LANGS.some(l => l.code === code)) return; this.current = code; Store.set('lang', code); }
 };
 
@@ -158,7 +160,9 @@ function compass(deg) {
     sq: ['veri', 'verilindje', 'lindje', 'juglindje', 'jug', 'jugperëndim', 'perëndim', 'veriperëndim'],
     bg: ['север', 'североизток', 'изток', 'югоизток', 'юг', 'югозапад', 'запад', 'северозапад'],
     sl: ['sever', 'severovzhod', 'vzhod', 'jugovzhod', 'jug', 'jugozahod', 'zahod', 'severozahod'],
-    de: ['Norden', 'Nordosten', 'Osten', 'Südosten', 'Süden', 'Südwesten', 'Westen', 'Nordwesten']
+    de: ['Norden', 'Nordosten', 'Osten', 'Südosten', 'Süden', 'Südwesten', 'Westen', 'Nordwesten'],
+    es: ['norte', 'nordeste', 'este', 'sudeste', 'sur', 'suroeste', 'oeste', 'noroeste'],
+    tr: ['kuzey', 'kuzeydoğu', 'doğu', 'güneydoğu', 'güney', 'güneybatı', 'batı', 'kuzeybatı']
   };
   return byLang(names)[Math.floor((deg + 22.5) / 45) % 8];
 }
@@ -174,7 +178,9 @@ function windFrom(deg) {
     sq: ['V', 'VL (bora)', 'L', 'JL (siroko)', 'J', 'JP', 'P', 'VP'],
     bg: ['С', 'СИ (бора)', 'И', 'ЮИ (юго)', 'Ю', 'ЮЗ', 'З', 'СЗ'],
     sl: ['S', 'SV (burja)', 'V', 'JV (jugo)', 'J', 'JZ', 'Z', 'SZ'],
-    de: ['N', 'NO (Bora)', 'O', 'SO (Jugo)', 'S', 'SW', 'W', 'NW']
+    de: ['N', 'NO (Bora)', 'O', 'SO (Jugo)', 'S', 'SW', 'W', 'NW'],
+    es: ['N', 'NE (gregal)', 'E', 'SE (siroco)', 'S', 'SO', 'O', 'NO'],
+    tr: ['K', 'KD (poyraz)', 'D', 'GD (keşişleme)', 'G', 'GB', 'B', 'KB']
   };
   return byLang(names)[Math.floor((deg + 22.5) / 45) % 8];
 }
@@ -199,7 +205,9 @@ function windWord(ms) {
   const bg = ['тихо', 'лек полъх', 'слаб вятър', 'умерен слаб вятър', 'умерен вятър', 'свеж вятър', 'силен вятър', 'много силен вятър', 'буря', 'силна буря', 'щормов вятър', 'жесток щорм', 'ураган'];
   const sl = ['brezvetrje', 'rahel veter', 'lahen veter', 'šibek veter', 'zmeren veter', 'svež veter', 'močan veter', 'zelo močan veter', 'vihar', 'močan vihar', 'nevihta', 'silovita nevihta', 'orkan'];
   const de = ['Windstille', 'leiser Zug', 'leichte Brise', 'schwache Brise', 'mäßige Brise', 'frische Brise', 'starker Wind', 'steifer Wind', 'stürmischer Wind', 'Sturm', 'schwerer Sturm', 'orkanartiger Sturm', 'Orkan'];
-  const word = byLang({ ru, en, sr, it, el, sq, bg, sl, de })[b];
+  const es = ['calma', 'ventolina', 'flojito', 'flojo', 'bonancible', 'fresquito', 'fresco', 'frescachón', 'temporal', 'temporal fuerte', 'temporal duro', 'temporal muy duro', 'temporal huracanado'];
+  const trw = ['sakin', 'esinti', 'hafif rüzgâr', 'zayıf rüzgâr', 'orta rüzgâr', 'sert rüzgâr', 'kuvvetli rüzgâr', 'fırtınamsı', 'fırtına', 'kuvvetli fırtına', 'tam fırtına', 'şiddetli fırtına', 'kasırga'];
+  const word = byLang({ ru, en, sr, it, el, sq, bg, sl, de, es, tr: trw })[b];
   return `${word}, ${b} ${tr('Бф', 'Bft', 'Bf')}`;
 }
 
@@ -216,7 +224,7 @@ function nowLocal(atMs) {
 function dayLabel(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d, 12));
-  const loc = { ru: 'ru', en: 'en', sr: 'sr-Latn', hr: 'hr', it: 'it', el: 'el', sq: 'sq', bg: 'bg', sl: 'sl', de: 'de' }[Lang.current] || 'en';
+  const loc = { ru: 'ru', en: 'en', sr: 'sr-Latn', hr: 'hr', it: 'it', el: 'el', sq: 'sq', bg: 'bg', sl: 'sl', de: 'de', es: 'es', tr: 'tr' }[Lang.current] || 'en';
   let w;
   try { w = new Intl.DateTimeFormat(loc, { weekday: 'short', timeZone: 'UTC' }).format(dt); } catch (e) { w = ''; }
   return `${w} ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}`;

@@ -354,6 +354,7 @@ const Country = {
     const d = this.data;
     if (d.noLionfish && f.key === 'Рыба-лев (крылатка)') return false;
     if (d.fishExclude && d.fishExclude.has(f.key)) return false;
+    if (f.only && !f.only.includes(this.code)) return false;
     return !d.fishFilter || d.fishFilter.has(f.key);
   }
 };

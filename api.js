@@ -372,9 +372,18 @@ async function fetchDepth(lat, lon) {
 
 // ---------- Метеостанция: ближайший аэропорт (METAR, MET Norway) ----------
 // aviationweather.gov браузер не пускает (нет CORS). api.met.no разрешает простые запросы с небольших сайтов.
+// Если у ближайшей станции нет свежей сводки (маленькие аэропорты молчат ночью и не в сезон), берём следующую.
 async function loadStation(spot) {
-  const st = nearestStation(spot.lat, spot.lon);
-  if (!st) return null;
+  for (const st of nearestStations(spot.lat, spot.lon)) {
+    try {
+      const d = await loadMetar(st);
+      if (d) return d;
+    } catch (e) { /* пробуем следующую станцию */ }
+  }
+  return null;
+}
+
+async function loadMetar(st) {
   const text = await fetchRetry(`https://api.met.no/weatherapi/tafmetar/1.0/metar.txt?icao=${st.icao}`, 9000, res => res.text());
   // В ответе все сводки за сутки, берём самую свежую
   const now = new Date();

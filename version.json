@@ -1,14 +1,15 @@
 {
-  "versionCode": 16,
-  "versionName": "1.5.9",
+  "versionCode": 17,
+  "versionName": "1.5.10",
   "url": "https://kind2908.github.io/morska-ribalka/app-release.apk",
-  "note": "RU: Новый район Пореч (Хорватия). В настройках появилась обратная связь: можно написать нам письмом или в Telegram.\nEN: New area: Poreč (Croatia). Settings now have a feedback form: write to us by email or in Telegram.\nSR/HR: Novo područje Poreč (Hrvatska). U postavkama su povratne informacije: pišite nam e-poštom ili u Telegram.\nIT: Nuova zona: Parenzo/Poreč (Croazia). Nelle impostazioni puoi scriverci per email o su Telegram.\nEL: Νέα περιοχή: Πόρετς (Κροατία). Στις ρυθμίσεις μπορείτε να μας γράψετε με email ή στο Telegram.\nSQ: Zonë e re: Poreç (Kroaci). Te cilësimet mund të na shkruani me email ose në Telegram.\nSL: Novo območje Poreč (Hrvaška). V nastavitvah nam lahko pišete po e-pošti ali v Telegram.",
-  "note_ru": "Новый район Пореч (Хорватия). В настройках появилась обратная связь: можно написать нам письмом или в Telegram, а в карточках рыб и в правилах сообщить о неточности.",
-  "note_en": "New area: Poreč (Croatia). Settings now have a feedback form: write to us by email or in Telegram, or report a mistake right from a fish card or the rules.",
-  "note_sr": "Nova oblast Poreč (Hrvatska). U podešavanjima možete da nam pišete e-poštom ili u Telegram, a na karticama riba i u pravilima da prijavite grešku.",
-  "note_hr": "Novo područje Poreč (Hrvatska). U postavkama nam možete pisati e-poštom ili u Telegram, a na karticama riba i u pravilima prijaviti pogrešku.",
-  "note_it": "Nuova zona: Parenzo/Poreč (Croazia). Nelle impostazioni puoi scriverci per email o su Telegram, oppure segnalare un errore dalla scheda di un pesce o dalle regole.",
-  "note_el": "Νέα περιοχή: Πόρετς (Κροατία). Στις ρυθμίσεις μπορείτε να μας γράψετε με email ή στο Telegram ή να αναφέρετε λάθος από την καρτέλα ψαριού ή τους κανόνες.",
-  "note_sq": "Zonë e re: Poreç (Kroaci). Te cilësimet mund të na shkruani me email ose në Telegram, ose të raportoni një gabim nga karta e peshkut ose rregullat.",
-  "note_sl": "Novo območje Poreč (Hrvaška). V nastavitvah nam lahko pišete po e-pošti ali v Telegram ali sporočite napako iz kartice ribe ali pravil."
+  "note": "RU: Добавлен немецкий язык.\nEN: German language added.\nDE: Die App ist jetzt auf Deutsch verfügbar.\nSR/HR: Dodan njemački jezik.\nIT: Aggiunta la lingua tedesca.\nEL: Προστέθηκε η γερμανική γλώσσα.\nSQ: U shtua gjuha gjermane.\nSL: Dodana nemščina.",
+  "note_ru": "Добавлен немецкий язык. Приложение больше не запрашивает рекламный идентификатор.",
+  "note_en": "German language added. The app no longer requests the advertising ID.",
+  "note_de": "Die App ist jetzt auf Deutsch verfügbar: Oberfläche, Fischnamen, Regeln und Rezepte.",
+  "note_sr": "Dodat nemački jezik. Aplikacija više ne traži reklamni identifikator.",
+  "note_hr": "Dodan njemački jezik. Aplikacija više ne traži oglasni identifikator.",
+  "note_it": "Aggiunta la lingua tedesca. L'app non richiede più l'ID pubblicitario.",
+  "note_el": "Προστέθηκε η γερμανική γλώσσα. Η εφαρμογή δεν ζητά πλέον το διαφημιστικό αναγνωριστικό.",
+  "note_sq": "U shtua gjuha gjermane. Aplikacioni nuk kërkon më ID-në e reklamave.",
+  "note_sl": "Dodana nemščina. Aplikacija ne zahteva več oglaševalskega ID-ja."
 }

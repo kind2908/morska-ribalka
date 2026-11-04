@@ -226,6 +226,60 @@ const COUNTRIES = [
        'Sources: spot.gov.si (Recreational marine fishing; Sea sport fishing with a spear gun). See the SPOT portal for sizes and fees.',
        'Izvori: spot.gov.si (Recreational marine fishing; Sea sport fishing with a spear gun). Veličine i cijene potražite na portalu SPOT.']
     ]
+  },
+  {
+    code: 'TR', name: ['Турция', 'Turkey', 'Turska'], native: 'Türkiye', lang: 'tr', tz: 'Europe/Istanbul',
+    sea: ['Чёрное, Мраморное, Эгейское и Средиземное моря', 'Black, Marmara, Aegean and Mediterranean seas', 'Crno, Mramorno, Egejsko i Sredozemno more'],
+    authority: ['Министерство сельского и лесного хозяйства Турции', 'the Turkish Ministry of Agriculture and Forestry', 'Ministarstvo poljoprivrede i šumarstva Turske'],
+    regions: [
+      { key: 'Трабзон', ru: 'Трабзон', en: 'Trabzon', loc: 'Trabzon', pts: [[41.0150, 39.7300], [41.0320, 39.7300], [41.1400, 39.7300]] },
+      { key: 'Самсун', ru: 'Самсун', en: 'Samsun', loc: 'Samsun', pts: [[41.3000, 36.3450], [41.3250, 36.3650], [41.4300, 36.4000]] },
+      { key: 'Синоп', ru: 'Синоп', en: 'Sinop', loc: 'Sinop', pts: [[42.0320, 35.1500], [42.0600, 35.1500], [42.1650, 35.1500]] },
+      { key: 'Шиле', ru: 'Шиле', en: 'Şile', loc: 'Şile', pts: [[41.1840, 29.6100], [41.2050, 29.6200], [41.3100, 29.6500]] },
+      { key: 'Стамбул', ru: 'Стамбул', en: 'Istanbul', loc: 'İstanbul', pts: [[40.9750, 29.0300], [40.9500, 29.0200], [40.8500, 28.9800]] },
+      { key: 'Чешме', ru: 'Чешме', en: 'Çeşme', loc: 'Çeşme', pts: [[38.2150, 26.4000], [38.1800, 26.3700], [38.0800, 26.3700]] },
+      { key: 'Кушадасы', ru: 'Кушадасы', en: 'Kuşadası', loc: 'Kuşadası', pts: [[37.8680, 27.2400], [37.8650, 27.2150], [37.8600, 27.1000]] },
+      { key: 'Бодрум', ru: 'Бодрум', en: 'Bodrum', loc: 'Bodrum', pts: [[37.0260, 27.4300], [37.0080, 27.4300], [36.9000, 27.4300]] },
+      { key: 'Мармарис', ru: 'Мармарис', en: 'Marmaris', loc: 'Marmaris', pts: [[36.8450, 28.2700], [36.8200, 28.2700], [36.7400, 28.3300]] },
+      { key: 'Фетхие', ru: 'Фетхие', en: 'Fethiye', loc: 'Fethiye', pts: [[36.6260, 29.0950], [36.6400, 29.0700], [36.6800, 28.9500]] },
+      { key: 'Анталья', ru: 'Анталья', en: 'Antalya', loc: 'Antalya', pts: [[36.8550, 30.6500], [36.8300, 30.6600], [36.7200, 30.7000]] },
+      { key: 'Аланья', ru: 'Аланья', en: 'Alanya', loc: 'Alanya', pts: [[36.5400, 31.9850], [36.5100, 32.0000], [36.4000, 32.0000]] },
+      { key: 'Мерсин', ru: 'Мерсин', en: 'Mersin', loc: 'Mersin', pts: [[36.7800, 34.6200], [36.7600, 34.6300], [36.6700, 34.7000]] }
+    ],
+    rules: null // правила и районы приходят из данных приложения (rules-data.js, site_regions)
+  },
+  {
+    code: 'ES', name: ['Испания', 'Spain', 'Španija'], native: 'España', lang: 'es', tz: 'Europe/Madrid',
+    sea: ['Средиземное море и Атлантический океан', 'Mediterranean Sea and Atlantic Ocean', 'Sredozemno more i Atlantski okean'],
+    authority: ['Министерство сельского хозяйства, рыболовства и продовольствия Испании (MAPA) и правительства автономных областей', 'the Spanish Ministry of Agriculture, Fisheries and Food (MAPA) and the regional governments', 'Ministarstvo poljoprivrede, ribarstva i hrane Španije (MAPA) i vlade autonomnih oblasti'],
+    noLionfish: true,
+    fishExclude: new Set(['Иглобрюх серебристый', 'Сиган полосатый']),
+    regions: [
+      { key: 'Росас', ru: 'Росас', en: 'Roses', loc: 'Roses', area: 'CT', pts: [[42.2480, 3.1700], [42.2350, 3.1900], [42.1300, 3.2500]] },
+      { key: 'Барселона', ru: 'Барселона', en: 'Barcelona', loc: 'Barcelona', area: 'CT', pts: [[41.3700, 2.2000], [41.3500, 2.2200], [41.2800, 2.3300]] },
+      { key: 'Таррагона', ru: 'Таррагона', en: 'Tarragona', loc: 'Tarragona', area: 'CT', pts: [[41.1050, 1.2500], [41.0850, 1.2500], [40.9800, 1.2700]] },
+      { key: 'Пеньискола', ru: 'Пеньискола', en: 'Peñíscola', loc: 'Peníscola', area: 'VC', pts: [[40.3550, 0.4100], [40.3500, 0.4400], [40.3200, 0.5700]] },
+      { key: 'Валенсия', ru: 'Валенсия', en: 'Valencia', loc: 'València', area: 'VC', pts: [[39.4600, -0.3100], [39.4600, -0.2800], [39.4500, -0.1500]] },
+      { key: 'Дения', ru: 'Дения', en: 'Dénia', loc: 'Dénia', area: 'VC', pts: [[38.8450, 0.1250], [38.8500, 0.1500], [38.8500, 0.2900]] },
+      { key: 'Аликанте', ru: 'Аликанте', en: 'Alicante', loc: 'Alacant', area: 'VC', pts: [[38.3350, -0.4750], [38.3200, -0.4500], [38.2500, -0.3500]] },
+      { key: 'Торревьеха', ru: 'Торревьеха', en: 'Torrevieja', loc: 'Torrevieja', area: 'VC', pts: [[37.9650, -0.6700], [37.9550, -0.6500], [37.9200, -0.5300]] },
+      { key: 'Картахена', ru: 'Картахена', en: 'Cartagena', loc: 'Cartagena', area: 'MU', pts: [[37.5700, -0.9800], [37.5500, -0.9800], [37.4500, -0.9800]] },
+      { key: 'Альмерия', ru: 'Альмерия', en: 'Almería', loc: 'Almería', area: 'ANM', pts: [[36.8250, -2.4600], [36.8000, -2.4600], [36.7000, -2.4500]] },
+      { key: 'Малага', ru: 'Малага', en: 'Málaga', loc: 'Málaga', area: 'ANM', pts: [[36.7100, -4.4000], [36.6900, -4.4000], [36.6000, -4.3500]] },
+      { key: 'Марбелья', ru: 'Марбелья', en: 'Marbella', loc: 'Marbella', area: 'ANM', pts: [[36.5050, -4.8800], [36.4800, -4.8800], [36.3900, -4.8500]] },
+      { key: 'Кадис', ru: 'Кадис', en: 'Cádiz', loc: 'Cádiz', area: 'ANA', pts: [[36.5350, -6.3150], [36.5300, -6.3500], [36.5000, -6.4700]] },
+      { key: 'Уэльва', ru: 'Уэльва (Пунта-Умбрия)', en: 'Huelva (Punta Umbría)', loc: 'Punta Umbría', area: 'ANA', pts: [[37.1500, -6.9600], [37.1400, -6.9500], [37.0500, -6.9500]] },
+      { key: 'Пальма', ru: 'Пальма (Мальорка)', en: 'Palma (Mallorca)', loc: 'Palma', area: 'IB', pts: [[39.5500, 2.6300], [39.5300, 2.6300], [39.4300, 2.6500]] },
+      { key: 'Маон', ru: 'Маон (Менорка)', en: 'Mahón (Menorca)', loc: 'Maó', area: 'IB', pts: [[39.8650, 4.3100], [39.8600, 4.3400], [39.8300, 4.4800]] },
+      { key: 'Ибица', ru: 'Ибица', en: 'Ibiza', loc: 'Eivissa', area: 'IB', pts: [[38.9000, 1.4400], [38.8800, 1.4600], [38.8200, 1.5800]] },
+      { key: 'Виго', ru: 'Виго', en: 'Vigo', loc: 'Vigo', area: 'GA', pts: [[42.2450, -8.7300], [42.2200, -8.7800], [42.2000, -8.9500]] },
+      { key: 'Ла-Корунья', ru: 'Ла-Корунья', en: 'A Coruña', loc: 'A Coruña', area: 'GA', pts: [[43.3900, -8.4000], [43.4100, -8.4200], [43.4800, -8.4500]] },
+      { key: 'Хихон', ru: 'Хихон', en: 'Gijón', loc: 'Xixón', area: 'AS', pts: [[43.5500, -5.6600], [43.5700, -5.6600], [43.6800, -5.6600]] },
+      { key: 'Сантандер', ru: 'Сантандер', en: 'Santander', loc: 'Santander', area: 'CB', pts: [[43.4800, -3.7700], [43.5000, -3.7800], [43.6000, -3.7800]] },
+      { key: 'Бильбао', ru: 'Бильбао (Гечо)', en: 'Bilbao (Getxo)', loc: 'Getxo', area: 'PV', pts: [[43.3500, -3.0300], [43.3800, -3.0300], [43.4800, -3.0300]] },
+      { key: 'Сан-Себастьян', ru: 'Сан-Себастьян', en: 'San Sebastián', loc: 'Donostia', area: 'PV', pts: [[43.3160, -1.9930], [43.3350, -1.9900], [43.4500, -2.0000]] }
+    ],
+    rules: null // правила, области и районы приходят из данных приложения (rules-data.js, site_regions)
   }
 ];
 
@@ -247,6 +301,15 @@ const STATIONS = [
   ['LIBP', 'Pescara', 42.4320, 14.1810], ['LIBG', 'Taranto', 40.5170, 17.4030], ['LICR', 'Reggio Calabria', 38.0720, 15.6540],
   ['LICC', 'Catania', 37.4670, 15.0640], ['LIEE', 'Cagliari', 39.2430, 9.0600], ['LIRI', 'Salerno', 40.6200, 14.9110],
   ['LIRF', 'Roma Fiumicino', 41.8000, 12.2390], ['LIRP', 'Pisa', 43.6840, 10.3930], ['LIMJ', 'Genova', 44.4130, 8.8380],
+  ['LEGE', 'Girona', 41.9110, 2.7630], ['LEBL', 'Barcelona', 41.2930, 2.0700], ['LERS', 'Reus', 41.1500, 1.1790],
+  ['LECH', 'Castellón', 40.2110, 0.0670], ['LEVC', 'Valencia', 39.4890, -0.4820], ['LEAL', 'Alicante', 38.2820, -0.5580],
+  ['LELC', 'San Javier', 37.7750, -0.8120], ['LEMI', 'Murcia', 37.8030, -1.1250], ['LEAM', 'Almería', 36.8460, -2.3570],
+  ['LEMG', 'Málaga', 36.6660, -4.4820], ['LXGB', 'Gibraltar', 36.1510, -5.3500], ['LEJR', 'Jerez', 36.7510, -6.0560],
+  ['LERT', 'Rota', 36.6450, -6.3490], ['LEZL', 'Sevilla', 37.4180, -5.8930], ['LPFR', 'Faro', 37.0140, -7.9660],
+  ['LEPA', 'Palma de Mallorca', 39.5610, 2.7370], ['LEMH', 'Menorca', 39.8550, 4.2160], ['LEIB', 'Ibiza', 38.8760, 1.3840],
+  ['LEVX', 'Vigo', 42.2390, -8.6240], ['LECO', 'A Coruña', 43.3070, -8.3720], ['LEST', 'Santiago', 42.8880, -8.4110],
+  ['LEAS', 'Asturias', 43.5670, -6.0440], ['LEXJ', 'Santander', 43.4290, -3.8310], ['LEBB', 'Bilbao', 43.2980, -2.9060],
+  ['LESO', 'San Sebastián', 43.3610, -1.7870],
   ['LBWN', 'Varna', 43.2321, 27.8251], ['LBBG', 'Burgas', 42.5696, 27.5152]
 ];
 // Станции не дальше 110 км, от ближайшей к дальней (до трёх)
@@ -282,9 +345,15 @@ const Country = {
   authority() { return t3(this.data.authority); },
   rules() { return this.data.rules || DATA.rules; },
   regions() { return this.data.regions; },
+  // Область района со своими законами (Испания: CT, IB...), иначе null
+  area(regionKey) {
+    const r = this.data.regions.find(x => x.key === regionKey);
+    return (r && r.area && this.data.areas || []).find(a => a.code === r.area) || null;
+  },
   visible(f) {
     const d = this.data;
     if (d.noLionfish && f.key === 'Рыба-лев (крылатка)') return false;
+    if (d.fishExclude && d.fishExclude.has(f.key)) return false;
     return !d.fishFilter || d.fishFilter.has(f.key);
   }
 };

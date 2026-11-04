@@ -134,10 +134,11 @@ const safetyRuleKeys = new Set(['Скорпена чёрная', 'Скорпен
 const sizeText = s => (Lang.current !== 'ru' ? s
   : s.replace(' cm', ' см').replace(' mm', ' мм').replace(' kg', ' кг').replace(' g', ' г'));
 
-// Текст правил вида для выбранной страны: размер, запрет, примечание, безопасность
-function fishRuleText(f, code) {
-  const byCountry = SITE_DATA.fish[code] || {};
-  const r = byCountry[f.key];
+// Текст правил вида для выбранной страны и района: размер, запрет, примечание, безопасность.
+// Если у района есть область со своими нормами (ES-CT), берём их, иначе нормы страны.
+function fishRuleText(f, code, area) {
+  const byArea = area && SITE_DATA.fish[code + '-' + area.code];
+  const r = (byArea && byArea[f.key]) || (SITE_DATA.fish[code] || {})[f.key];
   const parts = [];
   if (r && r.min) parts.push(tr('Минимальный размер', 'Minimum size', 'Minimalna veličina') + ' ' + sizeText(r.min) + ' (' + r.src + ').');
   if (r && r.closed) parts.push(tr('Запрет ловли', 'Closed season', 'Lovostaj') + ': ' + r.closed + '.');
@@ -155,11 +156,17 @@ function renderLibrary(S, rerender) {
   const out = [h('h2', { class: 'page' }, tr('Рыбы', 'Fish', 'Ribe') + ' · ' + Country.sea())];
 
   const rules = Country.rules();
+  const area = Country.area(S.region);
   const rulesCard = card(tr('Основные правила и законы', 'Main rules and laws', 'Osnovna pravila i zakoni'),
     h('a', { class: 'link', href: '#', onclick: e => { e.preventDefault(); S.rulesOpen = !S.rulesOpen; rerender(); } },
       S.rulesOpen ? tr('Свернуть ▲', 'Collapse ▲', 'Skupi ▲') : tr('Показать ▼', 'Show ▼', 'Prikaži ▼')));
   if (S.rulesOpen) {
     rules.slice(0, rules.length - 2).forEach(r => rulesCard.appendChild(h('p', null, '• ' + t3(r))));
+    // Правила области выбранного района
+    if (area && area.rules.length) {
+      rulesCard.appendChild(h('h3', null, t3(area.name)));
+      area.rules.forEach(r => rulesCard.appendChild(h('p', null, '• ' + t3(r))));
+    }
     rulesCard.appendChild(small(t3(rules[rules.length - 2])));
     rulesCard.appendChild(small(t3(rules[rules.length - 1])));
     rulesCard.appendChild(feedbackForm(S, rerender, 'rules', TOPIC_RULES, Country.name()));
@@ -184,7 +191,7 @@ function renderLibrary(S, rerender) {
         c.appendChild(infoRow(tr('Наживка и приманки', 'Bait and lures', 'Mamci i varalice'), t3(f.bait)));
         c.appendChild(infoRow(tr('Часы активности', 'Active hours', 'Aktivni sati'), t3(f.hours)));
         c.appendChild(infoRow(tr('Сезон', 'Season', 'Sezona'), t3(f.season)));
-        c.appendChild(infoRow(tr('Правила', 'Rules', 'Pravila'), fishRuleText(f, Country.code)));
+        c.appendChild(infoRow(tr('Правила', 'Rules', 'Pravila'), fishRuleText(f, Country.code, area)));
         const x = window.FISHX && FISHX.sp[f.key];
         if (x) {
           c.appendChild(infoRow(tr('Повадки', 'Habits', 'Navike'), t3(x.habits)));

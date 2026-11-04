@@ -35,7 +35,8 @@ const Lang = {
     const guess = known.includes(phone) ? phone : (phone === 'bs' || phone === 'cnr' ? 'sr' : 'ru');
     this.current = LANGS.some(l => l.code === saved) ? saved : guess;
   },
-  set(code) { this.current = code; Store.set('lang', code); }
+  // язык страны может быть ещё не переведён (tr, es): тогда оставляем текущий
+  set(code) { if (!LANGS.some(l => l.code === code)) return; this.current = code; Store.set('lang', code); }
 };
 
 function tr(ru, en, sr) {

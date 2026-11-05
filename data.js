@@ -2198,6 +2198,25 @@ window.DATA = {
    "surf": false
   },
   {
+   "name": "Скумбрия",
+   "season": [
+    3,
+    3,
+    5,
+    7,
+    8,
+    7,
+    6,
+    6,
+    8,
+    8,
+    6,
+    4
+   ],
+   "temp": "tMackerel",
+   "surf": false
+  },
+  {
    "name": "Ласкирь",
    "season": [
     3,
@@ -2371,6 +2390,25 @@ window.DATA = {
    "surf": false
   },
   {
+   "name": "Сибас",
+   "season": [
+    8,
+    8,
+    7,
+    6,
+    5,
+    4,
+    4,
+    4,
+    6,
+    8,
+    9,
+    9
+   ],
+   "temp": "tSeaBass",
+   "surf": true
+  },
+  {
    "name": "Дорадо",
    "season": [
     4,
@@ -2409,6 +2447,25 @@ window.DATA = {
    "surf": false
   },
   {
+   "name": "Кальмар",
+   "season": [
+    8,
+    7,
+    6,
+    4,
+    3,
+    3,
+    3,
+    3,
+    5,
+    8,
+    9,
+    9
+   ],
+   "temp": "tSquid",
+   "surf": false
+  },
+  {
    "name": "Скумбрия",
    "season": [
     3,
@@ -2425,6 +2482,44 @@ window.DATA = {
     4
    ],
    "temp": "tMackerel",
+   "surf": false
+  },
+  {
+   "name": "Ласкирь",
+   "season": [
+    3,
+    3,
+    5,
+    7,
+    8,
+    8,
+    7,
+    7,
+    8,
+    8,
+    6,
+    4
+   ],
+   "temp": "tDiplodus",
+   "surf": false
+  },
+  {
+   "name": "Сарган",
+   "season": [
+    3,
+    4,
+    7,
+    9,
+    9,
+    7,
+    5,
+    4,
+    4,
+    5,
+    4,
+    3
+   ],
+   "temp": "tGarfish",
    "surf": false
   }
  ],

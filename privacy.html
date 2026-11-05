@@ -17,7 +17,7 @@
     h1 { font-size: 1.6rem; margin: 0 0 4px; }
     h2 { font-size: 1.25rem; margin: 0 0 8px; color: var(--accent); }
     h3 { font-size: 1rem; margin: 18px 0 4px; }
-    p, li { margin: 6px 0; }
+    p, li { margin: 6px 0; overflow-wrap: anywhere; }
     ul { padding-left: 20px; }
     .muted { color: var(--muted); font-size: .9rem; }
     nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 20px; }
@@ -29,94 +29,451 @@
 <body>
 <main>
   <h1>Sea Fishing — Privacy Policy</h1>
-  <p class="muted">Android app and website kind2908.github.io/morska-ribalka · Last updated: 4 November 2026</p>
+  <p class="muted">Android app and website kind2908.github.io/morska-ribalka · Last updated: 5 November 2026</p>
   <nav>
-    <a href="#en">English</a><a href="#de">Deutsch</a><a href="#ru">Русский</a><a href="#hr">Hrvatski / Srpski</a><a href="#it">Italiano</a>
+    <a href="#en">English</a><a href="#ru">Русский</a><a href="#hr">Hrvatski / Srpski</a><a href="#it">Italiano</a><a href="#el">Ελληνικά</a><a href="#sq">Shqip</a><a href="#sl">Slovenščina</a><a href="#de">Deutsch</a><a href="#es">Español</a><a href="#tr">Türkçe</a>
   </nav>
 
   <section id="en" lang="en">
     <h2>English</h2>
-    <p>Sea Fishing is a free hobby app for sea anglers on the Adriatic and Ionian coasts. It has no accounts, no ads and no in-app purchases. We do not sell or share personal data.</p>
+    <p>Sea Fishing is a free hobby app and website for sea anglers in Montenegro, Croatia, Italy, Greece, Albania, Slovenia, Spain (without the Canary Islands) and Turkey. It has no accounts, no ads and no in-app purchases. We do not sell or share personal data. The app is made by a private developer; contact details are at the end of this page.</p>
+    <h3>What stays on your device</h3>
+    <p>Your fishing diary, catch photos, saved places and settings are stored only on your device: in the app's storage on Android, or in your browser's storage on the website. They are never uploaded. We have no server that stores user data, so we cannot see, change or delete it.</p>
     <h3>Location</h3>
-    <p>If you allow it, the app uses your location to show the weather and sea conditions where you are and to suggest the nearest area. The location is used on your device. To get a forecast, the app sends the coordinates of the selected point (not your identity) to the weather and map services listed below. You can refuse location access and pick a point on the map instead.</p>
-    <h3>Fishing diary and photos</h3>
-    <p>Diary entries and catch photos are stored only on your device. They are never uploaded. A backup file (zip) or table (CSV) is created only when you export it yourself.</p>
-    <h3>Anonymous usage statistics</h3>
-    <p>The app and the website use Google Analytics for Firebase to count how many people use them, which screens are opened, the app language, the device model, the Android version and the approximate country. This data is not linked to your name and is not used for advertising. Advertising ID collection is turned off. You can switch statistics off at any time in Settings → “Anonymous statistics”. Google's privacy policy: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.</p>
-    <h3>Services the app connects to</h3>
+    <p>Location access is optional. If you allow it, the app or website uses your location to show the forecast where you are and to suggest the nearest area. To get the forecast, only the coordinates of the selected point are sent to the weather and map services listed below, never to us and never together with your name. You can refuse access and pick a point on the map instead.</p>
+    <h3>Anonymous statistics</h3>
+    <p>Statistics help us see whether the app is used at all. They are on by default and can be switched off at any time in Settings → “Anonymous statistics”.</p>
     <ul>
-      <li>Open-Meteo (api.open-meteo.com, marine-api.open-meteo.com): weather, waves, water temperature. Receives the coordinates of the chosen point.</li>
-      <li>EMODnet Bathymetry: sea depth for the chosen point and the depth map.</li>
-      <li>Esri ArcGIS Online: map and satellite images for the visible map area.</li>
-      <li>OpenStreetMap Overpass API: names of towns, islands, capes and bays in the visible map area.</li>
-      <li>NOAA Aviation Weather (aviationweather.gov): wind measured at nearby airports.</li>
-      <li>Wikipedia and Wikimedia Commons: fish pictures and articles in the fish library.</li>
-      <li>GitHub Pages: the website itself, and in the version downloaded from the website, the check for new versions.</li>
+      <li>Android app: Google Analytics for Firebase. It sends automatic events (first launch, sessions, updates) with a random installation ID, the app version, the app language, the device model, the Android version and the approximate country. The advertising ID is removed from the app, ad personalisation is off.</li>
+      <li>Website: Google Analytics 4 (the same Firebase project). It sends a random visitor ID (stored in a cookie), which tab is opened (forecast, conditions, days, map, diary, fish, settings), the site version, the APK download and the home-screen install, the language and the approximate country. IP anonymisation is on; Google signals and ad personalisation are off. When statistics are off, the Google script is not loaded.</li>
     </ul>
-    <p>Like any website, these services see your IP address when the app requests data from them.</p>
+    <p>The diary, photos, saved places and coordinates are never part of the statistics. We see only summary reports and cannot link them to a person. The legal basis is our legitimate interest in knowing how many people use the app (Art. 6(1)(f) GDPR); you object by switching statistics off. The data is kept by Google under the retention settings of Google Analytics: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.</p>
+    <h3>Services the app and website connect to</h3>
+    <ul>
+      <li>Open-Meteo (api.open-meteo.com, marine-api.open-meteo.com): weather, waves, water temperature, currents. Receives the coordinates of the selected point.</li>
+      <li>EMODnet Bathymetry: sea depth at the selected point and the depth map.</li>
+      <li>Esri ArcGIS Online: map and satellite images for the visible map area.</li>
+      <li>OpenStreetMap Overpass API (app): names of towns, islands, capes and bays in the visible map area.</li>
+      <li>Weather stations (METAR): NOAA Aviation Weather, aviationweather.gov (app), and MET Norway, api.met.no (website).</li>
+      <li>Wikipedia and Wikimedia Commons: fish pictures and articles in the fish library.</li>
+      <li>cdnjs (Cloudflare) (website): the Leaflet map library.</li>
+      <li>GitHub Pages: hosts the website; the Android version downloaded from the website checks it for new versions. GitHub may keep its own technical logs.</li>
+    </ul>
+    <p>Like any website, these services see your IP address when data is requested from them.</p>
     <h3>Feedback</h3>
-    <p>If you write to us by e-mail or Telegram, we see only what you send and use it only to answer you and improve the app.</p>
+    <p>If you write to us by e-mail or Telegram, we see only what you send. The feedback form adds the app version, language, country and area, and you see the whole text before sending. We use it only to answer you and improve the app, and delete it on request.</p>
+    <h3>Your rights</h3>
+    <p>Under the GDPR you have the right to access, export, correct and delete your data. Because your data stays on your device, you can do this yourself:</p>
+    <ul>
+      <li>Export: Diary → “Backup” (a zip file with entries, photos and places in the app, a JSON file on the website) and “Export diary” (a CSV table).</li>
+      <li>Delete: delete entries in the diary, clear the app's data or the site's data in the browser, or uninstall the app. Uninstalling deletes everything, so make a backup first if you want to keep the diary.</li>
+      <li>Statistics: switch them off in Settings. If you want Analytics data deleted or have any question, write to us. You may also complain to the data protection authority of your country.</li>
+    </ul>
     <h3>Children</h3>
     <p>The app is not directed at children under 13 and does not knowingly collect their data.</p>
+    <h3>Changes</h3>
+    <p>If this policy changes, the new version is published on this page with a new date.</p>
     <h3>Contact</h3>
-    <p>Questions or deletion requests: <a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>. Uninstalling the app deletes all of its data from your device.</p>
-  </section>
-
-  <section id="de" lang="de">
-    <h2>Deutsch</h2>
-    <p>Sea Fishing ist eine kostenlose Hobby-App für Meeresangler an der Adria und am Ionischen Meer. Es gibt keine Konten, keine Werbung und keine In-App-Käufe. Wir verkaufen keine persönlichen Daten und geben sie nicht weiter.</p>
-    <h3>Standort</h3>
-    <p>Wenn Sie es erlauben, nutzt die App Ihren Standort, um Wetter und Meeresbedingungen vor Ort anzuzeigen und den nächsten Bereich vorzuschlagen. Für die Vorhersage sendet die App nur die Koordinaten des gewählten Punktes (nicht Ihre Identität) an die unten genannten Wetter- und Kartendienste. Sie können den Standortzugriff ablehnen und stattdessen einen Punkt auf der Karte wählen.</p>
-    <h3>Fangtagebuch und Fotos</h3>
-    <p>Einträge und Fangfotos werden nur auf Ihrem Gerät gespeichert und nie hochgeladen. Eine Sicherungsdatei (ZIP) oder Tabelle (CSV) entsteht nur, wenn Sie sie selbst exportieren.</p>
-    <h3>Anonyme Nutzungsstatistik</h3>
-    <p>App und Website nutzen Google Analytics for Firebase, um zu zählen, wie viele Menschen sie nutzen, welche Bildschirme geöffnet werden, die App-Sprache, das Gerätemodell, die Android-Version und das ungefähre Land. Diese Daten sind nicht mit Ihrem Namen verknüpft und werden nicht für Werbung genutzt; die Erfassung der Werbe-ID ist abgeschaltet. Sie können die Statistik jederzeit unter Einstellungen → „Anonyme Statistik“ ausschalten.</p>
-    <h3>Verbundene Dienste</h3>
-    <p>Open-Meteo (Wetter, Wellen, Wassertemperatur), EMODnet Bathymetry (Wassertiefe), Esri ArcGIS Online (Karten- und Satellitenbilder), OpenStreetMap Overpass API (Orts- und Buchtnamen), NOAA Aviation Weather (Wind an Flughäfen), Wikipedia und Wikimedia Commons (Fischbilder), GitHub Pages (Website und Versionsprüfung in der Website-Version). Diese Dienste sehen Ihre IP-Adresse, wenn die App Daten abruft.</p>
-    <h3>Kontakt</h3>
-    <p>Fragen oder Löschanfragen: <a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>. Beim Deinstallieren werden alle Daten der App vom Gerät gelöscht.</p>
+    <p><a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>.</p>
   </section>
 
   <section id="ru" lang="ru">
     <h2>Русский</h2>
-    <p>Sea Fishing — бесплатное приложение для любителей морской рыбалки на Адриатике и Ионическом море. Здесь нет аккаунтов, рекламы и покупок. Мы не продаём и не передаём личные данные.</p>
+    <p>Sea Fishing — бесплатное приложение и сайт для любителей морской рыбалки в Черногории, Хорватии, Италии, Греции, Албании, Словении, Испании (без Канарских островов) и Турции. Здесь нет аккаунтов, рекламы и покупок. Мы не продаём и не передаём личные данные. Приложение делает частный разработчик, контакты в конце страницы.</p>
+    <h3>Что остаётся на вашем устройстве</h3>
+    <p>Дневник, фото уловов, сохранённые места и настройки хранятся только на вашем устройстве: в памяти приложения на Android или в хранилище браузера на сайте. Они никуда не загружаются. У нас нет сервера с данными пользователей, поэтому мы не можем их увидеть, изменить или удалить.</p>
     <h3>Местоположение</h3>
-    <p>Если вы разрешите, приложение использует ваше местоположение, чтобы показать погоду и море рядом с вами и предложить ближайший район. Для прогноза приложение отправляет только координаты выбранной точки (без сведений о вас) в сервисы погоды и карт из списка ниже. Можно не давать доступ и выбрать точку на карте.</p>
-    <h3>Дневник и фото</h3>
-    <p>Записи дневника и фото уловов хранятся только на вашем телефоне и никуда не загружаются. Файл резервной копии (zip) или таблица (CSV) создаются, только когда вы сами их сохраняете.</p>
+    <p>Доступ к местоположению необязателен. Если вы его дадите, приложение или сайт покажут прогноз там, где вы находитесь, и предложат ближайший район. Для прогноза в сервисы погоды и карт из списка ниже отправляются только координаты выбранной точки, но не нам и никогда вместе с вашим именем. Можно не давать доступ и выбрать точку на карте.</p>
     <h3>Анонимная статистика</h3>
-    <p>Приложение и сайт используют Google Analytics for Firebase: сколько людей пользуется, какие экраны открывают, язык приложения, модель телефона, версия Android и примерная страна. Эти данные не связаны с вашим именем и не используются для рекламы, сбор рекламного идентификатора выключен. Статистику можно выключить в любой момент: Настройки → «Анонимная статистика».</p>
-    <h3>Сервисы, к которым обращается приложение</h3>
-    <p>Open-Meteo (погода, волны, температура воды), EMODnet Bathymetry (глубины), Esri ArcGIS Online (карта и спутник), OpenStreetMap Overpass API (названия мест), NOAA Aviation Weather (ветер в аэропортах), Wikipedia и Wikimedia Commons (фото рыб), GitHub Pages (сайт и проверка новых версий в версии с сайта). Эти сервисы видят ваш IP-адрес при запросе данных.</p>
+    <p>Статистика помогает понять, пользуются ли приложением вообще. Она включена по умолчанию, выключить её можно в любой момент: Настройки → «Анонимная статистика».</p>
+    <ul>
+      <li>Приложение Android: Google Analytics for Firebase. Отправляет автоматические события (первый запуск, сеансы, обновления) со случайным номером установки, версией приложения, языком приложения, моделью телефона, версией Android и примерной страной. Рекламный идентификатор из приложения убран, персонализация рекламы выключена.</li>
+      <li>Сайт: Google Analytics 4 (тот же проект Firebase). Отправляет случайный номер посетителя (хранится в cookie), какая вкладка открыта (клёв, условия, дни, карта, дневник, рыбы, настройки), версию сайта, скачивание APK и установку на домашний экран, язык и примерную страну. Анонимизация IP включена, Google signals и персонализация рекламы выключены. Если статистика выключена, скрипт Google не загружается.</li>
+    </ul>
+    <p>Дневник, фото, сохранённые места и координаты в статистику не попадают никогда. Мы видим только сводные отчёты и не можем связать их с человеком. Основание обработки — наш законный интерес знать, сколько людей пользуется приложением (ст. 6(1)(f) GDPR); возразить можно, выключив статистику. Данные хранит Google по настройкам хранения Google Analytics: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.</p>
+    <h3>Сервисы, к которым обращаются приложение и сайт</h3>
+    <ul>
+      <li>Open-Meteo (api.open-meteo.com, marine-api.open-meteo.com): погода, волны, температура воды, течения. Получает координаты выбранной точки.</li>
+      <li>EMODnet Bathymetry: глубина в выбранной точке и карта глубин.</li>
+      <li>Esri ArcGIS Online: карта и спутниковые снимки видимой области.</li>
+      <li>OpenStreetMap Overpass API (приложение): названия городов, островов, мысов и бухт на видимой карте.</li>
+      <li>Метеостанции (METAR): NOAA Aviation Weather, aviationweather.gov (приложение), и MET Norway, api.met.no (сайт).</li>
+      <li>Википедия и Wikimedia Commons: фото и статьи о рыбах в библиотеке.</li>
+      <li>cdnjs (Cloudflare) (сайт): библиотека карт Leaflet.</li>
+      <li>GitHub Pages: на нём размещён сайт; версия для Android, скачанная с сайта, проверяет там новые версии. GitHub может вести свои технические журналы.</li>
+    </ul>
+    <p>Как любой сайт, эти сервисы видят ваш IP-адрес при запросе данных.</p>
+    <h3>Обратная связь</h3>
+    <p>Если вы пишете нам по почте или в Telegram, мы видим только то, что вы прислали. Форма обратной связи добавляет версию приложения, язык, страну и район, весь текст вы видите перед отправкой. Используем это только для ответа и улучшения приложения и удаляем по просьбе.</p>
+    <h3>Ваши права</h3>
+    <p>По GDPR у вас есть право на доступ к данным, их выгрузку, исправление и удаление. Так как данные хранятся на вашем устройстве, всё это вы делаете сами:</p>
+    <ul>
+      <li>Выгрузка: Дневник → «Резервная копия» (zip с записями, фото и местами в приложении, файл JSON на сайте) и «Экспорт дневника» (таблица CSV).</li>
+      <li>Удаление: удалите записи в дневнике, очистите данные приложения или данные сайта в браузере либо удалите приложение. При удалении приложения пропадает всё, поэтому сначала сделайте резервную копию, если дневник нужен.</li>
+      <li>Статистика: выключите её в настройках. Если хотите удалить данные Analytics или есть вопросы, напишите нам. Вы также можете пожаловаться в орган по защите данных своей страны.</li>
+    </ul>
+    <h3>Дети</h3>
+    <p>Приложение не предназначено для детей младше 13 лет и сознательно не собирает их данные.</p>
+    <h3>Изменения</h3>
+    <p>Если политика изменится, новая версия будет опубликована на этой странице с новой датой.</p>
     <h3>Связь</h3>
-    <p>Вопросы и просьбы об удалении данных: <a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>. При удалении приложения все его данные удаляются с телефона.</p>
+    <p><a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>.</p>
   </section>
 
   <section id="hr" lang="hr">
     <h2>Hrvatski / Srpski</h2>
-    <p>Sea Fishing je besplatna aplikacija za ljubitelje morskog ribolova na Jadranu i Jonskom moru. Nema računa, reklama ni kupnji. Ne prodajemo i ne dijelimo osobne podatke.</p>
+    <p>Sea Fishing je besplatna aplikacija i web stranica za ljubitelje morskog ribolova u Crnoj Gori, Hrvatskoj, Italiji, Grčkoj, Albaniji, Sloveniji, Španjolskoj (bez Kanarskih otoka) i Turskoj. Nema računa, reklama ni kupnji. Ne prodajemo i ne dijelimo osobne podatke. Aplikaciju izrađuje privatni programer, kontakt je na kraju stranice.</p>
+    <h3>Što ostaje na vašem uređaju</h3>
+    <p>Dnevnik, fotografije ulova, spremljena mjesta i postavke čuvaju se samo na vašem uređaju: u memoriji aplikacije na Androidu ili u pregledniku na web stranici. Nikamo se ne šalju. Nemamo poslužitelj s podacima korisnika, pa ih ne možemo vidjeti, mijenjati ni brisati.</p>
     <h3>Lokacija</h3>
-    <p>Ako dopustite, aplikacija koristi vašu lokaciju za prikaz vremena i stanja mora u blizini i za prijedlog najbližeg područja. Za prognozu šalje samo koordinate odabrane točke (bez podataka o vama) servisima za vrijeme i karte navedenima gore. Pristup lokaciji možete odbiti i odabrati točku na karti.</p>
-    <h3>Dnevnik i fotografije</h3>
-    <p>Zapisi i fotografije ulova čuvaju se samo na vašem uređaju i nikamo se ne šalju. Sigurnosna kopija (zip) ili tablica (CSV) nastaje samo kad je sami izvezete.</p>
+    <p>Pristup lokaciji nije obavezan. Ako ga dopustite, aplikacija ili stranica prikazuje prognozu na mjestu gdje ste i predlaže najbliže područje. Za prognozu se servisima za vrijeme i karte s popisa ispod šalju samo koordinate odabrane točke, a ne nama i nikad zajedno s vašim imenom. Pristup možete odbiti i odabrati točku na karti.</p>
     <h3>Anonimna statistika</h3>
-    <p>Aplikacija i stranica koriste Google Analytics for Firebase: broj korisnika, otvoreni ekrani, jezik, model uređaja, verzija Androida i približna zemlja. Podaci nisu povezani s vašim imenom i ne koriste se za reklame; prikupljanje reklamnog ID-a je isključeno. Statistiku možete isključiti u Postavkama.</p>
+    <p>Statistika nam pomaže vidjeti koristi li se aplikacija uopće. Uključena je prema zadanim postavkama i možete je isključiti u bilo kojem trenutku: Postavke → „Anonimna statistika“.</p>
+    <ul>
+      <li>Android aplikacija: Google Analytics for Firebase. Šalje automatske događaje (prvo pokretanje, sesije, ažuriranja) s nasumičnim brojem instalacije, verzijom aplikacije, jezikom aplikacije, modelom uređaja, verzijom Androida i približnom državom. Reklamni ID uklonjen je iz aplikacije, personalizacija reklama je isključena.</li>
+      <li>Web stranica: Google Analytics 4 (isti Firebase projekt). Šalje nasumični broj posjetitelja (spremljen u kolačiću), koja je kartica otvorena (prognoza, uvjeti, dani, karta, dnevnik, ribe, postavke), verziju stranice, preuzimanje APK-a i instalaciju na početni zaslon, jezik i približnu državu. Anonimizacija IP-a je uključena, Google signals i personalizacija reklama su isključeni. Kad je statistika isključena, Googleova skripta se ne učitava.</li>
+    </ul>
+    <p>Dnevnik, fotografije, spremljena mjesta i koordinate nikad nisu dio statistike. Vidimo samo zbirna izvješća i ne možemo ih povezati s osobom. Pravna osnova je naš legitimni interes da znamo koliko ljudi koristi aplikaciju (čl. 6. st. 1. t. (f) GDPR-a); prigovor ulažete isključivanjem statistike. Podatke čuva Google prema postavkama zadržavanja Google Analyticsa: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.</p>
+    <h3>Servisi s kojima se aplikacija i stranica povezuju</h3>
+    <ul>
+      <li>Open-Meteo (api.open-meteo.com, marine-api.open-meteo.com): vrijeme, valovi, temperatura vode, struje. Prima koordinate odabrane točke.</li>
+      <li>EMODnet Bathymetry: dubina na odabranoj točki i karta dubina.</li>
+      <li>Esri ArcGIS Online: karta i satelitske snimke vidljivog područja.</li>
+      <li>OpenStreetMap Overpass API (aplikacija): nazivi gradova, otoka, rtova i uvala na vidljivoj karti.</li>
+      <li>Meteorološke stanice (METAR): NOAA Aviation Weather, aviationweather.gov (aplikacija), i MET Norway, api.met.no (stranica).</li>
+      <li>Wikipedia i Wikimedia Commons: fotografije i članci o ribama u knjižnici.</li>
+      <li>cdnjs (Cloudflare) (stranica): biblioteka karata Leaflet.</li>
+      <li>GitHub Pages: na njemu je stranica; Android verzija preuzeta sa stranice tamo provjerava nove verzije. GitHub može voditi vlastite tehničke zapise.</li>
+    </ul>
+    <p>Kao i svaka web stranica, ti servisi vide vašu IP adresu kad se od njih traže podaci.</p>
+    <h3>Povratne informacije</h3>
+    <p>Ako nam pišete e-poštom ili u Telegramu, vidimo samo ono što pošaljete. Obrazac za povratne informacije dodaje verziju aplikacije, jezik, državu i područje, a cijeli tekst vidite prije slanja. Koristimo ga samo za odgovor i poboljšanje aplikacije i brišemo ga na zahtjev.</p>
+    <h3>Vaša prava</h3>
+    <p>Prema GDPR-u imate pravo na pristup, izvoz, ispravak i brisanje svojih podataka. Budući da su podaci na vašem uređaju, to radite sami:</p>
+    <ul>
+      <li>Izvoz: Dnevnik → „Rezervna kopija“ (zip datoteka sa zapisima, fotografijama i mjestima u aplikaciji, JSON datoteka na stranici) i „Izvoz dnevnika“ (CSV tablica).</li>
+      <li>Brisanje: obrišite zapise u dnevniku, obrišite podatke aplikacije ili podatke stranice u pregledniku ili deinstalirajte aplikaciju. Deinstalacijom se briše sve, pa prije napravite rezervnu kopiju ako želite sačuvati dnevnik.</li>
+      <li>Statistika: isključite je u postavkama. Ako želite brisanje podataka iz Analyticsa ili imate pitanje, pišite nam. Možete se obratiti i tijelu za zaštitu podataka u svojoj zemlji.</li>
+    </ul>
+    <h3>Djeca</h3>
+    <p>Aplikacija nije namijenjena djeci mlađoj od 13 godina i svjesno ne prikuplja njihove podatke.</p>
+    <h3>Promjene</h3>
+    <p>Ako se pravila promijene, nova verzija bit će objavljena na ovoj stranici s novim datumom.</p>
     <h3>Kontakt</h3>
-    <p><a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>. Brisanjem aplikacije brišu se svi njezini podaci s uređaja.</p>
+    <p><a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>.</p>
   </section>
 
   <section id="it" lang="it">
     <h2>Italiano</h2>
-    <p>Sea Fishing è un'app gratuita per la pesca in mare nell'Adriatico e nello Ionio. Niente account, pubblicità o acquisti. Non vendiamo né condividiamo dati personali.</p>
+    <p>Sea Fishing è un'app e un sito gratuiti per chi pesca in mare in Montenegro, Croazia, Italia, Grecia, Albania, Slovenia, Spagna (escluse le Canarie) e Turchia. Niente account, pubblicità o acquisti. Non vendiamo né condividiamo dati personali. L'app è realizzata da uno sviluppatore privato; i contatti sono in fondo alla pagina.</p>
+    <h3>Cosa resta sul tuo dispositivo</h3>
+    <p>Diario, foto delle catture, luoghi salvati e impostazioni restano solo sul tuo dispositivo: nella memoria dell'app su Android o nella memoria del browser sul sito. Non vengono mai caricati. Non abbiamo un server con i dati degli utenti, quindi non possiamo vederli, modificarli né cancellarli.</p>
     <h3>Posizione</h3>
-    <p>Se lo consenti, l'app usa la tua posizione per mostrare meteo e condizioni del mare vicino a te e suggerire la zona più vicina. Per le previsioni invia solo le coordinate del punto scelto (senza dati su di te) ai servizi meteo e cartografici elencati sopra. Puoi negare l'accesso e scegliere un punto sulla mappa.</p>
-    <h3>Diario e foto</h3>
-    <p>Le voci del diario e le foto delle catture restano solo sul tuo dispositivo. Un backup (zip) o una tabella (CSV) vengono creati solo quando li esporti tu.</p>
+    <p>L'accesso alla posizione è facoltativo. Se lo consenti, l'app o il sito mostrano le previsioni dove ti trovi e suggeriscono la zona più vicina. Per le previsioni vengono inviate solo le coordinate del punto scelto ai servizi meteo e cartografici elencati sotto, non a noi e mai insieme al tuo nome. Puoi negare l'accesso e scegliere un punto sulla mappa.</p>
     <h3>Statistiche anonime</h3>
-    <p>App e sito usano Google Analytics for Firebase: numero di utenti, schermate aperte, lingua, modello del dispositivo, versione di Android e paese approssimativo. I dati non sono collegati al tuo nome e non servono per la pubblicità; la raccolta dell'ID pubblicitario è disattivata. Puoi disattivare le statistiche nelle Impostazioni.</p>
+    <p>Le statistiche ci aiutano a capire se l'app viene usata. Sono attive per impostazione predefinita e puoi disattivarle in qualsiasi momento: Impostazioni → «Statistiche anonime».</p>
+    <ul>
+      <li>App Android: Google Analytics for Firebase. Invia eventi automatici (primo avvio, sessioni, aggiornamenti) con un ID di installazione casuale, la versione dell'app, la lingua dell'app, il modello del dispositivo, la versione di Android e il paese approssimativo. L'ID pubblicitario è rimosso dall'app, la personalizzazione degli annunci è disattivata.</li>
+      <li>Sito: Google Analytics 4 (lo stesso progetto Firebase). Invia un ID visitatore casuale (salvato in un cookie), quale scheda è aperta (previsioni, condizioni, giorni, mappa, diario, pesci, impostazioni), la versione del sito, il download dell'APK e l'installazione sulla schermata Home, la lingua e il paese approssimativo. L'anonimizzazione dell'IP è attiva; Google signals e la personalizzazione degli annunci sono disattivati. Con le statistiche disattivate lo script di Google non viene caricato.</li>
+    </ul>
+    <p>Diario, foto, luoghi salvati e coordinate non fanno mai parte delle statistiche. Vediamo solo rapporti aggregati e non possiamo collegarli a una persona. La base giuridica è il nostro legittimo interesse a sapere quante persone usano l'app (art. 6, par. 1, lett. f) GDPR); ti opponi disattivando le statistiche. I dati sono conservati da Google secondo le impostazioni di conservazione di Google Analytics: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.</p>
+    <h3>Servizi a cui si collegano l'app e il sito</h3>
+    <ul>
+      <li>Open-Meteo (api.open-meteo.com, marine-api.open-meteo.com): meteo, onde, temperatura dell'acqua, correnti. Riceve le coordinate del punto scelto.</li>
+      <li>EMODnet Bathymetry: profondità nel punto scelto e mappa delle profondità.</li>
+      <li>Esri ArcGIS Online: mappa e immagini satellitari dell'area visibile.</li>
+      <li>OpenStreetMap Overpass API (app): nomi di città, isole, capi e baie nella mappa visibile.</li>
+      <li>Stazioni meteo (METAR): NOAA Aviation Weather, aviationweather.gov (app), e MET Norway, api.met.no (sito).</li>
+      <li>Wikipedia e Wikimedia Commons: foto e articoli sui pesci nella libreria.</li>
+      <li>cdnjs (Cloudflare) (sito): la libreria di mappe Leaflet.</li>
+      <li>GitHub Pages: ospita il sito; la versione Android scaricata dal sito vi controlla le nuove versioni. GitHub può tenere i propri registri tecnici.</li>
+    </ul>
+    <p>Come qualsiasi sito, questi servizi vedono il tuo indirizzo IP quando vengono richiesti dati.</p>
+    <h3>Feedback</h3>
+    <p>Se ci scrivi per e-mail o su Telegram, vediamo solo ciò che invii. Il modulo di feedback aggiunge versione dell'app, lingua, paese e zona, e vedi tutto il testo prima dell'invio. Lo usiamo solo per risponderti e migliorare l'app e lo cancelliamo su richiesta.</p>
+    <h3>I tuoi diritti</h3>
+    <p>In base al GDPR hai diritto di accedere ai tuoi dati, esportarli, correggerli e cancellarli. Poiché i dati restano sul tuo dispositivo, puoi farlo da solo:</p>
+    <ul>
+      <li>Esportazione: Diario → «Copia di riserva» (un file zip con voci, foto e luoghi nell'app, un file JSON sul sito) ed «Esporta il diario» (una tabella CSV).</li>
+      <li>Cancellazione: elimina le voci del diario, cancella i dati dell'app o i dati del sito nel browser, oppure disinstalla l'app. La disinstallazione cancella tutto, quindi fai prima un backup se vuoi conservare il diario.</li>
+      <li>Statistiche: disattivale nelle Impostazioni. Se vuoi la cancellazione dei dati di Analytics o hai domande, scrivici. Puoi anche presentare reclamo all'autorità per la protezione dei dati del tuo paese.</li>
+    </ul>
+    <h3>Minori</h3>
+    <p>L'app non è rivolta a minori di 13 anni e non raccoglie consapevolmente i loro dati.</p>
+    <h3>Modifiche</h3>
+    <p>Se questa informativa cambia, la nuova versione viene pubblicata su questa pagina con una nuova data.</p>
     <h3>Contatti</h3>
-    <p><a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>. Disinstallando l'app tutti i suoi dati vengono eliminati dal dispositivo.</p>
+    <p><a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>.</p>
+  </section>
+
+  <section id="el" lang="el">
+    <h2>Ελληνικά</h2>
+    <p>Το Sea Fishing είναι δωρεάν εφαρμογή και ιστότοπος για ερασιτέχνες ψαράδες θάλασσας στο Μαυροβούνιο, την Κροατία, την Ιταλία, την Ελλάδα, την Αλβανία, τη Σλοβενία, την Ισπανία (χωρίς τις Κανάριες Νήσους) και την Τουρκία. Δεν έχει λογαριασμούς, διαφημίσεις ούτε αγορές. Δεν πουλάμε ούτε μοιραζόμαστε προσωπικά δεδομένα. Την εφαρμογή φτιάχνει ιδιώτης προγραμματιστής· τα στοιχεία επικοινωνίας είναι στο τέλος της σελίδας.</p>
+    <h3>Τι μένει στη συσκευή σας</h3>
+    <p>Το ημερολόγιο, οι φωτογραφίες αλιευμάτων, τα αποθηκευμένα σημεία και οι ρυθμίσεις αποθηκεύονται μόνο στη συσκευή σας: στη μνήμη της εφαρμογής στο Android ή στον χώρο αποθήκευσης του προγράμματος περιήγησης στον ιστότοπο. Δεν ανεβαίνουν ποτέ πουθενά. Δεν έχουμε διακομιστή με δεδομένα χρηστών, γι' αυτό δεν μπορούμε να τα δούμε, να τα αλλάξουμε ή να τα διαγράψουμε.</p>
+    <h3>Τοποθεσία</h3>
+    <p>Η πρόσβαση στην τοποθεσία είναι προαιρετική. Αν την επιτρέψετε, η εφαρμογή ή ο ιστότοπος δείχνει την πρόγνωση εκεί που βρίσκεστε και προτείνει την πλησιέστερη περιοχή. Για την πρόγνωση στέλνονται μόνο οι συντεταγμένες του επιλεγμένου σημείου στις υπηρεσίες καιρού και χαρτών που αναφέρονται παρακάτω, όχι σε εμάς και ποτέ μαζί με το όνομά σας. Μπορείτε να αρνηθείτε την πρόσβαση και να επιλέξετε σημείο στον χάρτη.</p>
+    <h3>Ανώνυμα στατιστικά</h3>
+    <p>Τα στατιστικά μάς βοηθούν να δούμε αν χρησιμοποιείται η εφαρμογή. Είναι ενεργά από προεπιλογή και μπορείτε να τα απενεργοποιήσετε οποιαδήποτε στιγμή: Ρυθμίσεις → «Ανώνυμα στατιστικά».</p>
+    <ul>
+      <li>Εφαρμογή Android: Google Analytics for Firebase. Στέλνει αυτόματα συμβάντα (πρώτη εκκίνηση, συνεδρίες, ενημερώσεις) με τυχαίο αναγνωριστικό εγκατάστασης, την έκδοση και τη γλώσσα της εφαρμογής, το μοντέλο της συσκευής, την έκδοση Android και την κατά προσέγγιση χώρα. Το διαφημιστικό αναγνωριστικό έχει αφαιρεθεί από την εφαρμογή και η εξατομίκευση διαφημίσεων είναι απενεργοποιημένη.</li>
+      <li>Ιστότοπος: Google Analytics 4 (το ίδιο έργο Firebase). Στέλνει τυχαίο αναγνωριστικό επισκέπτη (σε cookie), ποια καρτέλα ανοίγει (πρόγνωση, συνθήκες, ημέρες, χάρτης, ημερολόγιο, ψάρια, ρυθμίσεις), την έκδοση του ιστότοπου, τη λήψη του APK και την εγκατάσταση στην αρχική οθόνη, τη γλώσσα και την κατά προσέγγιση χώρα. Η ανωνυμοποίηση IP είναι ενεργή· τα Google signals και η εξατομίκευση διαφημίσεων είναι απενεργοποιημένα. Όταν τα στατιστικά είναι απενεργοποιημένα, το σενάριο της Google δεν φορτώνεται.</li>
+    </ul>
+    <p>Το ημερολόγιο, οι φωτογραφίες, τα αποθηκευμένα σημεία και οι συντεταγμένες δεν περιλαμβάνονται ποτέ στα στατιστικά. Βλέπουμε μόνο συγκεντρωτικές αναφορές και δεν μπορούμε να τις συνδέσουμε με πρόσωπο. Νομική βάση είναι το έννομο συμφέρον μας να γνωρίζουμε πόσοι χρησιμοποιούν την εφαρμογή (άρθρο 6 παρ. 1 στ. στ' ΓΚΠΔ)· αντιτίθεστε απενεργοποιώντας τα στατιστικά. Τα δεδομένα τα διατηρεί η Google σύμφωνα με τις ρυθμίσεις διατήρησης του Google Analytics: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.</p>
+    <h3>Υπηρεσίες με τις οποίες συνδέονται η εφαρμογή και ο ιστότοπος</h3>
+    <ul>
+      <li>Open-Meteo (api.open-meteo.com, marine-api.open-meteo.com): καιρός, κύματα, θερμοκρασία νερού, ρεύματα. Λαμβάνει τις συντεταγμένες του επιλεγμένου σημείου.</li>
+      <li>EMODnet Bathymetry: βάθος στο επιλεγμένο σημείο και χάρτης βαθών.</li>
+      <li>Esri ArcGIS Online: χάρτης και δορυφορικές εικόνες της ορατής περιοχής.</li>
+      <li>OpenStreetMap Overpass API (εφαρμογή): ονόματα πόλεων, νησιών, ακρωτηρίων και κόλπων στον ορατό χάρτη.</li>
+      <li>Μετεωρολογικοί σταθμοί (METAR): NOAA Aviation Weather, aviationweather.gov (εφαρμογή), και MET Norway, api.met.no (ιστότοπος).</li>
+      <li>Wikipedia και Wikimedia Commons: φωτογραφίες και άρθρα για τα ψάρια στη βιβλιοθήκη.</li>
+      <li>cdnjs (Cloudflare) (ιστότοπος): η βιβλιοθήκη χαρτών Leaflet.</li>
+      <li>GitHub Pages: φιλοξενεί τον ιστότοπο· η έκδοση Android που κατεβαίνει από τον ιστότοπο ελέγχει εκεί για νέες εκδόσεις. Το GitHub μπορεί να τηρεί δικά του τεχνικά αρχεία.</li>
+    </ul>
+    <p>Όπως κάθε ιστότοπος, αυτές οι υπηρεσίες βλέπουν τη διεύθυνση IP σας όταν τους ζητούνται δεδομένα.</p>
+    <h3>Σχόλια</h3>
+    <p>Αν μας γράψετε με e-mail ή στο Telegram, βλέπουμε μόνο ό,τι στείλετε. Η φόρμα σχολίων προσθέτει την έκδοση της εφαρμογής, τη γλώσσα, τη χώρα και την περιοχή, και βλέπετε όλο το κείμενο πριν την αποστολή. Το χρησιμοποιούμε μόνο για να σας απαντήσουμε και να βελτιώσουμε την εφαρμογή και το διαγράφουμε αν το ζητήσετε.</p>
+    <h3>Τα δικαιώματά σας</h3>
+    <p>Σύμφωνα με τον ΓΚΠΔ έχετε δικαίωμα πρόσβασης, εξαγωγής, διόρθωσης και διαγραφής των δεδομένων σας. Επειδή τα δεδομένα μένουν στη συσκευή σας, το κάνετε μόνοι σας:</p>
+    <ul>
+      <li>Εξαγωγή: Ημερολόγιο → «Αντίγραφο ασφαλείας» (αρχείο zip με εγγραφές, φωτογραφίες και σημεία στην εφαρμογή, αρχείο JSON στον ιστότοπο) και «Εξαγωγή ημερολογίου» (πίνακας CSV).</li>
+      <li>Διαγραφή: διαγράψτε εγγραφές στο ημερολόγιο, διαγράψτε τα δεδομένα της εφαρμογής ή τα δεδομένα του ιστότοπου στο πρόγραμμα περιήγησης, ή απεγκαταστήστε την εφαρμογή. Η απεγκατάσταση σβήνει τα πάντα, οπότε κάντε πρώτα αντίγραφο ασφαλείας αν θέλετε να κρατήσετε το ημερολόγιο.</li>
+      <li>Στατιστικά: απενεργοποιήστε τα στις Ρυθμίσεις. Αν θέλετε διαγραφή δεδομένων του Analytics ή έχετε ερώτηση, γράψτε μας. Μπορείτε επίσης να υποβάλετε καταγγελία στην αρχή προστασίας δεδομένων της χώρας σας.</li>
+    </ul>
+    <h3>Παιδιά</h3>
+    <p>Η εφαρμογή δεν απευθύνεται σε παιδιά κάτω των 13 ετών και δεν συλλέγει εν γνώσει της δεδομένα τους.</p>
+    <h3>Αλλαγές</h3>
+    <p>Αν η πολιτική αλλάξει, η νέα έκδοση δημοσιεύεται σε αυτή τη σελίδα με νέα ημερομηνία.</p>
+    <h3>Επικοινωνία</h3>
+    <p><a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>.</p>
+  </section>
+
+  <section id="sq" lang="sq">
+    <h2>Shqip</h2>
+    <p>Sea Fishing është një aplikacion dhe faqe interneti falas për peshkatarët amatorë të detit në Mal të Zi, Kroaci, Itali, Greqi, Shqipëri, Slloveni, Spanjë (pa Ishujt Kanarie) dhe Turqi. Nuk ka llogari, reklama apo blerje. Nuk i shesim dhe nuk i ndajmë të dhënat personale. Aplikacionin e bën një zhvillues privat; kontaktet janë në fund të faqes.</p>
+    <h3>Çfarë mbetet në pajisjen tuaj</h3>
+    <p>Ditari, fotot e kapjeve, vendet e ruajtura dhe cilësimet ruhen vetëm në pajisjen tuaj: në memorien e aplikacionit në Android ose në hapësirën e shfletuesit në faqe. Nuk ngarkohen kurrë. Nuk kemi server me të dhëna përdoruesish, prandaj nuk mund t'i shohim, ndryshojmë apo fshijmë.</p>
+    <h3>Vendndodhja</h3>
+    <p>Qasja në vendndodhje nuk është e detyrueshme. Nëse e lejoni, aplikacioni ose faqja tregon parashikimin aty ku jeni dhe sugjeron zonën më të afërt. Për parashikimin u dërgohen vetëm koordinatat e pikës së zgjedhur shërbimeve të motit dhe hartave të listuara më poshtë, jo neve dhe kurrë bashkë me emrin tuaj. Mund ta refuzoni qasjen dhe të zgjidhni një pikë në hartë.</p>
+    <h3>Statistika anonime</h3>
+    <p>Statistikat na ndihmojnë të shohim nëse aplikacioni përdoret. Janë të aktivizuara si parazgjedhje dhe mund t'i çaktivizoni në çdo kohë: Cilësimet → «Statistika anonime».</p>
+    <ul>
+      <li>Aplikacioni Android: Google Analytics for Firebase. Dërgon ngjarje automatike (nisja e parë, seancat, përditësimet) me një numër të rastësishëm instalimi, versionin dhe gjuhën e aplikacionit, modelin e pajisjes, versionin e Android dhe shtetin e përafërt. ID-ja e reklamave është hequr nga aplikacioni, personalizimi i reklamave është i çaktivizuar.</li>
+      <li>Faqja: Google Analytics 4 (i njëjti projekt Firebase). Dërgon një numër të rastësishëm vizitori (në një cookie), cila skedë hapet (parashikimi, kushtet, ditët, harta, ditari, peshqit, cilësimet), versionin e faqes, shkarkimin e APK-së dhe instalimin në ekranin kryesor, gjuhën dhe shtetin e përafërt. Anonimizimi i IP-së është aktiv; Google signals dhe personalizimi i reklamave janë të çaktivizuar. Kur statistikat janë të çaktivizuara, skripti i Google nuk ngarkohet.</li>
+    </ul>
+    <p>Ditari, fotot, vendet e ruajtura dhe koordinatat nuk janë kurrë pjesë e statistikave. Ne shohim vetëm raporte përmbledhëse dhe nuk mund t'i lidhim me një person. Baza ligjore është interesi ynë i ligjshëm për të ditur sa njerëz e përdorin aplikacionin (neni 6(1)(f) GDPR); kundërshtoni duke i çaktivizuar statistikat. Të dhënat i ruan Google sipas cilësimeve të ruajtjes së Google Analytics: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.</p>
+    <h3>Shërbimet me të cilat lidhen aplikacioni dhe faqja</h3>
+    <ul>
+      <li>Open-Meteo (api.open-meteo.com, marine-api.open-meteo.com): moti, dallgët, temperatura e ujit, rrymat. Merr koordinatat e pikës së zgjedhur.</li>
+      <li>EMODnet Bathymetry: thellësia në pikën e zgjedhur dhe harta e thellësive.</li>
+      <li>Esri ArcGIS Online: harta dhe imazhet satelitore të zonës së dukshme.</li>
+      <li>OpenStreetMap Overpass API (aplikacioni): emrat e qyteteve, ishujve, kepeve dhe gjireve në hartën e dukshme.</li>
+      <li>Stacionet meteorologjike (METAR): NOAA Aviation Weather, aviationweather.gov (aplikacioni), dhe MET Norway, api.met.no (faqja).</li>
+      <li>Wikipedia dhe Wikimedia Commons: fotot dhe artikujt për peshqit në bibliotekë.</li>
+      <li>cdnjs (Cloudflare) (faqja): biblioteka e hartave Leaflet.</li>
+      <li>GitHub Pages: pret faqen; versioni Android i shkarkuar nga faqja kontrollon aty për versione të reja. GitHub mund të mbajë regjistrat e vet teknikë.</li>
+    </ul>
+    <p>Si çdo faqe interneti, këto shërbime shohin adresën tuaj IP kur u kërkohen të dhëna.</p>
+    <h3>Komentet</h3>
+    <p>Nëse na shkruani me e-mail ose në Telegram, shohim vetëm atë që dërgoni. Formulari i komenteve shton versionin e aplikacionit, gjuhën, shtetin dhe zonën, dhe ju e shihni gjithë tekstin para dërgimit. E përdorim vetëm për t'ju përgjigjur dhe për të përmirësuar aplikacionin, dhe e fshijmë me kërkesë.</p>
+    <h3>Të drejtat tuaja</h3>
+    <p>Sipas GDPR keni të drejtë të qaseni, eksportoni, korrigjoni dhe fshini të dhënat tuaja. Meqë të dhënat mbeten në pajisjen tuaj, këtë e bëni vetë:</p>
+    <ul>
+      <li>Eksporti: Ditari → «Kopje rezervë» (skedar zip me shënimet, fotot dhe vendet në aplikacion, skedar JSON në faqe) dhe «Eksporto ditarin» (tabelë CSV).</li>
+      <li>Fshirja: fshini shënimet në ditar, fshini të dhënat e aplikacionit ose të dhënat e faqes në shfletues, ose çinstaloni aplikacionin. Çinstalimi fshin gjithçka, prandaj bëni më parë një kopje rezervë nëse doni ta mbani ditarin.</li>
+      <li>Statistikat: çaktivizojini në Cilësimet. Nëse doni fshirjen e të dhënave të Analytics ose keni pyetje, na shkruani. Mund të ankoheni edhe te autoriteti për mbrojtjen e të dhënave në vendin tuaj.</li>
+    </ul>
+    <h3>Fëmijët</h3>
+    <p>Aplikacioni nuk u drejtohet fëmijëve nën 13 vjeç dhe nuk mbledh me dije të dhënat e tyre.</p>
+    <h3>Ndryshimet</h3>
+    <p>Nëse kjo politikë ndryshon, versioni i ri publikohet në këtë faqe me një datë të re.</p>
+    <h3>Kontakti</h3>
+    <p><a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>.</p>
+  </section>
+
+  <section id="sl" lang="sl">
+    <h2>Slovenščina</h2>
+    <p>Sea Fishing je brezplačna aplikacija in spletna stran za ljubitelje morskega ribolova v Črni gori, na Hrvaškem, v Italiji, Grčiji, Albaniji, Sloveniji, Španiji (brez Kanarskih otokov) in Turčiji. Nima računov, oglasov ali nakupov. Osebnih podatkov ne prodajamo in ne delimo. Aplikacijo izdeluje zasebni razvijalec; kontakt je na koncu strani.</p>
+    <h3>Kaj ostane na vaši napravi</h3>
+    <p>Dnevnik, fotografije ulova, shranjena mesta in nastavitve so shranjeni samo na vaši napravi: v pomnilniku aplikacije v Androidu ali v brskalniku na spletni strani. Nikamor se ne nalagajo. Nimamo strežnika s podatki uporabnikov, zato jih ne moremo videti, spreminjati ali brisati.</p>
+    <h3>Lokacija</h3>
+    <p>Dostop do lokacije ni obvezen. Če ga dovolite, aplikacija ali spletna stran prikaže napoved tam, kjer ste, in predlaga najbližje območje. Za napoved se storitvam za vreme in zemljevide s spodnjega seznama pošljejo samo koordinate izbrane točke, ne nam in nikoli skupaj z vašim imenom. Dostop lahko zavrnete in izberete točko na zemljevidu.</p>
+    <h3>Anonimna statistika</h3>
+    <p>Statistika nam pomaga videti, ali se aplikacija sploh uporablja. Privzeto je vklopljena in jo lahko kadar koli izklopite: Nastavitve → »Anonimna statistika«.</p>
+    <ul>
+      <li>Aplikacija za Android: Google Analytics for Firebase. Pošilja samodejne dogodke (prvi zagon, seje, posodobitve) z naključno številko namestitve, različico in jezikom aplikacije, modelom naprave, različico Androida in približno državo. Oglaševalski ID je iz aplikacije odstranjen, prilagajanje oglasov je izklopljeno.</li>
+      <li>Spletna stran: Google Analytics 4 (isti projekt Firebase). Pošilja naključno številko obiskovalca (v piškotku), kateri zavihek je odprt (napoved, razmere, dnevi, zemljevid, dnevnik, ribe, nastavitve), različico strani, prenos APK in namestitev na začetni zaslon, jezik in približno državo. Anonimizacija IP je vklopljena; Google signals in prilagajanje oglasov sta izklopljena. Ko je statistika izklopljena, se Googlov skript ne naloži.</li>
+    </ul>
+    <p>Dnevnik, fotografije, shranjena mesta in koordinate nikoli niso del statistike. Vidimo samo zbirna poročila in jih ne moremo povezati z osebo. Pravna podlaga je naš zakoniti interes vedeti, koliko ljudi uporablja aplikacijo (člen 6(1)(f) GDPR); ugovarjate tako, da statistiko izklopite. Podatke hrani Google po nastavitvah hrambe Google Analytics: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.</p>
+    <h3>Storitve, s katerimi se povezujeta aplikacija in stran</h3>
+    <ul>
+      <li>Open-Meteo (api.open-meteo.com, marine-api.open-meteo.com): vreme, valovi, temperatura vode, tokovi. Prejme koordinate izbrane točke.</li>
+      <li>EMODnet Bathymetry: globina na izbrani točki in zemljevid globin.</li>
+      <li>Esri ArcGIS Online: zemljevid in satelitski posnetki vidnega območja.</li>
+      <li>OpenStreetMap Overpass API (aplikacija): imena mest, otokov, rtov in zalivov na vidnem zemljevidu.</li>
+      <li>Meteorološke postaje (METAR): NOAA Aviation Weather, aviationweather.gov (aplikacija), in MET Norway, api.met.no (stran).</li>
+      <li>Wikipedija in Wikimedia Commons: fotografije in članki o ribah v knjižnici.</li>
+      <li>cdnjs (Cloudflare) (stran): knjižnica zemljevidov Leaflet.</li>
+      <li>GitHub Pages: gosti spletno stran; različica za Android, prenesena s strani, tam preverja nove različice. GitHub lahko vodi lastne tehnične dnevnike.</li>
+    </ul>
+    <p>Kot vsaka spletna stran te storitve vidijo vaš naslov IP, ko se od njih zahtevajo podatki.</p>
+    <h3>Povratne informacije</h3>
+    <p>Če nam pišete po e-pošti ali v Telegramu, vidimo samo, kar pošljete. Obrazec za povratne informacije doda različico aplikacije, jezik, državo in območje, celotno besedilo pa vidite pred pošiljanjem. Uporabimo ga samo za odgovor in izboljšanje aplikacije ter ga na zahtevo izbrišemo.</p>
+    <h3>Vaše pravice</h3>
+    <p>Po GDPR imate pravico do dostopa, izvoza, popravka in izbrisa svojih podatkov. Ker so podatki na vaši napravi, to storite sami:</p>
+    <ul>
+      <li>Izvoz: Dnevnik → »Varnostna kopija« (datoteka zip z vnosi, fotografijami in mesti v aplikaciji, datoteka JSON na strani) in »Izvozi dnevnik« (tabela CSV).</li>
+      <li>Izbris: izbrišite vnose v dnevniku, počistite podatke aplikacije ali podatke strani v brskalniku ali odstranite aplikacijo. Odstranitev izbriše vse, zato najprej naredite varnostno kopijo, če želite dnevnik obdržati.</li>
+      <li>Statistika: izklopite jo v Nastavitvah. Če želite izbris podatkov Analytics ali imate vprašanje, nam pišite. Pritožbo lahko vložite tudi pri organu za varstvo podatkov v svoji državi.</li>
+    </ul>
+    <h3>Otroci</h3>
+    <p>Aplikacija ni namenjena otrokom, mlajšim od 13 let, in zavestno ne zbira njihovih podatkov.</p>
+    <h3>Spremembe</h3>
+    <p>Če se pravilnik spremeni, je nova različica objavljena na tej strani z novim datumom.</p>
+    <h3>Kontakt</h3>
+    <p><a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>.</p>
+  </section>
+
+  <section id="de" lang="de">
+    <h2>Deutsch</h2>
+    <p>Sea Fishing ist eine kostenlose App und Website für Meeresangler in Montenegro, Kroatien, Italien, Griechenland, Albanien, Slowenien, Spanien (ohne die Kanarischen Inseln) und der Türkei. Es gibt keine Konten, keine Werbung und keine Käufe. Wir verkaufen keine persönlichen Daten und geben sie nicht weiter. Die App wird von einem privaten Entwickler erstellt; die Kontaktdaten stehen am Ende der Seite.</p>
+    <h3>Was auf Ihrem Gerät bleibt</h3>
+    <p>Fangtagebuch, Fangfotos, gespeicherte Orte und Einstellungen werden nur auf Ihrem Gerät gespeichert: im Speicher der App unter Android oder im Browserspeicher auf der Website. Sie werden nie hochgeladen. Wir haben keinen Server mit Nutzerdaten und können sie daher weder sehen noch ändern oder löschen.</p>
+    <h3>Standort</h3>
+    <p>Der Standortzugriff ist freiwillig. Wenn Sie ihn erlauben, zeigen App oder Website die Vorhersage für Ihren Standort und schlagen den nächsten Bereich vor. Für die Vorhersage werden nur die Koordinaten des gewählten Punktes an die unten genannten Wetter- und Kartendienste gesendet, nicht an uns und nie zusammen mit Ihrem Namen. Sie können den Zugriff ablehnen und einen Punkt auf der Karte wählen.</p>
+    <h3>Anonyme Statistik</h3>
+    <p>Die Statistik hilft uns zu sehen, ob die App überhaupt genutzt wird. Sie ist standardmäßig eingeschaltet und lässt sich jederzeit ausschalten: Einstellungen → „Anonyme Statistik“.</p>
+    <ul>
+      <li>Android-App: Google Analytics for Firebase. Sendet automatische Ereignisse (erster Start, Sitzungen, Updates) mit einer zufälligen Installations-ID, App-Version, App-Sprache, Gerätemodell, Android-Version und dem ungefähren Land. Die Werbe-ID ist aus der App entfernt, personalisierte Werbung ist abgeschaltet.</li>
+      <li>Website: Google Analytics 4 (dasselbe Firebase-Projekt). Sendet eine zufällige Besucher-ID (in einem Cookie), welcher Tab geöffnet wird (Vorhersage, Bedingungen, Tage, Karte, Tagebuch, Fische, Einstellungen), die Website-Version, den APK-Download und die Installation auf dem Startbildschirm, die Sprache und das ungefähre Land. Die IP-Anonymisierung ist eingeschaltet; Google Signals und personalisierte Werbung sind abgeschaltet. Bei ausgeschalteter Statistik wird das Google-Skript nicht geladen.</li>
+    </ul>
+    <p>Tagebuch, Fotos, gespeicherte Orte und Koordinaten sind nie Teil der Statistik. Wir sehen nur zusammengefasste Berichte und können sie keiner Person zuordnen. Rechtsgrundlage ist unser berechtigtes Interesse zu wissen, wie viele Menschen die App nutzen (Art. 6 Abs. 1 lit. f DSGVO); Sie widersprechen, indem Sie die Statistik ausschalten. Die Daten speichert Google nach den Aufbewahrungseinstellungen von Google Analytics: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.</p>
+    <h3>Dienste, mit denen sich App und Website verbinden</h3>
+    <ul>
+      <li>Open-Meteo (api.open-meteo.com, marine-api.open-meteo.com): Wetter, Wellen, Wassertemperatur, Strömungen. Erhält die Koordinaten des gewählten Punktes.</li>
+      <li>EMODnet Bathymetry: Wassertiefe am gewählten Punkt und Tiefenkarte.</li>
+      <li>Esri ArcGIS Online: Karten- und Satellitenbilder des sichtbaren Bereichs.</li>
+      <li>OpenStreetMap Overpass API (App): Namen von Orten, Inseln, Kaps und Buchten auf der sichtbaren Karte.</li>
+      <li>Wetterstationen (METAR): NOAA Aviation Weather, aviationweather.gov (App), und MET Norway, api.met.no (Website).</li>
+      <li>Wikipedia und Wikimedia Commons: Fischbilder und Artikel in der Fischbibliothek.</li>
+      <li>cdnjs (Cloudflare) (Website): die Kartenbibliothek Leaflet.</li>
+      <li>GitHub Pages: hostet die Website; die von der Website geladene Android-Version prüft dort auf neue Versionen. GitHub kann eigene technische Protokolle führen.</li>
+    </ul>
+    <p>Wie jede Website sehen diese Dienste Ihre IP-Adresse, wenn Daten von ihnen abgerufen werden.</p>
+    <h3>Rückmeldungen</h3>
+    <p>Wenn Sie uns per E-Mail oder Telegram schreiben, sehen wir nur, was Sie senden. Das Feedback-Formular fügt App-Version, Sprache, Land und Bereich hinzu, und Sie sehen den ganzen Text vor dem Senden. Wir nutzen ihn nur, um Ihnen zu antworten und die App zu verbessern, und löschen ihn auf Wunsch.</p>
+    <h3>Ihre Rechte</h3>
+    <p>Nach der DSGVO haben Sie das Recht auf Auskunft, Datenübertragbarkeit, Berichtigung und Löschung. Da Ihre Daten auf Ihrem Gerät bleiben, können Sie das selbst tun:</p>
+    <ul>
+      <li>Export: Tagebuch → „Sicherung“ (eine ZIP-Datei mit Einträgen, Fotos und Orten in der App, eine JSON-Datei auf der Website) und „Tagebuch exportieren“ (eine CSV-Tabelle).</li>
+      <li>Löschen: Einträge im Tagebuch löschen, die Daten der App oder die Website-Daten im Browser löschen oder die App deinstallieren. Beim Deinstallieren wird alles gelöscht, machen Sie also vorher eine Sicherung, wenn Sie das Tagebuch behalten möchten.</li>
+      <li>Statistik: in den Einstellungen ausschalten. Wenn Sie die Löschung von Analytics-Daten wünschen oder Fragen haben, schreiben Sie uns. Sie können sich auch bei der Datenschutzbehörde Ihres Landes beschweren.</li>
+    </ul>
+    <h3>Kinder</h3>
+    <p>Die App richtet sich nicht an Kinder unter 13 Jahren und erhebt wissentlich keine Daten von ihnen.</p>
+    <h3>Änderungen</h3>
+    <p>Wenn sich diese Erklärung ändert, wird die neue Fassung mit neuem Datum auf dieser Seite veröffentlicht.</p>
+    <h3>Kontakt</h3>
+    <p><a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>.</p>
+  </section>
+
+  <section id="es" lang="es">
+    <h2>Español</h2>
+    <p>Sea Fishing es una aplicación y un sitio web gratuitos para pescadores recreativos de mar en Montenegro, Croacia, Italia, Grecia, Albania, Eslovenia, España (sin las Canarias) y Turquía. No tiene cuentas, publicidad ni compras. No vendemos ni compartimos datos personales. La aplicación la hace un desarrollador particular; los datos de contacto están al final de la página.</p>
+    <h3>Qué se queda en tu dispositivo</h3>
+    <p>El diario, las fotos de capturas, los lugares guardados y los ajustes se guardan solo en tu dispositivo: en la memoria de la aplicación en Android o en el almacenamiento del navegador en el sitio web. Nunca se suben a ningún sitio. No tenemos un servidor con datos de usuarios, así que no podemos verlos, cambiarlos ni borrarlos.</p>
+    <h3>Ubicación</h3>
+    <p>El acceso a la ubicación es opcional. Si lo permites, la aplicación o el sitio muestran el pronóstico donde estás y sugieren la zona más cercana. Para el pronóstico solo se envían las coordenadas del punto elegido a los servicios de tiempo y mapas de la lista de abajo, no a nosotros y nunca junto con tu nombre. Puedes negar el acceso y elegir un punto en el mapa.</p>
+    <h3>Estadísticas anónimas</h3>
+    <p>Las estadísticas nos ayudan a saber si la aplicación se usa. Están activadas por defecto y puedes desactivarlas en cualquier momento: Ajustes → «Estadísticas anónimas».</p>
+    <ul>
+      <li>Aplicación Android: Google Analytics for Firebase. Envía eventos automáticos (primer inicio, sesiones, actualizaciones) con un identificador de instalación aleatorio, la versión y el idioma de la aplicación, el modelo del dispositivo, la versión de Android y el país aproximado. El identificador de publicidad se ha quitado de la aplicación y la personalización de anuncios está desactivada.</li>
+      <li>Sitio web: Google Analytics 4 (el mismo proyecto de Firebase). Envía un identificador de visitante aleatorio (en una cookie), qué pestaña se abre (pronóstico, condiciones, días, mapa, diario, peces, ajustes), la versión del sitio, la descarga del APK y la instalación en la pantalla de inicio, el idioma y el país aproximado. La anonimización de IP está activada; Google signals y la personalización de anuncios están desactivados. Con las estadísticas desactivadas no se carga el script de Google.</li>
+    </ul>
+    <p>El diario, las fotos, los lugares guardados y las coordenadas nunca forman parte de las estadísticas. Solo vemos informes agregados y no podemos relacionarlos con una persona. La base jurídica es nuestro interés legítimo en saber cuántas personas usan la aplicación (art. 6.1.f del RGPD); te opones desactivando las estadísticas. Los datos los conserva Google según los ajustes de conservación de Google Analytics: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.</p>
+    <h3>Servicios a los que se conectan la aplicación y el sitio</h3>
+    <ul>
+      <li>Open-Meteo (api.open-meteo.com, marine-api.open-meteo.com): tiempo, oleaje, temperatura del agua, corrientes. Recibe las coordenadas del punto elegido.</li>
+      <li>EMODnet Bathymetry: profundidad en el punto elegido y mapa de profundidades.</li>
+      <li>Esri ArcGIS Online: mapa e imágenes de satélite de la zona visible.</li>
+      <li>OpenStreetMap Overpass API (aplicación): nombres de pueblos, islas, cabos y bahías en el mapa visible.</li>
+      <li>Estaciones meteorológicas (METAR): NOAA Aviation Weather, aviationweather.gov (aplicación), y MET Norway, api.met.no (sitio).</li>
+      <li>Wikipedia y Wikimedia Commons: fotos y artículos sobre peces en la biblioteca.</li>
+      <li>cdnjs (Cloudflare) (sitio): la biblioteca de mapas Leaflet.</li>
+      <li>GitHub Pages: aloja el sitio; la versión Android descargada del sitio comprueba allí si hay versiones nuevas. GitHub puede llevar sus propios registros técnicos.</li>
+    </ul>
+    <p>Como cualquier sitio web, estos servicios ven tu dirección IP cuando se les piden datos.</p>
+    <h3>Comentarios</h3>
+    <p>Si nos escribes por correo o por Telegram, solo vemos lo que envías. El formulario de comentarios añade la versión de la aplicación, el idioma, el país y la zona, y ves todo el texto antes de enviarlo. Lo usamos solo para responderte y mejorar la aplicación, y lo borramos si lo pides.</p>
+    <h3>Tus derechos</h3>
+    <p>Según el RGPD tienes derecho a acceder a tus datos, exportarlos, corregirlos y borrarlos. Como los datos se quedan en tu dispositivo, puedes hacerlo tú mismo:</p>
+    <ul>
+      <li>Exportar: Diario → «Copia de seguridad» (un archivo zip con entradas, fotos y lugares en la aplicación, un archivo JSON en el sitio) y «Exportar diario» (una tabla CSV).</li>
+      <li>Borrar: elimina entradas del diario, borra los datos de la aplicación o los datos del sitio en el navegador, o desinstala la aplicación. Al desinstalar se borra todo, así que haz antes una copia de seguridad si quieres conservar el diario.</li>
+      <li>Estadísticas: desactívalas en Ajustes. Si quieres que se borren los datos de Analytics o tienes alguna pregunta, escríbenos. También puedes reclamar ante la autoridad de protección de datos de tu país.</li>
+    </ul>
+    <h3>Menores</h3>
+    <p>La aplicación no está dirigida a menores de 13 años y no recoge sus datos de forma consciente.</p>
+    <h3>Cambios</h3>
+    <p>Si esta política cambia, la nueva versión se publica en esta página con una fecha nueva.</p>
+    <h3>Contacto</h3>
+    <p><a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>.</p>
+  </section>
+
+  <section id="tr" lang="tr">
+    <h2>Türkçe</h2>
+    <p>Sea Fishing; Karadağ, Hırvatistan, İtalya, Yunanistan, Arnavutluk, Slovenya, İspanya (Kanarya Adaları hariç) ve Türkiye'deki amatör deniz balıkçıları için ücretsiz bir uygulama ve web sitesidir. Hesap, reklam ve satın alma yoktur. Kişisel verileri satmıyor ve paylaşmıyoruz. Uygulamayı bireysel bir geliştirici yapıyor; iletişim bilgileri sayfanın sonundadır.</p>
+    <h3>Cihazınızda kalanlar</h3>
+    <p>Av günlüğü, av fotoğrafları, kayıtlı yerler ve ayarlar yalnızca cihazınızda saklanır: Android'de uygulamanın belleğinde, web sitesinde ise tarayıcının depolama alanında. Hiçbir yere yüklenmez. Kullanıcı verisi tutan bir sunucumuz yoktur; bu yüzden bu verileri göremez, değiştiremez veya silemeyiz.</p>
+    <h3>Konum</h3>
+    <p>Konum erişimi isteğe bağlıdır. İzin verirseniz uygulama veya site bulunduğunuz yerin tahminini gösterir ve en yakın bölgeyi önerir. Tahmin için yalnızca seçilen noktanın koordinatları aşağıdaki hava durumu ve harita hizmetlerine gönderilir; bize gönderilmez ve asla adınızla birlikte gönderilmez. Erişimi reddedip haritada bir nokta seçebilirsiniz.</p>
+    <h3>Anonim istatistik</h3>
+    <p>İstatistik, uygulamanın kullanılıp kullanılmadığını görmemize yardımcı olur. Varsayılan olarak açıktır ve istediğiniz zaman kapatabilirsiniz: Ayarlar → «Anonim istatistik».</p>
+    <ul>
+      <li>Android uygulaması: Google Analytics for Firebase. Rastgele bir kurulum numarası, uygulama sürümü, uygulama dili, cihaz modeli, Android sürümü ve yaklaşık ülke ile otomatik olaylar (ilk açılış, oturumlar, güncellemeler) gönderir. Reklam kimliği uygulamadan kaldırılmıştır, reklam kişiselleştirme kapalıdır.</li>
+      <li>Web sitesi: Google Analytics 4 (aynı Firebase projesi). Rastgele bir ziyaretçi numarası (bir çerezde), hangi sekmenin açıldığı (tahmin, koşullar, günler, harita, günlük, balıklar, ayarlar), site sürümü, APK indirme ve ana ekrana kurulum, dil ve yaklaşık ülke gönderilir. IP anonimleştirme açıktır; Google signals ve reklam kişiselleştirme kapalıdır. İstatistik kapalıyken Google betiği yüklenmez.</li>
+    </ul>
+    <p>Günlük, fotoğraflar, kayıtlı yerler ve koordinatlar hiçbir zaman istatistiğe dahil edilmez. Yalnızca toplu raporları görürüz ve bunları bir kişiyle ilişkilendiremeyiz. Hukuki dayanak, uygulamayı kaç kişinin kullandığını bilmeye yönelik meşru menfaatimizdir (GDPR md. 6(1)(f)); istatistiği kapatarak itiraz edersiniz. Veriler, Google Analytics saklama ayarlarına göre Google tarafından saklanır: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.</p>
+    <h3>Uygulamanın ve sitenin bağlandığı hizmetler</h3>
+    <ul>
+      <li>Open-Meteo (api.open-meteo.com, marine-api.open-meteo.com): hava durumu, dalga, su sıcaklığı, akıntılar. Seçilen noktanın koordinatlarını alır.</li>
+      <li>EMODnet Bathymetry: seçilen noktadaki derinlik ve derinlik haritası.</li>
+      <li>Esri ArcGIS Online: görünen alanın haritası ve uydu görüntüleri.</li>
+      <li>OpenStreetMap Overpass API (uygulama): görünen haritadaki şehir, ada, burun ve koy adları.</li>
+      <li>Meteoroloji istasyonları (METAR): NOAA Aviation Weather, aviationweather.gov (uygulama), ve MET Norway, api.met.no (site).</li>
+      <li>Wikipedia ve Wikimedia Commons: kütüphanedeki balık fotoğrafları ve makaleleri.</li>
+      <li>cdnjs (Cloudflare) (site): Leaflet harita kütüphanesi.</li>
+      <li>GitHub Pages: siteyi barındırır; siteden indirilen Android sürümü yeni sürümleri orada kontrol eder. GitHub kendi teknik kayıtlarını tutabilir.</li>
+    </ul>
+    <p>Her web sitesinde olduğu gibi, bu hizmetler kendilerinden veri istendiğinde IP adresinizi görür.</p>
+    <h3>Geri bildirim</h3>
+    <p>Bize e-posta veya Telegram ile yazarsanız yalnızca gönderdiğinizi görürüz. Geri bildirim formu uygulama sürümünü, dili, ülkeyi ve bölgeyi ekler; göndermeden önce metnin tamamını görürsünüz. Bunu yalnızca size yanıt vermek ve uygulamayı geliştirmek için kullanır, istek üzerine sileriz.</p>
+    <h3>Haklarınız</h3>
+    <p>GDPR uyarınca verilerinize erişme, dışa aktarma, düzeltme ve silme hakkınız vardır. Veriler cihazınızda kaldığı için bunu kendiniz yaparsınız:</p>
+    <ul>
+      <li>Dışa aktarma: Günlük → «Yedek» (uygulamada kayıtlar, fotoğraflar ve yerlerle bir zip dosyası, sitede bir JSON dosyası) ve «Günlüğü dışa aktar» (CSV tablosu).</li>
+      <li>Silme: günlükteki kayıtları silin, uygulamanın verilerini veya tarayıcıdaki site verilerini temizleyin ya da uygulamayı kaldırın. Kaldırma her şeyi siler; günlüğü saklamak istiyorsanız önce yedek alın.</li>
+      <li>İstatistik: Ayarlar'dan kapatın. Analytics verilerinin silinmesini istiyorsanız veya sorunuz varsa bize yazın. Ülkenizdeki veri koruma otoritesine de şikâyette bulunabilirsiniz.</li>
+    </ul>
+    <h3>Çocuklar</h3>
+    <p>Uygulama 13 yaşından küçük çocuklara yönelik değildir ve bilerek onların verilerini toplamaz.</p>
+    <h3>Değişiklikler</h3>
+    <p>Bu politika değişirse yeni sürüm bu sayfada yeni bir tarihle yayımlanır.</p>
+    <h3>İletişim</h3>
+    <p><a href="mailto:kind2908k@gmail.com">kind2908k@gmail.com</a>, Telegram <a href="https://t.me/tamtam2908">@tamtam2908</a>.</p>
   </section>
 </main>
+<script>
+  // Без якоря в адресе листаем к разделу на языке браузера
+  (function () {
+    if (location.hash) return;
+    var map = { sr: 'hr', bs: 'hr', cnr: 'hr', me: 'hr' };
+    var l = (navigator.language || 'en').slice(0, 2).toLowerCase();
+    var id = map[l] || l;
+    var el = document.getElementById(id);
+    if (el && id !== 'en') el.scrollIntoView();
+  })();
+</script>
 </body>
 </html>

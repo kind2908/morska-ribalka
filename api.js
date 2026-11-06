@@ -373,12 +373,15 @@ async function fetchDepth(lat, lon) {
 // ---------- Метеостанция: ближайший аэропорт (METAR, MET Norway) ----------
 // aviationweather.gov браузер не пускает (нет CORS). api.met.no разрешает простые запросы с небольших сайтов.
 // Если у ближайшей станции нет свежей сводки (маленькие аэропорты молчат ночью и не в сезон), берём следующую.
+// Если ближайшая не ответила и показана следующая, в карточке об этом пишем (skippedName, skippedKm).
 async function loadStation(spot) {
+  let skipped = null;
   for (const st of nearestStations(spot.lat, spot.lon)) {
     try {
       const d = await loadMetar(st);
-      if (d) return d;
+      if (d) return skipped ? Object.assign(d, { skippedName: skipped.name, skippedKm: Math.round(skipped.km) }) : d;
     } catch (e) { /* пробуем следующую станцию */ }
+    if (!skipped) skipped = st;
   }
   return null;
 }

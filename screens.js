@@ -224,6 +224,9 @@ function renderConditions(S, A) {
       const st = S.station;
       wrap.appendChild(card(tr('Ближайшая метеостанция', 'Nearest weather station', 'Najbliža meteorološka stanica'),
         small(trv('{0} ({1}), {2} км от точки', '{0} ({1}), {2} km from the point', '{0} ({1}), {2} km od tačke', [st.name, st.icao, st.km]) + (st.time ? ' · ' + trv('измерено в {0}', 'observed at {0}', 'mjereno u {0}', [st.time]) : '')),
+        st.skippedName ? h('p', { class: 'small err' }, trv('{0} ({1} км) сейчас не передаёт сводку, поэтому показана следующая по расстоянию станция.',
+          '{0} ({1} km) is not sending reports right now, so the next nearest station is shown.',
+          '{0} ({1} km) trenutno ne šalje izvještaj, pa je prikazana sljedeća najbliža stanica.', [st.skippedName, st.skippedKm])) : null,
         infoRow(tr('Температура воздуха', 'Air temperature', 'Temperatura zraka'), fmt(st.temp, '°C')),
         infoRow(tr('Ветер', 'Wind', 'Vjetar'), fmt(st.wind, U.ms) + (isNaN_(st.windDir) ? '' : ', ' + windFrom(st.windDir))),
         infoRow(tr('Порывы', 'Gusts', 'Udari'), isNaN_(st.gust) ? '—' : fmt(st.gust, U.ms)),

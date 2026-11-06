@@ -221,11 +221,24 @@ function nowLocal(atMs) {
   return { date: `${g('year')}-${g('month')}-${g('day')}`, hour: parseInt(g('hour'), 10), minute: parseInt(g('minute'), 10) };
 }
 
+// Дни недели своей таблицей, с понедельника. Раньше брались из браузера, и там, где нет албанского,
+// вместо него подставлялся язык системы: у русскоязычного пользователя выходило «пт 06.11».
+const WEEKDAYS = {
+  ru: ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'],
+  en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  sr: ['pon', 'uto', 'sri', 'čet', 'pet', 'sub', 'ned'],
+  hr: ['pon', 'uto', 'sri', 'čet', 'pet', 'sub', 'ned'],
+  it: ['lun', 'mar', 'mer', 'gio', 'ven', 'sab', 'dom'],
+  el: ['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'],
+  sq: ['Hën', 'Mar', 'Mër', 'Enj', 'Pre', 'Sht', 'Die'],
+  sl: ['pon', 'tor', 'sre', 'čet', 'pet', 'sob', 'ned'],
+  de: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
+  es: ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'],
+  tr: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']
+};
 function dayLabel(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d, 12));
-  const loc = { ru: 'ru', en: 'en', sr: 'sr-Latn', hr: 'hr', it: 'it', el: 'el', sq: 'sq', bg: 'bg', sl: 'sl', de: 'de', es: 'es', tr: 'tr' }[Lang.current] || 'en';
-  let w;
-  try { w = new Intl.DateTimeFormat(loc, { weekday: 'short', timeZone: 'UTC' }).format(dt); } catch (e) { w = ''; }
+  const dow = (new Date(Date.UTC(y, m - 1, d, 12)).getUTCDay() + 6) % 7;   // 0 = понедельник
+  const w = (WEEKDAYS[Lang.current] || WEEKDAYS.en)[dow];
   return `${w} ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}`;
 }

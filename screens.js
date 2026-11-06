@@ -38,9 +38,12 @@ function weatherDownCard(S) {
 // Выбранное время прогноза; будущие часы доступны, когда загружены почасовые данные
 function forecastChoice(S) {
   const nowHour = nowLocal().hour;
-  const slots = forecastSlots(nowHour), slot = slots[S.slot], raw = S.hourly;
+  const raw = S.hourly;
+  const slots = forecastSlots(nowHour, raw, S.fish, S.boat), slot = slots[S.slot];
   const future = S.slot > 0 && !!raw;
-  return { nowHour, slots, slot, raw, future, dayIndex: future ? Math.floor(slot.hourIndex / 24) : 0 };
+  // заголовок карточки: окно и показанный в нём лучший час, например «15:00–18:00 · 16:00»
+  const title = future ? slot.label + ' · ' + hh(slot.hourIndex) : slot.label;
+  return { nowHour, slots, slot, raw, future, title, dayIndex: future ? Math.floor(slot.hourIndex / 24) : 0 };
 }
 
 // Строка «на какое время это показано» и кнопки выбора времени
@@ -52,7 +55,8 @@ function timePicker(S, A, f) {
     h('div', { class: 'slots' }, f.slots.map((s, i) =>
       btn(s.label, () => { if (i !== S.slot) { S.slot = i; A.rerender(); } }, { primary: i === S.slot, disabled: i > 0 && !f.raw }))),
     h('p', { class: 'bold' }, f.future
-      ? trv('Прогноз на {0} · обновлено в {1}', 'Forecast for {0} · updated at {1}', 'Prognoza za {0} · ažurirano u {1}', [`${forDate}, ${pad2(f.slot.hourIndex % 24)}:00`, updated])
+      ? trv('Прогноз на {0}, лучший час в окне {1} · обновлено в {2}', 'Forecast for {0}, the best hour in {1} · updated at {2}',
+        'Prognoza za {0}, najbolji sat u periodu {1} · ažurirano u {2}', [`${forDate}, ${hh(f.slot.hourIndex)}`, f.slot.window, updated])
       : trv('Клёв и условия сейчас, {0} · обновлено в {1}', 'Bite and conditions now, {0} · updated at {1}', 'Ribolov i uslovi sada, {0} · ažurirano u {1}', [`${pad2(f.nowHour)}:00`, updated])),
     f.future ? small(tr('Ветер, волна, давление, вода, течение, уровень моря и оценка показаны на выбранный час. Воздух и метеостанция остаются текущими.',
       'Wind, waves, pressure, water, current, sea level and the score are for the selected hour. Air and the weather station stay current.',
@@ -72,7 +76,7 @@ function renderBite(S, A) {
     const d = f.future ? forecastAt(d0, f.raw, f.slot.hourIndex) : d0;
     if (!d0.weatherOk) {
       wrap.appendChild(weatherDownCard(S));
-      wrap.appendChild(card(f.slot.label,
+      wrap.appendChild(card(f.title,
         h('div', { class: 'tiles' },
           statTile(tr('Вода', 'Water', 'Voda'), fmt(d.waterTemp, '°C')),
           statTile(tr('Волна', 'Waves', 'Talasi'), fmt(d.waveHeight, U.m()))),
@@ -129,7 +133,7 @@ function renderBite(S, A) {
       wrap.appendChild(rc);
     }
 
-    wrap.appendChild(card(f.slot.label,
+    wrap.appendChild(card(f.title,
       h('div', { class: 'tiles' },
         statTile(tr('Воздух', 'Air', 'Zrak'), S.air ? fmt(S.air.now.temp, '°C') : noData()),
         statTile(tr('Вода', 'Water', 'Voda'), fmt(d.waterTemp, '°C')),

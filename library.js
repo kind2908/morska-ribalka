@@ -90,18 +90,14 @@ function fishPhoto(latin, cls) {
   FISHX.extra.forEach(e => { if (!DATA.lib.some(f => f.key === e.key)) DATA.lib.push(e); });
 })();
 
-const MONTHS = [
-  ['Я','Ф','М','А','М','И','И','А','С','О','Н','Д'],
-  ['J','F','M','A','M','J','J','A','S','O','N','D'],
-  ['J','F','M','A','M','J','J','A','K','O','N','D']];
+// Первые буквы месяцев своей таблицей: браузер без нужного языка подставлял язык системы (кириллицу)
+const MONTHS = {
+  ru: 'ЯФМАМИИАСОНД', en: 'JFMAMJJASOND', sr: 'JFMAMJJASOND', hr: 'SVOTSLSKRLSP', it: 'GFMAMGLASOND',
+  el: 'ΙΦΜΑΜΙΙΑΣΟΝΔ', sq: 'JSMPMQKGSTND', sl: 'JFMAMJJASOND', de: 'JFMAMJJASOND', es: 'EFMAMJJASOND', tr: 'OŞMNMHTAEEKA'
+};
 function seasonBar(months) {
   const names = [tr('Нет','No','Ne'), tr('Слабо','Weak','Slabo'), tr('Хорошо','Good','Dobro'), tr('Пик','Peak','Vrhunac')];
-  let m;
-  try {
-    const loc = { ru: 'ru', en: 'en', sr: 'sr-Latn', hr: 'hr', it: 'it', el: 'el', sq: 'sq', bg: 'bg', sl: 'sl', de: 'de', es: 'es', tr: 'tr' }[Lang.current] || 'en';
-    const f = new Intl.DateTimeFormat(loc, { month: 'narrow', timeZone: 'UTC' });
-    m = Array.from({ length: 12 }, (_, i) => f.format(new Date(Date.UTC(2026, i, 15))));
-  } catch (e) { m = MONTHS[1]; }
+  const m = [...(MONTHS[Lang.current] || MONTHS.en)];
   const wrap = h('div', { class: 'sbar' });
   months.forEach((v, i) => wrap.appendChild(h('div', { class: 'sb s' + v, title: names[v] }, h('i', null), h('b', null, m[i]))));
   return wrap;

@@ -405,13 +405,26 @@ function addDays(dateStr, n) {
   return new Date(Date.UTC(y, m - 1, d + n)).toISOString().substring(0, 10);
 }
 
-// Выбранный момент прогноза: абсолютный час от полуночи сегодня
-function forecastSlots(nowHour) {
+// Выбранное время прогноза. Кроме «Сейчас» это окно в 3 часа [from, from + 3) (часы от полуночи сегодня),
+// а показывается лучший по клёву час внутри окна (hourIndex). Пользователи не понимали «+3 ч»,
+// поэтому на кнопках интервал: «15:00–18:00», «Завтра 05:00–08:00». Утро начинается с 5:00 (раньше 7:00).
+const SLOT_HOURS = 3, MORNING_HOUR = 5;
+const hh = h => pad2(((h % 24) + 24) % 24) + ':00';
+function forecastSlots(nowHour, raw, fish, boat) {
+  const win = (from, label) => {
+    const span = hh(from) + '–' + hh(from + SLOT_HOURS);
+    let best = from, bestScore = -Infinity;
+    if (raw) for (let h = from; h < from + SLOT_HOURS; h++) {
+      const r = hourExplain(raw, fish, boat, h);
+      if (r && r.score > bestScore) { bestScore = r.score; best = h; }
+    }
+    return { label: label(span), hourIndex: best, window: span };
+  };
   return [
     { label: tr('Сейчас', 'Now', 'Sada'), hourIndex: nowHour },
-    { label: tr('+3 ч', '+3 h', '+3 h'), hourIndex: nowHour + 3 },
-    { label: tr('+6 ч', '+6 h', '+6 h'), hourIndex: nowHour + 6 },
-    { label: tr('Завтра утром', 'Tomorrow morning', 'Sutra ujutru'), hourIndex: 24 + 7 }
+    win(nowHour + SLOT_HOURS, s => s),
+    win(nowHour + 2 * SLOT_HOURS, s => s),
+    win(24 + MORNING_HOUR, s => trv('Завтра {0}', 'Tomorrow {0}', 'Sutra {0}', [s]))
   ];
 }
 

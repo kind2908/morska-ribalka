@@ -105,7 +105,7 @@ function renderBite(S, A) {
       indicator(tr('Клёв', 'Bite', 'Ribolov'), scoreD, scoreWord(score), col, biteTop(res)),
       indicator(tr('Условия для рыбака', 'Conditions for anglers', 'Uslovi za ribolovca'), cm.score, comfortWord(clv), ccol,
         cm.items.length ? cm.items.map(i => [i[0], i[1], i[2]]) : [[tr('Всё спокойно', 'All calm', 'Sve mirno'), '', 0]], penaltyColor,
-        f.raw ? trv('На 3 часа с {0}:00', 'For 3 hours from {0}:00', 'Za 3 sata od {0}:00', [pad2(hourIndex % 24)]) : null)));
+        f.raw ? hh(hourIndex) + '–' + hh(hourIndex + 3) : null)));
 
     let warning = null;
     if (f.raw) warning = outlookWarning(f.raw, hourIndex, slotDay, S.boat);

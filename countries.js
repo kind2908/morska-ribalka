@@ -285,7 +285,7 @@ const COUNTRIES = [
 
 // ---------- Метеостанции (аэропорты, данные METAR) ----------
 const STATIONS = [
-  ['LYTV', 'Tivat', 42.4047, 18.7233], ['LYPG', 'Podgorica', 42.3594, 19.2519], ['LDDU', 'Dubrovnik', 42.5614, 18.2682],
+  ['LIBN', 'Lecce', 40.238, 18.138], ['LGEL', 'Elefsina', 38.064, 23.556], ['LGHI', 'Chios', 38.343, 26.141], ['LGSM', 'Samos', 37.69, 26.912], ['LGKO', 'Kos', 36.801, 27.091], ['LYTV', 'Tivat', 42.4047, 18.7233], ['LYPG', 'Podgorica', 42.3594, 19.2519], ['LDDU', 'Dubrovnik', 42.5614, 18.2682],
   ['LDSP', 'Split', 43.5389, 16.2980], ['LDZD', 'Zadar', 44.1083, 15.3467], ['LDPL', 'Pula', 44.8935, 13.9222],
   ['LDRI', 'Rijeka', 45.2169, 14.5703], ['LDLO', 'Lošinj', 44.5658, 14.3931], ['LIPQ', 'Trieste', 45.8275, 13.4722],
   ['LIPZ', 'Venezia', 45.5053, 12.3519], ['LIPR', 'Rimini', 44.0203, 12.6117], ['LIPY', 'Ancona', 43.6163, 13.3612],

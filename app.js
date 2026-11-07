@@ -14,7 +14,7 @@ const S = {
   diarySub: 0, draft: null, editNote: null, mark: null, slider: 10,
   rulesOpen: false, libOpen: null, aboutOpen: false, theme: 0,
   gps: { code: 0, acc: 0, loading: false }, token: 0, pending: false,
-  updateReady: false, installHint: null, reload: null, picker: false
+  updateReady: false, reload: null, picker: false
 };
 
 const $ = id => document.getElementById(id);
@@ -241,18 +241,69 @@ function render(force) {
   document.documentElement.lang = Lang.current;
 }
 
-// ---------- Подсказка про установку на iPhone ----------
-function makeInstallHint() {
-  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+// ---------- Всплывающая подсказка: как поставить сайт на iPhone как приложение ----------
+// На iPhone нельзя поставить приложение с сайта, зато сайт можно добавить на экран «Домой»:
+// значок, полный экран, работа без связи. Многие об этом не знают, поэтому показываем окно сверху.
+// Только iPhone/iPad, только если сайт ещё не открыт со значка. «Понятно» скрывает навсегда,
+// «Позже» на 7 дней.
+const HINT_LATER_MS = 7 * 86400000;
+function iosInstallState() {
+  const ua = navigator.userAgent;
+  // iPadOS притворяется Mac, отличаем по сенсорному экрану
+  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
   const standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
-  if (!ios || standalone || Store.get('hint_closed', false)) return null;
-  return h('div', { class: 'warn caution' },
-    h('div', { class: 'row' },
-      h('b', { class: 'grow' }, tr('Как поставить на iPhone', 'How to install on iPhone', 'Kako instalirati na iPhone')),
-      h('button', { class: 'gear', type: 'button', 'aria-label': 'close', onclick: () => { Store.set('hint_closed', true); S.installHint = null; render(); } }, '×')),
-    h('p', null, tr('В Safari нажмите «Поделиться» (квадрат со стрелкой), затем «На экран “Домой”». Дальше открывайте приложение с иконки: данные Safari и иконки хранятся раздельно, поэтому дневник начинайте вести уже в ней.',
-      'In Safari tap “Share” (the square with an arrow), then “Add to Home Screen”. Then open the app from the icon: Safari and the icon keep their data separately, so start your diary in the icon.',
-      'U Safariju dodirnite „Podijeli“ (kvadrat sa strelicom), zatim „Dodaj na početni ekran“. Zatim otvarajte aplikaciju s ikone: Safari i ikona čuvaju podatke odvojeno, pa dnevnik počnite voditi u ikoni.')));
+  if (!ios || standalone) return null;
+  // встроенные браузеры (Telegram, Instagram, Facebook, Google) и другие браузеры ставить на экран не умеют
+  const safari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA|YaBrowser|Instagram|FBAN|FBAV|Line\/|Telegram/.test(ua);
+  return { safari };
+}
+function shareIcon() {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('class', 'ih-ico'); svg.setAttribute('aria-hidden', 'true');
+  svg.innerHTML = '<path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M8 10H6a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1h-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
+  return svg;
+}
+function showInstallHint() {
+  const st = iosInstallState();
+  if (!st || Store.get('hint_closed', false) || Date.now() < Store.get('hint_later', 0)) return;
+  // пока открыт выбор страны, ждём
+  if (S.picker || S.showSettings) { setTimeout(showInstallHint, 3000); return; }
+  if (document.querySelector('.ihint')) return;
+  const close = forever => {
+    if (forever) Store.set('hint_closed', true); else Store.set('hint_later', Date.now() + HINT_LATER_MS);
+    box.classList.remove('on'); setTimeout(() => box.remove(), 250);
+  };
+  const step = (n, ...kids) => h('li', null, h('span', { class: 'ih-n' }, String(n)), h('span', null, ...kids));
+  const box = h('div', { class: 'ihint', role: 'dialog', 'aria-live': 'polite' },
+    h('div', { class: 'ih-card' },
+      h('div', { class: 'row' },
+        h('img', { class: 'ih-app', src: 'apple-touch-icon.png', alt: '' }),
+        h('b', { class: 'grow' }, tr('Поставьте приложение на iPhone', 'Install the app on your iPhone', 'Instalirajte aplikaciju na iPhone')),
+        h('button', { class: 'gear', type: 'button', 'aria-label': 'close', onclick: () => close(false) }, '×')),
+      h('p', { class: 'small' }, tr('Сайт работает как приложение: значок на экране, полный экран и прогноз без связи. Бесплатно, займёт несколько секунд.',
+        'The site works as an app: an icon on your screen, full screen and the forecast offline. Free, takes a few seconds.',
+        'Sajt radi kao aplikacija: ikona na ekranu, cijeli ekran i prognoza bez veze. Besplatno, traje nekoliko sekundi.')),
+      st.safari ? null : h('p', { class: 'small err' }, tr('Сейчас сайт открыт не в Safari. Откройте его в Safari: меню ··· или значок компаса → «Открыть в Safari».',
+        'The site is not open in Safari right now. Open it in Safari: the ··· menu or the compass icon → “Open in Safari”.',
+        'Sajt sada nije otvoren u Safariju. Otvorite ga u Safariju: meni ··· ili ikona kompasa → „Otvori u Safariju“.')),
+      h('ol', { class: 'ih-steps' },
+        step(1, tr('Нажмите «Поделиться» в Safari', 'Tap “Share” in Safari', 'Dodirnite „Podijeli“ u Safariju'), ' ', shareIcon()),
+        step(2, tr('Выберите «На экран „Домой“». Если не видно, пролистайте список вниз.',
+          'Choose “Add to Home Screen”. If you cannot see it, scroll the list down.',
+          'Izaberite „Dodaj na početni ekran“. Ako ga ne vidite, pomjerite listu nadolje.')),
+        step(3, tr('Нажмите «Добавить» и открывайте приложение с нового значка.',
+          'Tap “Add” and open the app from the new icon.',
+          'Dodirnite „Dodaj“ i otvarajte aplikaciju s nove ikone.'))),
+      h('p', { class: 'small' }, tr('Дневник в значке и в Safari хранится отдельно, поэтому ведите его в значке.',
+        'The diary in the icon and in Safari is stored separately, so keep it in the icon.',
+        'Dnevnik u ikoni i u Safariju čuva se odvojeno, pa ga vodite u ikoni.')),
+      h('div', { class: 'row ih-btns' },
+        btn(tr('Позже', 'Later', 'Kasnije'), () => close(false), { flat: true }),
+        btn(tr('Понятно', 'Got it', 'Razumijem'), () => close(true), { primary: true }))));
+  document.body.appendChild(box);
+  requestAnimationFrame(() => box.classList.add('on'));
 }
 
 // ---------- Service worker ----------
@@ -307,7 +358,7 @@ function init() {
   const mk = Store.get('mark', null);
   if (mk && mk.date === nowLocal().date) { S.mark = mk.m; S.slider = mk.m; }
   S.draft = newDraft(S);
-  S.installHint = makeInstallHint();
+  setTimeout(showInstallHint, 4000);
 
   $('view').addEventListener('focusout', () => {
     if (S.pending) { S.pending = false; setTimeout(() => softRender(), 80); }

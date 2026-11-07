@@ -66,7 +66,6 @@ function timePicker(S, A, f) {
 // ---------------- Клёв ----------------
 function renderBite(S, A) {
   const out = [contextBar(S, A)];
-  if (S.installHint) out.push(S.installHint);
   if (S.updateReady) out.push(A.updateBanner());
 
   out.push(gate(S, d0 => {

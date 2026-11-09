@@ -78,7 +78,7 @@ function renderBite(S, A) {
       wrap.appendChild(card(f.title,
         h('div', { class: 'tiles' },
           statTile(tr('Вода', 'Water', 'Voda'), fmt(d.waterTemp, '°C')),
-          statTile(tr('Волна', 'Waves', 'Talasi'), fmt(d.waveHeight, U.m()))),
+          statTile(tr('Волна', 'Waves', 'Talasi'), fmt(d.waveHeight, U.m()), waveHint(d.waveHeight))),
         small(tr('Подробности на вкладке «Условия»', 'Details on the “Conditions” tab', 'Detalji na kartici „Uslovi“'))));
       return wrap;
     }
@@ -138,7 +138,7 @@ function renderBite(S, A) {
         statTile(tr('Вода', 'Water', 'Voda'), fmt(d.waterTemp, '°C')),
         statTile(tr('Ветер', 'Wind', 'Vjetar'), fmt(d.wind, U.ms)),
         statTile(tr('Порывы', 'Gusts', 'Udari'), fmt(d.gust, U.ms)),
-        statTile(tr('Волна', 'Waves', 'Talasi'), fmt(d.waveHeight, U.m())),
+        statTile(tr('Волна', 'Waves', 'Talasi'), fmt(d.waveHeight, U.m()), waveHint(d.waveHeight)),
         statTile(tr('Давление', 'Pressure', 'Pritisak'), fmt(d.pressure, U.hpa()))),
       small(tr('Подробности на вкладке «Условия»', 'Details on the “Conditions” tab', 'Detalji na kartici „Uslovi“'))));
 

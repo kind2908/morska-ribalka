@@ -27,7 +27,8 @@ function h(tag, attrs, ...kids) {
 const card = (title, ...kids) => h('section', { class: 'card' }, title ? h('h3', null, title) : null, ...kids);
 const small = (...kids) => h('p', { class: 'small' }, ...kids);
 const infoRow = (label, value) => h('div', { class: 'info' }, h('span', { class: 'lbl' }, label), h('span', { class: 'val' }, value));
-const statTile = (label, value) => h('div', { class: 'tile' }, h('div', { class: 'small' }, label), h('div', { class: 'tv' }, value));
+const statTile = (label, value, hint) => h('div', { class: 'tile' }, h('div', { class: 'small' }, label), h('div', { class: 'tv' }, value),
+  hint ? h('div', { class: 'small' }, hint) : null);
 
 function btn(label, onclick, opts = {}) {
   return h('button', {

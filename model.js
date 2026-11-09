@@ -156,11 +156,23 @@ function biteExplain(data, fish, boat, ms) {
 // ---------- Условия для рыбака (комфорт и безопасность, это не клёв) ----------
 // Отдельная шкала 1–10: 10 всё спокойно. Клёв от неё не зависит: рыба клюёт и в дождь, но стоять под ливнем и порывами тяжело.
 const comfWindPts = [[0, 0], [3, 0], [5, -0.8], [7, -2.3], [9, -3.5], [11, -5.0], [12, -6.2], [14, -7.0], [17, -8.0]];
-const comfWavePts = [[0, 0], [0.6, 0], [1.0, -0.8], [1.5, -2.0], [2.0, -3.0], [3.0, -5.0], [4.0, -7.0]];
+// С берега волна мешает раньше: на камнях отдельные волны в 1,5–2 раза выше средней (Hs) и заливают.
+// С лодки высота умножается на 1,4 и идёт по своей кривой.
+const comfWaveShorePts = [[0, 0], [0.3, 0], [0.5, -1.0], [0.8, -2.2], [1.0, -3.0], [1.5, -4.2], [2.0, -5.0], [3.0, -7.0]];
+const comfWaveBoatPts = [[0, 0], [0.6, 0], [1.0, -0.8], [1.5, -2.0], [2.0, -3.0], [3.0, -5.0], [4.0, -7.0]];
 const comfRainDayPts = [[0, 0], [2, -0.3], [5, -1.0], [10, -2.0], [20, -3.5], [40, -5.0], [60, -6.0]];
-const comfRainOutingPts = [[0, 0], [1, -0.5], [3, -1.5], [6, -2.5], [10, -3.5], [20, -5.0], [30, -6.0]];
-const comfRainPeakPts = [[0, 0], [1, -0.2], [2.5, -0.8], [4, -1.8], [7.6, -3.5], [10, -5.0]];
+const comfRainOutingPts = [[0, 0], [0.5, -0.4], [1, -0.8], [3, -2.2], [6, -3.5], [10, -4.5], [20, -6.0], [30, -7.0]];
+const comfRainPeakPts = [[0, 0], [1, -0.4], [2.5, -1.2], [4, -2.2], [7.6, -3.8], [10, -5.0]];
 const comfTempPts = [[-5, -4.0], [0, -3.0], [5, -1.5], [10, -0.5], [14, 0], [31, 0], [35, -1.0], [39, -2.5]];
+
+// Средняя высота волны (Hs) и сколько бывают отдельные волны: примерно до 1,8 Hs
+function waveHint(wave) {
+  return isNaN_(wave) || wave < 0.2 ? null : trv('отдельные до {0}', 'single waves up to {0}', 'pojedinačni do {0}', [fmt(wave * 1.8, U.m())]);
+}
+function waveText(wave) {
+  return isNaN_(wave) || wave < 0.2 ? fmt(wave, U.m())
+    : trv('{0}, отдельные до {1}', '{0}, single waves up to {1}', '{0}, pojedinačni do {1}', [fmt(wave, U.m()), fmt(wave * 1.8, U.m())]);
+}
 
 // p: { windMs, gustMs, waveM, rainMm, rainPeakMmH, thunder, snow, feelsC, boat, rainOuting }
 // rainOuting: rainMm это сумма за выход на 3 часа, а не за день
@@ -171,13 +183,15 @@ function comfortModel(p) {
   const wp = interp(Math.max(w, g * 0.8) * (p.boat ? 1.2 : 1), comfWindPts);
   if (wp < -0.05) items.push([tr('Ветер', 'Wind', 'Vjetar'), trv('{0} км/ч, порывы {1}', '{0} km/h, gusts {1}', '{0} km/h, udari {1}', [f0(w * 3.6), f0(g * 3.6)]), wp]);
   const wave = isNaN_(p.waveM) ? 0 : p.waveM;
-  const vp = interp(wave * (p.boat ? 1.4 : 1), comfWavePts);
-  if (vp < -0.05) items.push([tr('Волна', 'Waves', 'Talasi'), `${f1(wave)} ${U.m()}`, vp]);
+  const vp = p.boat ? interp(wave * 1.4, comfWaveBoatPts) : interp(wave, comfWaveShorePts);
+  if (vp < -0.05) items.push([tr('Волна', 'Waves', 'Talasi'), waveText(wave), vp]);
   const rain = isNaN_(p.rainMm) ? 0 : p.rainMm, peak = isNaN_(p.rainPeakMmH) ? 0 : p.rainPeakMmH;
   const rp = Math.min(interp(rain, p.rainOuting ? comfRainOutingPts : comfRainDayPts), interp(peak, comfRainPeakPts));
   if (rp < -0.05) items.push([tr('Дождь', 'Rain', 'Kiša'), p.rainOuting
     ? trv('{0} мм за 3 ч', '{0} mm in 3 h', '{0} mm za 3 h', [f1(rain)])
     : trv('{0} мм за день', '{0} mm per day', '{0} mm za dan', [f0(rain)]), rp]);
+  // Под заметным дождём «Комфортно» не бывает, даже если ветра и волны нет
+  if ((p.rainOuting && rain >= 1.0) || peak >= 2.5) cap = Math.min(cap, 7.5);
   if (p.thunder) { items.push([tr('Гроза', 'Thunderstorm', 'Grmljavina'), tr('возможна', 'possible', 'moguća'), -6.0]); cap = Math.min(cap, 3.0); }
   if (p.snow) { items.push([tr('Снег', 'Snow', 'Snijeg'), tr('возможен', 'possible', 'moguć'), -4.0]); cap = Math.min(cap, 4.5); }
   if (!isNaN_(p.feelsC)) {
@@ -191,7 +205,7 @@ function comfortModel(p) {
 }
 
 // 0 зелёный, 1 жёлтый, 2 оранжевый, 3 красный
-function comfortLevel(score) { return score >= 8 ? 0 : score >= 6 ? 1 : score >= 4 ? 2 : 3; }
+function comfortLevel(score) { score = Math.round(score * 10) / 10; return score >= 8 ? 0 : score >= 6 ? 1 : score >= 4 ? 2 : 3; }
 const COMFORT_COLORS = ['#2E9E5B', '#E0B000', '#F0841C', '#D9534F'];
 // Цвет строки по силе штрафа: мелкий штраф не красим, иначе он выглядит как тревога
 function penaltyColor(p) {

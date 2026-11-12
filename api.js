@@ -29,6 +29,35 @@ const nv = (arr, i) => {
 };
 const nn = v => (v == null ? NaN : v);
 
+// ---------- Медиана нескольких моделей для ветра, порывов и осадков ----------
+// Одна модель может заметно ошибаться: 12.11.2026 у Херцег-Нови «лучшая» модель давала порывы 85–95 км/ч
+// и почти без дождя, а пять других 50–75 км/ч и 3–8 мм/ч. Медиана убирает такие выбросы.
+const ENS_MODELS = ['best_match', 'ecmwf_ifs', 'icon_seamless', 'meteofrance_seamless', 'gfs_seamless', 'ukmo_seamless'];
+const ENS_VARS = ['wind_speed_10m', 'wind_gusts_10m', 'precipitation'];
+function median(v) {
+  if (!v.length) return NaN;
+  const s = v.slice().sort((a, b) => a - b), m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+// range: те же past_days/forecast_days/timezone, что у основного запроса. null, если не удалось
+async function loadEnsemble(lat, lon, range) {
+  try {
+    const r = await getJson(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&hourly=${ENS_VARS.join(',')}&models=${ENS_MODELS.join(',')}&wind_speed_unit=ms${range}`);
+    const h = r.hourly, index = new Map(h.time.map((t, i) => [t, i])), values = {};
+    for (const name of ENS_VARS) {
+      const arrs = ENS_MODELS.map(m => h[name + '_' + m]).filter(Boolean);
+      values[name] = h.time.map((_, i) => median(arrs.map(a => a[i]).filter(v => v != null && !Number.isNaN(v))));
+    }
+    const at = (name, time) => { const i = index.get(time); return i == null ? NaN : values[name][i]; };
+    return {
+      at,
+      // подменить значения ряда по его времени; где медианы нет, остаётся прежнее
+      overlay: (name, times, arr) => arr.map((v, i) => { const m = times[i] ? at(name, times[i]) : NaN; return Number.isNaN(m) ? v : m; })
+    };
+  } catch (e) { return null; }
+}
+
 function seriesOf(h, name, start, count) {
   const arr = h ? h[name] : null;
   return Array.from({ length: count }, (_, i) => nv(arr, start + i));
@@ -98,6 +127,7 @@ async function loadConditionsAt(lat, lon, localIso) {
 
 // ---------- «Сейчас» ----------
 async function loadSeaData(spot) {
+  const ensP = loadEnsemble(spot.lat, spot.lon, `&forecast_days=2&timezone=${TZ}`);
   const marineRoot = await getJson(
     `https://marine-api.open-meteo.com/v1/marine?latitude=${spot.lat}&longitude=${spot.lon}` +
     `&current=wave_height,sea_surface_temperature,ocean_current_velocity,ocean_current_direction` +
@@ -148,11 +178,18 @@ async function loadSeaData(spot) {
     }
   }
 
+  // ветер «сейчас» медианой на ближайший час, осадки на конец часа (Open-Meteo пишет сумму за предыдущий час)
+  const ens = await ensP;
+  const hourKey = ms => { const d = new Date(ms); const z = n => String(n).padStart(2, '0'); return `${d.getUTCFullYear()}-${z(d.getUTCMonth() + 1)}-${z(d.getUTCDate())}T${z(d.getUTCHours())}:00`; };
+  const nowMs = weather && weather.time ? Date.parse(weather.time + ':00Z') : NaN;
+  const ensNow = (name, addMin) => (!ens || Number.isNaN(nowMs)) ? NaN : ens.at(name, hourKey(nowMs + addMin * 60000));
+  const eWind = ensNow('wind_speed_10m', 30), eGust = ensNow('wind_gusts_10m', 30), eRain = ensNow('precipitation', 60);
+
   return {
     waveHeight: nn(marine.wave_height),
     waterTemp: nn(marine.sea_surface_temperature),
-    wind: weather ? nn(weather.wind_speed_10m) : NaN,
-    gust: weather ? nn(weather.wind_gusts_10m) : NaN,
+    wind: !Number.isNaN(eWind) ? eWind : weather ? nn(weather.wind_speed_10m) : NaN,
+    gust: !Number.isNaN(eGust) ? eGust : weather ? nn(weather.wind_gusts_10m) : NaN,
     cloud: weather ? nn(weather.cloud_cover) : NaN,
     pressure: weather ? nn(weather.pressure_msl) : NaN,
     pressureTrend: pTrend,
@@ -160,7 +197,7 @@ async function loadSeaData(spot) {
     currentDir: nn(marine.ocean_current_direction),
     seaLevel, tideRising: rising, nextHigh: high, nextLow: low,
     rain3d: weather ? rain : NaN,
-    rainNow: !weather ? NaN : weather.precipitation == null ? 0 : weather.precipitation,
+    rainNow: !weather ? NaN : !Number.isNaN(eRain) ? eRain : weather.precipitation == null ? 0 : weather.precipitation,
     sunrise, sunset,
     weatherOk: !!weather
   };
@@ -169,6 +206,7 @@ async function loadSeaData(spot) {
 // ---------- По часам: сегодня и следующие дни ----------
 const HOURLY_DAYS = 5;
 async function loadHourly(spot) {
+  const ensP = loadEnsemble(spot.lat, spot.lon, `&past_days=1&forecast_days=${HOURLY_DAYS}&timezone=${TZ}`);
   const root = await getJson(
     `https://api.open-meteo.com/v1/forecast?latitude=${spot.lat}&longitude=${spot.lon}` +
     `&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,cloud_cover,precipitation,precipitation_probability,weather_code,pressure_msl` +
@@ -190,13 +228,17 @@ async function loadHourly(spot) {
     mStart = Math.max(0, mh.time.findIndex(t => t.startsWith(today)));
   } catch (e) { mh = null; }
 
+  const ens = await ensP;
+  const wTimes = Array.from({ length: hours }, (_, i) => h.time[start + i] || '');
+  const med = name => { const a = seriesOf(h, name, start, hours); return ens ? ens.overlay(name, wTimes, a) : a; };
+
   return {
     date: today,
-    wind: seriesOf(h, 'wind_speed_10m', start, hours),
-    gust: seriesOf(h, 'wind_gusts_10m', start, hours),
+    wind: med('wind_speed_10m'),
+    gust: med('wind_gusts_10m'),
     windDir: seriesOf(h, 'wind_direction_10m', start, hours),
     cloud: seriesOf(h, 'cloud_cover', start, hours),
-    rain: seriesOf(h, 'precipitation', start, hours),
+    rain: med('precipitation'),
     prob: seriesOf(h, 'precipitation_probability', start, hours),
     code: seriesOf(h, 'weather_code', start, hours),
     wave: seriesOf(mh, 'wave_height', mStart, hours),
@@ -251,12 +293,28 @@ async function loadDays(spot) {
     `&hourly=precipitation,cloud_cover` + tail;
   const simple = base +
     `&daily=wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,pressure_msl_mean,precipitation_sum` + tail;
+  const ensP = loadEnsemble(spot.lat, spot.lon, tail.replace('&wind_speed_unit=ms', ''));
   let root;
   try { root = await getJson(full); } catch (e) { root = await getJson(simple); }
+  const ens = await ensP;
 
   const weather = root.daily;
   const hourlyObj = root.hourly;
-  const hourly = hourlyObj ? hourlyObj.precipitation : null;
+  const hourKey = (i, h) => root.daily.time[i] + 'T' + String(h).padStart(2, '0') + ':00';
+  // часовые осадки: медиана моделей, где она есть, иначе ответ основного запроса
+  const baseRain = hourlyObj ? hourlyObj.precipitation : null;
+  const hourly = !ens ? baseRain : root.daily.time.flatMap((_, i) => Array.from({ length: 24 }, (_, h) => {
+    const m = ens.at('precipitation', hourKey(i, h));
+    return !Number.isNaN(m) ? m : nv(baseRain, i * 24 + h) || 0;
+  }));
+  // суточный максимум или сумма по медиане; NaN, если для дня мало часов
+  const ensDay = (name, i, sum) => {
+    if (!ens) return NaN;
+    const v = Array.from({ length: 24 }, (_, h) => ens.at(name, hourKey(i, h))).filter(x => !Number.isNaN(x));
+    if (v.length < 12) return NaN;
+    return sum ? v.reduce((a, b) => a + b, 0) : Math.max(...v);
+  };
+  const or = (a, b) => Number.isNaN(a) ? b : a;
   const cloudArr = hourlyObj ? hourlyObj.cloud_cover : null;
   const probs = weather.precipitation_probability_max;
   const codes = weather.weather_code;
@@ -281,13 +339,13 @@ async function loadDays(spot) {
     const tNow = dayMean(sst, i), tPrev = dayMean(sst, i - 1);
     result.push({
       date,
-      windMax: nv(weather.wind_speed_10m_max, i),
-      gustMax: nv(weather.wind_gusts_10m_max, i),
+      windMax: or(ensDay('wind_speed_10m', i, false), nv(weather.wind_speed_10m_max, i)),
+      gustMax: or(ensDay('wind_gusts_10m', i, false), nv(weather.wind_gusts_10m_max, i)),
       windDir: nv(weather.wind_direction_10m_dominant, i),
       waveMax: nv(waves, i),
       pressureMean: p,
       pressureChange: (Number.isNaN(p) || Number.isNaN(prev)) ? NaN : p - prev,
-      rain: weather.precipitation_sum[i] == null ? 0 : weather.precipitation_sum[i],
+      rain: or(ensDay('precipitation', i, true), weather.precipitation_sum[i] == null ? 0 : weather.precipitation_sum[i]),
       rainProbMax: probs && probs[i] != null ? probs[i] : -1,
       thunder: code >= 95 && code <= 99,
       snow: (code >= 71 && code <= 77) || code === 85 || code === 86,
@@ -324,14 +382,17 @@ function rainLevelText(day) {
   return null;
 }
 const pad2 = n => String(n).padStart(2, '0');
+// Окно, которое кончается после полуночи, подписываем «следующего дня»
 function rainWindowText(w) {
-  return `${pad2(w.fromHour)}:00–${pad2(w.toHour % 24)}:00 · ≈ ${f0(w.mm)} ${U.mm()} (${tr('до', 'up to', 'do')} ${f1(w.peakMmH)} ${U.mm()}/${tr('ч', 'h', 'h')})`;
+  // toHour: 24 это полночь, больше 24 это час следующего дня
+  const to = w.toHour > 24 ? `${pad2(w.toHour - 24)}:00 ${tr('следующего дня', 'next day', 'sljedećeg dana')}` : `${pad2(w.toHour)}:00`;
+  return `${pad2(w.fromHour)}:00–${to} · ≈ ${f0(w.mm)} ${U.mm()} (${tr('до', 'up to', 'do')} ${f1(w.peakMmH)} ${U.mm()}/${tr('ч', 'h', 'h')})`;
 }
 function rainShortText(day) {
   const parts = [];
   const level = rainLevelText(day);
   if (level) {
-    const windows = day.rainWindows.map(w => `${pad2(w.fromHour)}:00–${pad2(w.toHour % 24)}:00`).join('; ');
+    const windows = day.rainWindows.map(w => `${pad2(w.fromHour)}:00–${pad2(w.toHour > 24 ? w.toHour - 24 : w.toHour)}:00`).join('; ');
     parts.push(`☔ ${level}` + (windows ? `: ${windows}` : '') + ` (≈ ${f0(day.rain)} ${U.mm()})`);
   }
   if (day.thunder) parts.push(tr('⛈ гроза', '⛈ thunderstorm', '⛈ grmljavina'));

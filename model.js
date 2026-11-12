@@ -348,12 +348,13 @@ function rainView(raw, dayIndex, fromHour, day) {
   const windows = [];
   let start = -1, last = -1, sum = 0, wPeak = 0, rain = 0, peak = 0, prob = -1;
   const close = () => {
-    if (start >= 0 && sum >= 0.5) windows.push({ fromHour: start % 24, toHour: (last + 1) % 24, mm: sum, peakMmH: wPeak });
+    if (start >= 0 && sum >= 0.5) windows.push({ fromHour: start - dayIndex * 24, toHour: last + 1 - dayIndex * 24, mm: sum, peakMmH: wPeak });
     start = -1; last = -1; sum = 0; wPeak = 0;
   };
   for (let i = from; i < end; i++) {
     const v = hourVal(raw.rain, i + 1);
-    rain += v; peak = Math.max(peak, v);
+    // итог и пик только за сам день; окно дождя может идти дальше за полночь
+    if (i < dayEnd) { rain += v; peak = Math.max(peak, v); }
     const pr = raw.prob ? raw.prob[i + 1] : null;
     if (pr != null && !Number.isNaN(pr)) prob = Math.max(prob, pr);
     if (v >= 0.2) {

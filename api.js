@@ -92,6 +92,9 @@ async function loadConditionsAt(lat, lon, localIso) {
     const h = root.hourly;
     const i = h.time.indexOf(key);
     if (i < 0 || h.wind_speed_10m[i] == null) return null;
+    // ветер и порывы медианой моделей, как в прогнозе
+    const ens = await loadEnsemble(lat, lon, range);
+    const eAt = (name, fb) => { const v = ens ? ens.at(name, key) : NaN; return Number.isNaN(v) ? fb : v; };
     const pNow = nv(h.pressure_msl, i), pBefore = nv(h.pressure_msl, i - 3);
     const sun = name => (root.daily && root.daily[name] && root.daily[name][1] ? root.daily[name][1].substring(11, 16) : '—');
 
@@ -109,8 +112,8 @@ async function loadConditionsAt(lat, lon, localIso) {
     return {
       waveHeight: marine('wave_height'),
       waterTemp: marine('sea_surface_temperature'),
-      wind: nv(h.wind_speed_10m, i),
-      gust: nv(h.wind_gusts_10m, i),
+      wind: eAt('wind_speed_10m', nv(h.wind_speed_10m, i)),
+      gust: eAt('wind_gusts_10m', nv(h.wind_gusts_10m, i)),
       cloud: nv(h.cloud_cover, i),
       pressure: pNow,
       pressureTrend: Number.isNaN(pNow) || Number.isNaN(pBefore) ? NaN : pNow - pBefore,

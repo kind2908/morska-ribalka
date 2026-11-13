@@ -44,14 +44,17 @@ async function loadEnsemble(lat, lon, range) {
   try {
     const r = await getJson(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
       `&hourly=${ENS_VARS.join(',')}&models=${ENS_MODELS.join(',')}&wind_speed_unit=ms${range}`);
-    const h = r.hourly, index = new Map(h.time.map((t, i) => [t, i])), values = {};
+    const h = r.hourly, index = new Map(h.time.map((t, i) => [t, i])), values = {}, perModel = {};
     for (const name of ENS_VARS) {
       const arrs = ENS_MODELS.map(m => h[name + '_' + m]).filter(Boolean);
+      perModel[name] = arrs;
       values[name] = h.time.map((_, i) => median(arrs.map(a => a[i]).filter(v => v != null && !Number.isNaN(v))));
     }
     const at = (name, time) => { const i = index.get(time); return i == null ? NaN : values[name][i]; };
     return {
       at,
+      // ряды отдельных моделей на те же часы, что times (NaN, где модель молчит), для разброса
+      models: (name, times) => (perModel[name] || []).map(a => times.map(t => { const i = index.get(t); return i == null || a[i] == null ? NaN : a[i]; })),
       // подменить значения ряда по его времени; где медианы нет, остаётся прежнее
       overlay: (name, times, arr) => arr.map((v, i) => { const m = times[i] ? at(name, times[i]) : NaN; return Number.isNaN(m) ? v : m; })
     };
@@ -252,7 +255,9 @@ async function loadHourly(spot) {
     times: Array.from({ length: hours }, (_, i) => (mh && mh.time[mStart + i]) || ''),
     pressure: seriesOf(h, 'pressure_msl', Math.max(start - 3, 0), hours + 3),
     sunrise: sunTimes('sunrise'),
-    sunset: sunTimes('sunset')
+    sunset: sunTimes('sunset'),
+    gustModels: ens ? ens.models('wind_gusts_10m', wTimes) : [],
+    rainModels: ens ? ens.models('precipitation', wTimes) : []
   };
 }
 

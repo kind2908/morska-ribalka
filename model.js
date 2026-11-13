@@ -166,6 +166,13 @@ const comfRainPeakPts = [[0, 0], [1, -0.4], [2.5, -1.2], [4, -2.2], [7.6, -3.8],
 const comfTempPts = [[-5, -4.0], [0, -3.0], [5, -1.5], [10, -0.5], [14, 0], [31, 0], [35, -1.0], [39, -2.5]];
 
 // Средняя высота волны (Hs) и сколько бывают отдельные волны: примерно до 1,8 Hs
+// «(модели 50–95)», если самая низкая и самая высокая модель расходятся хотя бы на minGap; иначе пусто
+function spreadText(r, k, minGap) {
+  if (!r || Number.isNaN(r[0]) || Number.isNaN(r[1])) return '';
+  const lo = r[0] * k, hi = r[1] * k;
+  if (hi - lo < minGap) return '';
+  return ' ' + trv('(модели {0}–{1})', '(models {0}–{1})', '(modeli {0}–{1})', [f0(lo), f0(hi)]);
+}
 function waveHint(wave) {
   return isNaN_(wave) || wave < 0.2 ? null : trv('отдельные до {0}', 'single waves up to {0}', 'pojedinačni do {0}', [fmt(wave * 1.8, U.m())]);
 }
@@ -181,14 +188,14 @@ function comfortModel(p) {
   let cap = 10;
   const w = isNaN_(p.windMs) ? 0 : p.windMs, g = isNaN_(p.gustMs) ? 0 : p.gustMs;
   const wp = interp(Math.max(w, g * 0.8) * (p.boat ? 1.2 : 1), comfWindPts);
-  if (wp < -0.05) items.push([tr('Ветер', 'Wind', 'Vjetar'), trv('{0} км/ч, порывы {1}', '{0} km/h, gusts {1}', '{0} km/h, udari {1}', [f0(w * 3.6), f0(g * 3.6)]), wp]);
+  if (wp < -0.05) items.push([tr('Ветер', 'Wind', 'Vjetar'), trv('{0} км/ч, порывы {1}', '{0} km/h, gusts {1}', '{0} km/h, udari {1}', [f0(w * 3.6), f0(g * 3.6)]) + spreadText(p.gustRange, 3.6, 15), wp]);
   const wave = isNaN_(p.waveM) ? 0 : p.waveM;
   const vp = p.boat ? interp(wave * 1.4, comfWaveBoatPts) : interp(wave, comfWaveShorePts);
   if (vp < -0.05) items.push([tr('Волна', 'Waves', 'Talasi'), waveText(wave), vp]);
   const rain = isNaN_(p.rainMm) ? 0 : p.rainMm, peak = isNaN_(p.rainPeakMmH) ? 0 : p.rainPeakMmH;
   const rp = Math.min(interp(rain, p.rainOuting ? comfRainOutingPts : comfRainDayPts), interp(peak, comfRainPeakPts));
   if (rp < -0.05) items.push([tr('Дождь', 'Rain', 'Kiša'), p.rainOuting
-    ? trv('{0} мм за 3 ч', '{0} mm in 3 h', '{0} mm za 3 h', [f1(rain)])
+    ? trv('{0} мм за 3 ч', '{0} mm in 3 h', '{0} mm za 3 h', [f1(rain)]) + spreadText(p.rainRange, 1, 3)
     : trv('{0} мм за день', '{0} mm per day', '{0} mm za dan', [f0(rain)]), rp]);
   // Под заметным дождём «Комфортно» не бывает, даже если ветра и волны нет
   if ((p.rainOuting && rain >= 1.0) || peak >= 2.5) cap = Math.min(cap, 7.5);
@@ -247,7 +254,11 @@ function comfortOuting(d, raw, hourIndex, day, air, boat) {
     if (k > 0) { const v = hourVal(raw.rain, i); rain += v; peak = Math.max(peak, v); }
   }
   const flags = weatherFlags(raw, hourIndex, hourIndex + OUTING_HOURS, day);
-  return comfortModel({
+  // разброс моделей за то же окно: у каждой модели свой максимум порывов и своя сумма дождя
+  const range = v => { const x = v.filter(n => !Number.isNaN(n)); return x.length >= 3 ? [Math.min(...x), Math.max(...x)] : null; };
+  const gustRange = range((raw.gustModels || []).map(a => { const v = []; for (let k = 0; k <= OUTING_HOURS; k++) { const n = a[hourIndex + k]; if (n != null && !Number.isNaN(n)) v.push(n); } return v.length ? Math.max(...v) : NaN; }));
+  const rainRange = range((raw.rainModels || []).map(a => { let sum = 0; for (let k = 1; k <= OUTING_HOURS; k++) { const n = a[hourIndex + k]; if (n == null || Number.isNaN(n)) return NaN; sum += n; } return sum; }));
+  return comfortModel({ gustRange, rainRange,
     windMs: wind, gustMs: gust, waveM: wave, rainMm: rain, rainPeakMmH: peak, rainOuting: true,
     thunder: flags.thunder, snow: flags.snow, feelsC: air && air.now ? air.now.feels : NaN, boat
   });

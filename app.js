@@ -1,5 +1,5 @@
 // Главный файл: состояние, переключение вкладок, загрузка данных, запуск
-const APP_VERSION = '1.13.4';
+const APP_VERSION = '1.14.0';
 const STALE_MS = 30 * 60 * 1000;
 const WEATHER_RETRY_MS = 2 * 60 * 1000;
 const ANDROID_APK = 'app-release.apk';
@@ -345,6 +345,19 @@ function init() {
   ['fish_boat', 'fish_shore'].forEach(k => { if (Store.get(k, null) === 'Зубатка') Store.set(k, 'Зубан'); });
   const dl = Store.get('diary', []);
   if (dl.some(e => e.fish === 'Зубатка')) Store.set('diary', dl.map(e => e.fish === 'Зубатка' ? Object.assign({}, e, { fish: 'Зубан' }) : e));
+  // Ссылки со страниц стран (ru/croatia.html и т.п.): ?c=HR&r=Пула&lang=hr
+  try {
+    const qs = new URLSearchParams(location.search);
+    const qc = qs.get('c');
+    if (qc && COUNTRIES.some(x => x.code === qc)) {
+      Country.set(qc);
+      const qr = qs.get('r');
+      const reg = COUNTRIES.find(x => x.code === qc).regions;
+      Store.set('region', qr && reg.some(r => r.key === qr) ? qr : reg[0].key);
+    }
+    if (qs.get('lang') && !Store.get('lang', null)) Lang.set(qs.get('lang'));
+    if (location.search) history.replaceState(null, '', location.pathname);
+  } catch (e) { /* без параметров */ }
   const savedCountry = Country.saved();
   Country.apply(savedCountry || 'ME');
   refreshRegions();

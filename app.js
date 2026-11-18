@@ -1,5 +1,5 @@
 // Главный файл: состояние, переключение вкладок, загрузка данных, запуск
-const APP_VERSION = '1.14.0';
+const APP_VERSION = '1.15.0';
 const STALE_MS = 30 * 60 * 1000;
 const WEATHER_RETRY_MS = 2 * 60 * 1000;
 const ANDROID_APK = 'app-release.apk';
@@ -9,7 +9,7 @@ const THEME_COLORS = { sea: ['#0B5C8E', '#0A1822'], light: ['#F6F7F5', '#F6F7F5'
 const S = {
   region: 'Херцег-Нови', selected: null, boat: false, fish: null,
   data: null, error: false, days: [], hourly: null, air: null,
-  slot: 0, loadedAt: 0, staleTry: 0,
+  pickDay: null, pickHour: 0, loadedAt: 0, staleTry: 0,
   mySpots: [], tab: 0, showSettings: false, mapFocus: null, pick: null,
   diarySub: 0, draft: null, editNote: null, mark: null, slider: 10,
   rulesOpen: false, libOpen: null, aboutOpen: false, theme: 0,
@@ -129,6 +129,8 @@ function pickFish(boat) {
 // keepOld: та же точка, данные просто устарели; старое остаётся на экране, пока не придёт новое
 S.reload = function (keepOld) {
   const token = ++S.token, spot = S.selected;
+  // последняя выбранная точка: при следующем открытии откроемся на ней (просьба пользователей)
+  Store.set('spot', { c: Country.saved(), region: S.region, name: spot.name, lat: spot.lat, lon: spot.lon });
   if (!keepOld) {
     S.data = null; S.error = false; S.days = []; S.hourly = null; S.air = null; S.station = null; S.loadedAt = 0;
     render();
@@ -368,6 +370,11 @@ function init() {
   S.fish = pickFish(S.boat);
   S.selected = regionSpots(S.region)[0];
   S.mySpots = Store.get('my_spots', []);
+  const sp = Store.get('spot', null);
+  if (sp && sp.c === Country.saved() && sp.region === S.region && typeof sp.lat === 'number' && typeof sp.lon === 'number') {
+    S.selected = regionSpots(S.region).concat(S.mySpots).find(x => x.lat === sp.lat && x.lon === sp.lon && x.name === sp.name)
+      || { name: String(sp.name || 'Точка на карте'), lat: sp.lat, lon: sp.lon };
+  }
   const mk = Store.get('mark', null);
   if (mk && mk.date === nowLocal().date) { S.mark = mk.m; S.slider = mk.m; }
   S.draft = newDraft(S);

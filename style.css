@@ -224,3 +224,10 @@ body.picking #tabs{display:none}
   font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
 .ih-ico { width: 20px; height: 20px; vertical-align: -4px; color: var(--primary); }
 .ih-btns { justify-content: flex-end; }
+/* выбор часа ползунком и нажимаемые дни */
+.hourpick { display: flex; align-items: center; gap: 12px; margin: 10px 0 4px; }
+.hourpick .range { flex: 1; }
+.hourpick .bold { min-width: 3.2em; }
+.dayrow.tap { cursor: pointer; }
+.dayrow.tap:hover, .dayrow.tap:focus { background: var(--surface-variant); outline: none; }
+.dayrow.tap .dl::after { content: ' ›'; opacity: .6; }
